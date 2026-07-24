@@ -60,7 +60,7 @@ header {
 h1 {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2.2rem, 5vw, 4.7rem);
+  font-size: clamp(2.2rem, 5vw, 2.7rem);
   line-height: 0.95;
   letter-spacing: -0.055em;
 }

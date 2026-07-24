@@ -574,7 +574,7 @@ export default function MatchStudio() {
 
           {!loading && !error && view === "products" ? (
             <div className="products-view">
-              <div className="summary-grid">
+              {/* <div className="summary-grid">
                 <Metric label="Showing" value={products.length} />
                 <Metric label="90-100" value={counts["90_100"]} />
                 <Metric label="80-89" value={counts["80_89"]} />
@@ -582,7 +582,7 @@ export default function MatchStudio() {
                 <Metric label="60-69" value={counts["60_69"]} />
                 <Metric label="50-59" value={counts["50_59"]} />
                 <Metric label="Below 50" value={counts.below50} />
-              </div>
+              </div> */}
 
               <div className="filters" style={{ display: "grid" }}>
                 <label>
