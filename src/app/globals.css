@@ -17,7 +17,7 @@
   box-sizing: border-box;
 }
 
-body {
+/* body {
   min-height: 100vh;
   margin: 0;
   background:
@@ -26,7 +26,7 @@ body {
     linear-gradient(135deg, #fffaf5 0%, #f8f2f7 48%, #fff8ef 100%);
   color: var(--ink);
   font-family: ui-rounded, "Avenir Next", "Nunito Sans", "Trebuchet MS", sans-serif;
-}
+} */
 
 button,
 select {
@@ -40,7 +40,7 @@ button {
 header {
   max-width: 1420px;
   margin: 0 auto;
-  padding: 34px 22px 18px;
+  /* padding: 34px 22px 18px; */
 }
 
 .back-link {
@@ -113,7 +113,7 @@ main {
 }
 
 .section-title {
-  margin: 2px 0 11px;
+  margin: 2px 2px 11px;
   color: var(--muted);
   font-size: 0.76rem;
   font-weight: 950;
@@ -836,11 +836,11 @@ details.payload-details summary {
 
 @media (max-width: 760px) {
   header {
-    padding-top: 24px;
+    padding-top: 4px;
   }
 
   main {
-    padding-inline: 14px;
+    padding-inline: 0px;
   }
 
   .quiz-panel {
@@ -990,4 +990,270 @@ details.payload-details summary {
     grid-column: 2;
     justify-self: start;
   }
+}
+
+/* ==========================================================================
+   Quiz Panel Redesign Styles
+   ========================================================================== */
+
+.quiz-panel {
+  background: #ffffff;
+  border-radius: 28px;
+  border: 1px solid #e1e8ed;
+  /* padding: 20px 18px; */
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05);
+}
+
+.quiz-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f4f8;
+}
+
+.quiz-icon {
+  font-size: 1.5rem;
+}
+
+.quiz-title-group {
+  flex: 1;
+}
+
+.quiz-title-group h2 {
+  margin: 0 0 6px 0;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #1a202c;
+  text-transform: uppercase;
+}
+
+.progress-bar-wrap {
+  width: 100%;
+  height: 6px;
+  background: #edf2f7;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #57b5e6, #3b82f6);
+  border-radius: 999px;
+}
+
+.quiz-section {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 18px;
+  padding: 14px;
+  padding-top: 8px;
+  padding-bottom: 4px;
+  margin-bottom: 4px;
+}
+
+.quiz-section .section-title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 850;
+  color: #1e293b;
+  letter-spacing: 0.05em;
+}
+
+.quiz-section .section-subtitle {
+  margin: 2px 0 10px 0;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+/* 1. Skin Type Grid Cards */
+.skin-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.skin-type-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 48px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.skin-type-card:hover {
+  border-color: #cbd5e1;
+  transform: none;
+}
+
+.skin-type-card.active {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.chip-icon-box {
+  font-size: 0.7rem;
+}
+
+.chip-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #334155;
+  letter-spacing: 0.03em;
+}
+
+.check-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3b82f6;
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+}
+
+/* 2. Concern Pills Wrap */
+.concern-pills-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.concern-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.concern-pill.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+.pill-remove {
+  font-size: 0.85rem;
+  line-height: 1;
+  margin-left: 2px;
+}
+
+/* 3. Sensitivity Toggle */
+.sensitivity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.inline-label {
+  font-size: 0.75rem;
+  font-weight: 750;
+  color: #334155;
+}
+
+.sensitivity-toggle {
+  display: flex;
+  background: #e2e8f0;
+  padding: 2px;
+  border-radius: 999px;
+}
+
+.toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.toggle-btn.active {
+  background: #ffffff;
+  color: #1e293b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 4. Demographics Grid */
+.demographics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.select-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.select-field label {
+  font-size: 0.65rem;
+  font-weight: 850;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.select-field select {
+  height: 40px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Footer & Action Button */
+.quiz-footer {
+  margin-top: 16px;
+}
+
+.quiz-disclaimer {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin: 0 0 12px 0;
+  line-height: 1.35;
+}
+
+.find-matches-btn {
+  width: 100%;
+  min-height: 48px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+}
+
+.find-matches-btn:hover {
+  opacity: 0.95;
 }
