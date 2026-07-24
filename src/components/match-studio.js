@@ -3,6 +3,8 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useMemo, useState } from "react";
+import { trackingService } from '@/lib/tracking/trackingClient';
+import { EVENTS } from '@/lib/tracking/events';
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -280,6 +282,13 @@ export default function MatchStudio() {
   const [modalProduct, setModalProduct] = useState(null);
   const [filters, setFilters] = useState({ score: "all", category: "all", type: "all", sheet: "all" });
 
+  // Page view — fires once on mount, same pattern as your other Roopsee pages.
+  useEffect(() => {
+    trackingService.trackPageLoad(EVENTS.PAGE_VIEWED_SHOP_PRODUCTS, {
+      page_type: "match_studio",
+    });
+  }, []);
+
   async function recommend(nextProfile = profile) {
     setLoading(true);
     setError("");
@@ -294,6 +303,9 @@ export default function MatchStudio() {
       setData(payload);
     } catch (requestError) {
       setError(requestError.message);
+      trackingService.trackError("match_studio_recommend_failed", {
+        message: requestError.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -355,11 +367,13 @@ export default function MatchStudio() {
       selectedGender: gender,
       selectedSpecialConditions: specials.length ? specials : ["None"],
     });
+    trackingService.trackClick("gender_option", { gender });
   }
 
   function selectSpecial(item) {
     if (item === "None") {
       update("selectedSpecialConditions", ["None"]);
+      trackingService.trackClick("special_condition_option", { condition: "None" });
       return;
     }
     const current = profile.selectedSpecialConditions.filter((value) => value !== "None");
@@ -367,6 +381,38 @@ export default function MatchStudio() {
       ? current.filter((value) => value !== item)
       : [...current, item].slice(-2);
     update("selectedSpecialConditions", next.length ? next : ["None"]);
+    trackingService.trackClick("special_condition_option", { condition: item });
+  }
+
+  // Every product-card / routine-card open funnels through here so the
+  // click event always carries which product and its score.
+  function handleOpenProduct(product) {
+    trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
+      productId: product.product_uid,
+      productName: product.product_name,
+      brand: product.brand_name,
+      score: product.score,
+      view,
+    });
+    setModalProduct(product);
+  }
+
+  function handleViewChange(nextView) {
+    setView(nextView);
+    trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_MODE_TOGGLE, { view: nextView });
+  }
+
+  function handleRefresh() {
+    trackingService.trackClick("refresh_product_preview", { ...profile });
+    recommend();
+  }
+
+  function handleFilterChange(filterKey, value) {
+    setFilters((current) => ({ ...current, [filterKey]: value }));
+    trackingService.trackEvent(EVENTS.CLICKED_FILTER_OPTION, {
+      filter_type: filterKey,
+      value,
+    });
   }
 
   return (
@@ -386,21 +432,30 @@ export default function MatchStudio() {
           <ChipGroup
             isActive={(item) => profile.selectedSkinType === item}
             items={options.skinTypes}
-            onSelect={(item) => update("selectedSkinType", item)}
+            onSelect={(item) => {
+              update("selectedSkinType", item);
+              trackingService.trackEvent(EVENTS.CLICKED_SKIN_TYPE_FILTER, { skin_type: item });
+            }}
           />
 
           <div className="section-title">Sensitive? *</div>
           <ChipGroup
             isActive={(item) => profile.selectedSensitive === (item === "Yes")}
             items={options.sensitivityOptions}
-            onSelect={(item) => update("selectedSensitive", item === "Yes")}
+            onSelect={(item) => {
+              update("selectedSensitive", item === "Yes");
+              trackingService.trackClick("sensitivity_option", { sensitive: item });
+            }}
           />
 
           <div className="section-title">Skin Concern (Choose 1) *</div>
           <ChipGroup
             isActive={(item) => profile.selectedFaceBodyConcerns.includes(item)}
             items={options.concerns}
-            onSelect={(item) => update("selectedFaceBodyConcerns", [item])}
+            onSelect={(item) => {
+              update("selectedFaceBodyConcerns", [item]);
+              trackingService.trackClick("skin_concern_option", { concern: item });
+            }}
           />
 
           <div className="section-title">Special Conditions *</div>
@@ -413,7 +468,13 @@ export default function MatchStudio() {
           <div className="row">
             <div>
               <div className="section-title">Age</div>
-              <select value={profile.age} onChange={(event) => update("age", event.target.value)}>
+              <select
+                value={profile.age}
+                onChange={(event) => {
+                  update("age", event.target.value);
+                  trackingService.trackClick("age_option", { age: event.target.value });
+                }}
+              >
                 <option>Teen</option>
                 <option>Adult</option>
               </select>
@@ -430,7 +491,7 @@ export default function MatchStudio() {
           </div>
 
           <div className="actions">
-            <button className="primary" disabled={loading} onClick={() => recommend()} type="button">
+            <button className="primary" disabled={loading} onClick={handleRefresh} type="button">
               {loading ? "Loading Product Preview..." : "Refresh Product Preview"}
             </button>
           </div>
@@ -457,8 +518,8 @@ export default function MatchStudio() {
           </div>
 
           <div aria-label="Result view" className="view-tabs">
-            <button className={`view-tab ${view === "products" ? "active" : ""}`} onClick={() => setView("products")} type="button">Products</button>
-            <button className={`view-tab ${view === "routine" ? "active" : ""}`} onClick={() => setView("routine")} type="button">Routine</button>
+            <button className={`view-tab ${view === "products" ? "active" : ""}`} onClick={() => handleViewChange("products")} type="button">Products</button>
+            <button className={`view-tab ${view === "routine" ? "active" : ""}`} onClick={() => handleViewChange("routine")} type="button">Routine</button>
           </div>
 
           {error ? <div className="empty">{error}</div> : null}
@@ -479,7 +540,7 @@ export default function MatchStudio() {
               <div className="filters" style={{ display: "grid" }}>
                 <label>
                   Score Range
-                  <select value={filters.score} onChange={(event) => setFilters({ ...filters, score: event.target.value })}>
+                  <select value={filters.score} onChange={(event) => handleFilterChange("score", event.target.value)}>
                     <option value="all">All score ranges</option>
                     <option value="90_100">90-100</option>
                     <option value="80_89">80-89</option>
@@ -491,21 +552,21 @@ export default function MatchStudio() {
                 </label>
                 <label>
                   Category
-                  <select value={filters.category} onChange={(event) => setFilters({ ...filters, category: event.target.value })}>
+                  <select value={filters.category} onChange={(event) => handleFilterChange("category", event.target.value)}>
                     <option value="all">All categories</option>
                     {filterValues("category").map((value) => <option key={value}>{value}</option>)}
                   </select>
                 </label>
                 <label>
                   Product Type
-                  <select value={filters.type} onChange={(event) => setFilters({ ...filters, type: event.target.value })}>
+                  <select value={filters.type} onChange={(event) => handleFilterChange("type", event.target.value)}>
                     <option value="all">All types</option>
                     {filterValues("product_type").map((value) => <option key={value}>{value}</option>)}
                   </select>
                 </label>
                 <label>
                   Score Sheet
-                  <select value={filters.sheet} onChange={(event) => setFilters({ ...filters, sheet: event.target.value })}>
+                  <select value={filters.sheet} onChange={(event) => handleFilterChange("sheet", event.target.value)}>
                     <option value="all">All sheets</option>
                     {filterValues("source_sheet").map((value) => <option key={value}>{value}</option>)}
                   </select>
@@ -515,7 +576,7 @@ export default function MatchStudio() {
               {products.length ? (
                 <div className="product-grid">
                   {products.map((product) => (
-                    <ProductCard key={product.product_uid} onOpen={setModalProduct} product={product} />
+                    <ProductCard key={product.product_uid} onOpen={handleOpenProduct} product={product} />
                   ))}
                 </div>
               ) : <div className="empty">No matching catalog products found for this profile.</div>}
@@ -524,7 +585,7 @@ export default function MatchStudio() {
 
           {!loading && !error && view === "routine" ? (
             <div className="routine-view">
-              <RoutineView onOpen={setModalProduct} routine={data?.routine} />
+              <RoutineView onOpen={handleOpenProduct} routine={data?.routine} />
             </div>
           ) : null}
         </section>
