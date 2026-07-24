@@ -1,0 +1,18 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "roopsee-product-coverage-service"
+      }
+    }
+  ],
+  "services": {
+    "roopsee-product-coverage-service": {
+      "root": ".",
+      "entrypoint": "api/index.py"
+    }
+  }
+}
