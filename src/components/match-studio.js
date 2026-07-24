@@ -17,13 +17,13 @@ const options = {
     "Body Acne",
     "Dryness",
     "Open Pores",
-    "Uneven Skin Tone",
-    "Dark Spots/Pigmentation",
+    "Dark Spots",
     "Melasma",
     "Barrier Repair",
+    "Uneven Skin Tone",
     "Comedones",
-    "Wrinkles/Fine lines",
-    "Redness/Irritation",
+    "Wrinkles",
+    "Redness",
     "Dehydration",
     "Dullness",
     "Tanning",
@@ -541,8 +541,8 @@ export default function MatchStudio({ initialData }) {
   return (
     <>
       <header>
-        <div className="eyebrow">Personalised skincare product matcher</div>
-        <h1>Find skincare products for your skin profile</h1>
+        {/* <div className="eyebrow">Personalised skincare product matcher</div> */}
+        {/* <h1>Find skincare products for your skin profile</h1> */}
         {/* <p>
           Select your skin type, sensitivity, age and main concern. Roopsee compares applicable
           catalog scores and ranks products for a practical morning, night and weekly routine.
@@ -551,112 +551,203 @@ export default function MatchStudio({ initialData }) {
 
       <main id="matcher">
         <section className="panel profile-panel quiz-panel">
-          <div className="section-title">Skin Type *</div>
-          <ChipGroup
-            isActive={(item) => profile.selectedSkinType === item}
-            items={options.skinTypes}
-            onSelect={(item) => {
-              update("selectedSkinType", item);
-              trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
-                field: "skin_type",
-                question: "Skin type",
-                answer: item,
-                value: item,
-              });
-            }}
-          />
-
-          <div className="section-title">Sensitive? *</div>
-          <ChipGroup
-            isActive={(item) => profile.selectedSensitive === (item === "Yes")}
-            items={options.sensitivityOptions}
-            onSelect={(item) => {
-              update("selectedSensitive", item === "Yes");
-              trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
-                field: "sensitivity",
-                question: "Sensitive skin",
-                answer: item,
-                value: item,
-              });
-            }}
-          />
-
-          <div className="section-title">Skin Concern (Choose 1) *</div>
-          <ChipGroup
-            isActive={(item) => profile.selectedFaceBodyConcerns.includes(item)}
-            items={options.concerns}
-            onSelect={(item) => {
-              update("selectedFaceBodyConcerns", [item]);
-              trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
-                field: "skin_concern",
-                question: "Skin concern",
-                answer: item,
-                value: item,
-              });
-            }}
-          />
-
-          <div className="section-title">Special Conditions *</div>
-          <ChipGroup
-            isActive={(item) => profile.selectedSpecialConditions.includes(item)}
-            items={availableSpecials}
-            onSelect={selectSpecial}
-          />
-
-          <div className="row">
-            <div>
-              <div className="section-title">Age</div>
-              <select
-                value={profile.age}
-                onChange={(event) => {
-                  update("age", event.target.value);
-                  trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
-                    field: "age",
-                    question: "Age",
-                    answer: event.target.value,
-                    value: event.target.value,
-                  });
-                }}
-              >
-                <option>Teen</option>
-                <option>Adult</option>
-              </select>
-            </div>
-            <div>
-              <div className="section-title">Gender</div>
-              <select value={profile.selectedGender} onChange={(event) => selectGender(event.target.value)}>
-                <option>female</option>
-                <option>male</option>
-                <option>other</option>
-                <option>prefer not to say</option>
-              </select>
+          {/* Header banner matching the design */}
+          <div className="quiz-header">
+            <span className="quiz-icon">✨</span>
+            <div className="quiz-title-group">
+              <h2>SKIN MATCH TOOL</h2>
+              <div className="progress-bar-wrap">
+                <div className="progress-bar-fill" style={{ width: "100%" }}></div>
+              </div>
             </div>
           </div>
 
-          <div className="actions">
-            <button className="primary" disabled={loading} onClick={handleRefresh} type="button">
-              {loading ? "Loading Product Preview..." : "Refresh Product Preview"}
-            </button>
+          {/* Question 1: Skin Type */}
+          <div className="quiz-section">
+            <div className="section-title">1. YOUR SKIN TYPE</div>
+            <p className="section-subtitle">Tap to select your primary skin type.</p>
+            <div className="chips skin-type-grid">
+              {options.skinTypes.map((item) => {
+                const active = profile.selectedSkinType === item;
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    className={`chip skin-type-card ${active ? "active" : ""}`}
+                    onClick={() => {
+                      update("selectedSkinType", item);
+                      trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+                        field: "skin_type",
+                        question: "Skin type",
+                        answer: item,
+                        value: item,
+                      });
+                    }}
+                  >
+                    <div className="chip-icon-box">
+                      {item === "Oily" && "💧"}
+                      {item === "Dry" && "🌵"}
+                      {item === "Combination" && "☯️"}
+                      {item === "Normal" && "✨"}
+                    </div>
+                    <span className="chip-label">{item.toUpperCase()}</span>
+                    {active && <span className="check-badge">✓</span>}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
-          <details className="payload-details">
-            <summary>Testing payload</summary>
-            <pre className="json-box">{JSON.stringify(profile, null, 2)}</pre>
-          </details>
+          {/* Question 2: Skin Concerns */}
+          <div className="quiz-section">
+            <div className="section-title">2. YOUR SKIN CONCERNS</div>
+            <p className="section-subtitle">Select all that apply.</p>
+            <div className="concern-pills-wrap">
+              {options.concerns.map((item) => {
+                const active = profile.selectedFaceBodyConcerns.includes(item);
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    className={`concern-pill ${active ? "active" : ""}`}
+                    onClick={() => {
+                      update("selectedFaceBodyConcerns", [item]);
+                      trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+                        field: "skin_concern",
+                        question: "Skin concern",
+                        answer: item,
+                        value: item,
+                      });
+                    }}
+                  >
+                    {item} {active && <span className="pill-remove">×</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-          <div className="profile-guides">
-            <div className="routine-section-title">Explore skincare guides</div>
-            <div className="tagline">
-              {guideLinks.map((guide) => (
-                <Link
-                  className="tag"
-                  href={`/skincare-for/${guide.slug}`}
-                  key={guide.slug}
-                  onClick={(event) => handleGuideClick(event, guide)}
+          {/* Question 3: Sensitive & Special Conditions */}
+          <div className="quiz-section">
+            <div className="section-title">3. SENSITIVITY & CONDITIONS</div>
+            <div className="sensitivity-row">
+              <span className="inline-label">Sensitive Skin?</span>
+              <div className="sensitivity-toggle">
+                {options.sensitivityOptions.map((item) => {
+                  const active = profile.selectedSensitive === (item === "Yes");
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      className={`toggle-btn ${active ? "active" : ""}`}
+                      onClick={() => {
+                        update("selectedSensitive", item === "Yes");
+                        trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+                          field: "sensitivity",
+                          question: "Sensitive skin",
+                          answer: item,
+                          value: item,
+                        });
+                      }}
+                    >
+                      {item}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="special-conditions-wrap">
+              <div className="section-subtitle" style={{ marginTop: "8px" }}>Special Conditions:</div>
+              <div className="concern-pills-wrap">
+                {availableSpecials.map((item) => {
+                  const active = profile.selectedSpecialConditions.includes(item);
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      className={`concern-pill ${active ? "active" : ""}`}
+                      onClick={() => selectSpecial(item)}
+                    >
+                      {item} {active && <span className="pill-remove">×</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Question 4: Age & Gender */}
+          <div className="quiz-section">
+            <div className="section-title">4. DEMOGRAPHICS</div>
+            <div className="demographics-grid">
+              <div className="select-field">
+                <label htmlFor="quiz-age-select">AGE GROUP</label>
+                <select
+                  id="quiz-age-select"
+                  value={profile.age}
+                  onChange={(event) => {
+                    update("age", event.target.value);
+                    trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+                      field: "age",
+                      question: "Age",
+                      answer: event.target.value,
+                      value: event.target.value,
+                    });
+                  }}
                 >
-                  {guide.label}
-                </Link>
-              ))}
+                  <option value="Teen">Teen</option>
+                  <option value="Adult">Adult</option>
+                </select>
+              </div>
+
+              <div className="select-field">
+                <label htmlFor="quiz-gender-select">GENDER IDENTITY</label>
+                <select
+                  id="quiz-gender-select"
+                  value={profile.selectedGender}
+                  onChange={(event) => selectGender(event.target.value)}
+                >
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                  <option value="other">Other</option>
+                  <option value="prefer not to say">Prefer not to say</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Disclaimer & Action */}
+          <div className="quiz-footer">
+            {/* <p className="quiz-disclaimer">
+              * Your answers help us find the best product recommendations for your unique skin.
+            </p> */}
+
+            <div className="actions">
+              <button className="primary find-matches-btn" disabled={loading} onClick={handleRefresh} type="button">
+                {loading ? "FINDING MATCHES..." : "FIND MY MATCHES"}
+              </button>
+            </div>
+
+            <details className="payload-details">
+              <summary>Testing payload</summary>
+              <pre className="json-box">{JSON.stringify(profile, null, 2)}</pre>
+            </details>
+
+            <div className="profile-guides">
+              <div className="routine-section-title">Explore skincare guides</div>
+              <div className="tagline">
+                {guideLinks.map((guide) => (
+                  <Link
+                    className="tag"
+                    href={`/skincare-for/${guide.slug}`}
+                    key={guide.slug}
+                    onClick={(event) => handleGuideClick(event, guide)}
+                  >
+                    {guide.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -664,7 +755,7 @@ export default function MatchStudio({ initialData }) {
         <section className="panel shop-panel" id="results">
           <div className="studio-toolbar">
             <div className="studio-title">
-              <h2>Recommended for this profile</h2>
+              <p style={{ textAlign: "center" }}>Recommended for this profile</p>
               {/* <p>
                 {view === "routine"
                   ? "Routine picks are split into Premium and Value Fit, using score plus effective price."
@@ -696,7 +787,7 @@ export default function MatchStudio({ initialData }) {
                 <Metric label="Below 50" value={counts.below50} />
               </div> */}
 
-              <div className="filters" style={{ display: "grid" }}>
+              {/* <div className="filters" style={{ display: "grid" }}>
                 <label>
                   Score Range
                   <select value={filters.score} onChange={(event) => handleFilterChange("score", event.target.value)}>
@@ -730,7 +821,7 @@ export default function MatchStudio({ initialData }) {
                     {filterValues("source_sheet").map((value) => <option key={value}>{value}</option>)}
                   </select>
                 </label>
-              </div>
+              </div> */}
 
               {products.length ? (
                 <div className="product-grid">
@@ -757,54 +848,6 @@ export default function MatchStudio({ initialData }) {
         </section>
       </main>
 
-      {/* <main>
-        <aside className="panel profile-panel">
-          <div className="studio-title">
-            <h2>How Roopsee matching works</h2>
-          </div>
-          <p>
-            Each product is compared using the score components applicable to its product type.
-            These can include age, concern, skin type, sensitivity and selected special conditions.
-          </p>
-          <p>
-            Applicable scores are averaged and rounded. A -100 component remains a hard blocker,
-            so an unsuitable condition is not hidden by otherwise positive scores.
-          </p>
-          <div className="warnings">
-            This tool supports product discovery and does not diagnose or treat a skin condition.
-            Seek qualified medical advice for persistent, painful, severe or worsening symptoms.
-          </div>
-        </aside>
-
-        <section className="panel shop-panel">
-          <div className="studio-title">
-            <h2>Skincare matching questions</h2>
-            <p>Clear answers about how to use the recommendations.</p>
-          </div>
-          <section>
-            <div className="routine-section-title">What does a higher match score mean?</div>
-            <p>
-              A higher score means the product aligns more closely with the selected profile using
-              the applicable catalog score components. It does not guarantee a clinical outcome.
-            </p>
-          </section>
-          <section>
-            <div className="routine-section-title">Why do different product types use different scores?</div>
-            <p>
-              Cleansers, serums, moisturisers and sunscreens play different roles, so the matcher
-              applies product-specific rules instead of treating every product identically.
-            </p>
-          </section>
-          <section>
-            <div className="routine-section-title">How should I start a new routine?</div>
-            <p>
-              Introduce products gradually, follow their directions and patch test when appropriate.
-              Stop a product that causes persistent irritation and obtain professional advice when needed.
-            </p>
-          </section>
-          <p><small>Catalog and matching guidance updated July 2026.</small></p>
-          </section>
-      </main> */}
 
       <ProductModal onClose={() => setModalProduct(null)} product={modalProduct} />
     </>
