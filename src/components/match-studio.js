@@ -2,9 +2,12 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
+import { DEFAULT_PROFILE } from "@/lib/default-profile";
+import { productPath } from "@/lib/site";
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -28,15 +31,69 @@ const options = {
   specials: ["Excessive Dryness", "Pregnant", "Breastfeeding", "None"],
 };
 
-const initialProfile = {
-  age: "Teen",
-  selectedGender: "female",
-  selectedSkinType: "Oily",
-  selectedSensitive: false,
-  selectedFaceBodyConcerns: ["Acne"],
-  selectedLipsEyesConcerns: [],
-  selectedSpecialConditions: ["None"],
-};
+const guideLinks = [
+  {
+    slug: "oily-skin-acne",
+    label: "Oily skin and acne",
+    profile: {
+      selectedSkinType: "Oily",
+      selectedSensitive: false,
+      selectedFaceBodyConcerns: ["Acne"],
+      selectedSpecialConditions: ["None"],
+    },
+  },
+  {
+    slug: "dry-sensitive-skin",
+    label: "Dry and sensitive skin",
+    profile: {
+      selectedSkinType: "Dry",
+      selectedSensitive: true,
+      selectedFaceBodyConcerns: ["Dryness"],
+      selectedSpecialConditions: ["Excessive Dryness"],
+    },
+  },
+  {
+    slug: "pigmentation",
+    label: "Pigmentation and dark spots",
+    profile: {
+      selectedSkinType: "Combination",
+      selectedSensitive: false,
+      selectedFaceBodyConcerns: ["Dark Spots/Pigmentation"],
+      selectedSpecialConditions: ["None"],
+    },
+  },
+  {
+    slug: "teen-acne",
+    label: "Teen acne",
+    profile: {
+      age: "Teen",
+      selectedSkinType: "Oily",
+      selectedSensitive: false,
+      selectedFaceBodyConcerns: ["Acne"],
+      selectedSpecialConditions: ["None"],
+    },
+  },
+  {
+    slug: "dull-skin",
+    label: "Dull-looking skin",
+    profile: {
+      selectedSkinType: "Normal",
+      selectedSensitive: false,
+      selectedFaceBodyConcerns: ["Dullness"],
+      selectedSpecialConditions: ["None"],
+    },
+  },
+  {
+    slug: "barrier-repair",
+    label: "Skin barrier support",
+    profile: {
+      selectedSkinType: "Dry",
+      selectedSensitive: true,
+      selectedFaceBodyConcerns: ["Barrier Repair"],
+      selectedSpecialConditions: ["None"],
+    },
+  },
+];
 
 function scoreRange(score) {
   if (score >= 90) return "90_100";
@@ -69,11 +126,6 @@ function formatPrice(product) {
   return value ? `Rs. ${value}` : "Price unavailable";
 }
 
-function shortExplanation(value) {
-  const text = String(value || "");
-  return text.length > 118 ? `${text.slice(0, 118)}...` : text;
-}
-
 function ProductImage({ product }) {
   const [failed, setFailed] = useState(false);
   if (!product.image || failed) return <div className="image-fallback">R</div>;
@@ -104,16 +156,7 @@ function ChipGroup({ items, isActive, onSelect }) {
   );
 }
 
-function Metric({ label, value }) {
-  return (
-    <div className="metric">
-      <strong>{Number(value || 0).toLocaleString("en-IN")}</strong>
-      <span>{label}</span>
-    </div>
-  );
-}
-
-function ProductCard({ product, onOpen }) {
+function ProductCard({ product, onVisit }) {
   const band = scoreBand(product.score);
   return (
     <article className="product-card">
@@ -134,13 +177,18 @@ function ProductCard({ product, onOpen }) {
             ? <del>Rs. {product.mrp}</del>
             : null}
         </div>
-        <p className="product-copy">{shortExplanation(product.explanation)}</p>
         <div className="tagline">
           <span className="tag">{rangeLabel(scoreRange(product.score))}</span>
           <span className="tag">{product.when_to_use || "Routine"}</span>
           <span className="tag">{product.size || "Size unavailable"}</span>
         </div>
-        <button className="details-link" onClick={() => onOpen(product)} type="button">View Details</button>
+        <Link
+          className="details-link"
+          href={productPath(product.product_uid)}
+          onClick={() => onVisit(product)}
+        >
+          View product details
+        </Link>
       </div>
     </article>
   );
@@ -266,6 +314,11 @@ function ProductModal({ product, onClose }) {
                 </li>
               ))}
             </ul>
+            <div className="actions">
+              <Link className="details-link" href={productPath(product.product_uid)}>
+                Open crawlable product page
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -273,27 +326,22 @@ function ProductModal({ product, onClose }) {
   );
 }
 
-export default function MatchStudio() {
-  const [profile, setProfile] = useState(initialProfile);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+export default function MatchStudio({ initialData }) {
+  const [profile, setProfile] = useState(DEFAULT_PROFILE);
+  const [data, setData] = useState(initialData);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [view, setView] = useState("products");
   const [modalProduct, setModalProduct] = useState(null);
   const [filters, setFilters] = useState({ score: "all", category: "all", type: "all", sheet: "all" });
+  const [limit, setLimit] = useState(initialData?.returned || 24);
 
   // Page view — fires once on mount, same pattern as your other Roopsee pages.
-  useEffect(() => {
-    trackingService.trackPageLoad(EVENTS.PAGE_VIEWED_SHOP_PRODUCTS, {
-      page_type: "match_studio",
-    });
-  }, []);
-
-  async function recommend(nextProfile = profile) {
+  const recommend = useCallback(async (nextProfile, nextLimit = 24) => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("/api/recommend?limit=500", {
+      const response = await fetch(`/api/recommend?limit=${nextLimit}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(nextProfile),
@@ -301,6 +349,7 @@ export default function MatchStudio() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Unable to load recommendations.");
       setData(payload);
+      setLimit(nextLimit);
     } catch (requestError) {
       setError(requestError.message);
       trackingService.trackError("match_studio_recommend_failed", {
@@ -309,26 +358,6 @@ export default function MatchStudio() {
     } finally {
       setLoading(false);
     }
-  }
-
-  useEffect(() => {
-    let active = true;
-    fetch("/api/recommend?limit=500", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(initialProfile),
-    })
-      .then(async (response) => {
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "Unable to load recommendations.");
-        return payload;
-      })
-      .then((payload) => active && setData(payload))
-      .catch((requestError) => active && setError(requestError.message))
-      .finally(() => active && setLoading(false));
-    return () => {
-      active = false;
-    };
   }, []);
 
   const products = useMemo(() => (data?.products || []).filter((product) => {
@@ -342,13 +371,6 @@ export default function MatchStudio() {
   const filterValues = (field) => [
     ...new Set((data?.products || []).map((product) => product[field]).filter(Boolean)),
   ].sort();
-
-  const counts = Object.fromEntries(
-    ["90_100", "80_89", "70_79", "60_69", "50_59", "below50"].map((range) => [
-      range,
-      products.filter((product) => scoreRange(product.score) === range).length,
-    ]),
-  );
 
   const availableSpecials = profile.selectedGender === "male"
     ? options.specials.filter((item) => !["Pregnant", "Breastfeeding"].includes(item))
@@ -414,6 +436,18 @@ export default function MatchStudio() {
     setModalProduct(product);
   }
 
+  function handleVisitProduct(product) {
+    trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
+      productId: product.product_uid,
+      productName: product.product_name,
+      brand: product.brand_name,
+      price: product.selling_price || product.mrp,
+      section: "product_results",
+      score: product.score,
+      destination: productPath(product.product_uid),
+    });
+  }
+
   function handleViewChange(nextView) {
     setView(nextView);
     trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_MODE_TOGGLE, { view: nextView });
@@ -431,8 +465,64 @@ export default function MatchStudio() {
         profile.selectedGender,
       ].join(" | "),
     });
-    recommend();
+    recommend(profile, 24);
   }
+
+  function handleLoadMore() {
+    const nextLimit = Math.min(limit + 24, data?.total_matches || limit + 24);
+    trackingService.trackEvent(EVENTS.CLICKED_LOAD_MORE, {
+      current_count: data?.returned || 0,
+      requested_count: nextLimit,
+    });
+    recommend(profile, nextLimit);
+  }
+
+  const applyGuide = useCallback((guide, shouldScroll = true) => {
+    const nextProfile = {
+      ...DEFAULT_PROFILE,
+      ...guide.profile,
+    };
+    setProfile(nextProfile);
+    setFilters({ score: "all", category: "all", type: "all", sheet: "all" });
+    setView("products");
+    setModalProduct(null);
+    trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+      field: "skincare_guide",
+      question: "Skincare guide",
+      answer: guide.label,
+      value: guide.slug,
+    });
+    recommend(nextProfile, 24);
+    if (shouldScroll) window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [recommend]);
+
+  function handleGuideClick(event, guide) {
+    if (
+      event.button !== 0
+      || event.metaKey
+      || event.ctrlKey
+      || event.shiftKey
+      || event.altKey
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    applyGuide(guide);
+  }
+
+  useEffect(() => {
+    trackingService.trackPageLoad(EVENTS.PAGE_VIEWED_SHOP_PRODUCTS, {
+      page_type: "match_studio",
+    });
+
+    const selectedGuide = new URLSearchParams(window.location.search).get("guide");
+    const guide = guideLinks.find((item) => item.slug === selectedGuide);
+    if (!guide) return undefined;
+
+    const applyTimer = window.setTimeout(() => applyGuide(guide, false), 0);
+    return () => window.clearTimeout(applyTimer);
+  }, [applyGuide]);
 
   function handleFilterChange(filterKey, value) {
     setFilters((current) => ({ ...current, [filterKey]: value }));
@@ -445,15 +535,15 @@ export default function MatchStudio() {
   return (
     <>
       <header>
-        <div className="eyebrow">Excel-backed storefront simulator</div>
-        <h1>Roopsee Match Studio</h1>
+        <div className="eyebrow">Personalised skincare product matcher</div>
+        <h1>Find skincare products for your skin profile</h1>
         <p>
-          Change the profile, see the exact products a shopper would see, and open product details
-          without auth, cart, or checkout noise. Scores come from the approved live catalog data.
+          Select your skin type, sensitivity, age and main concern. Roopsee compares applicable
+          catalog scores and ranks products for a practical morning, night and weekly routine.
         </p>
       </header>
 
-      <main>
+      <main id="matcher">
         <section className="panel profile-panel">
           <div className="section-title">Skin Type *</div>
           <ChipGroup
@@ -547,17 +637,31 @@ export default function MatchStudio() {
             <summary>Testing payload</summary>
             <pre className="json-box">{JSON.stringify(profile, null, 2)}</pre>
           </details>
+
+          <div className="routine-section-title">Explore skincare guides</div>
+          <div className="tagline">
+            {guideLinks.map((guide) => (
+              <Link
+                className="tag"
+                href={`/skincare-for/${guide.slug}`}
+                key={guide.slug}
+                onClick={(event) => handleGuideClick(event, guide)}
+              >
+                {guide.label}
+              </Link>
+            ))}
+          </div>
         </section>
 
         <section className="panel shop-panel">
           <div className="studio-toolbar">
             <div className="studio-title">
               <h2>Recommended for this profile</h2>
-              <p>
+              {/* <p>
                 {view === "routine"
                   ? "Routine picks are split into Premium and Value Fit, using score plus effective price."
                   : `Showing ${products.length} of ${data?.total_matches || 0} matching catalog products. Any -100 component stays a hard blocker.`}
-              </p>
+              </p> */}
             </div>
             <div className="profile-pill">
               {profile.selectedSkinType} · {profile.selectedSensitive ? "Sensitive" : "Non-sensitive"} · {profile.selectedFaceBodyConcerns.join(", ")}
@@ -623,10 +727,17 @@ export default function MatchStudio() {
               {products.length ? (
                 <div className="product-grid">
                   {products.map((product) => (
-                    <ProductCard key={product.product_uid} onOpen={handleOpenProduct} product={product} />
+                    <ProductCard key={product.product_uid} onVisit={handleVisitProduct} product={product} />
                   ))}
                 </div>
               ) : <div className="empty">No matching catalog products found for this profile.</div>}
+              {data?.returned < data?.total_matches ? (
+                <div className="actions">
+                  <button className="secondary" disabled={loading} onClick={handleLoadMore} type="button">
+                    Load 24 more products
+                  </button>
+                </div>
+              ) : null}
             </div>
           ) : null}
 
@@ -637,6 +748,55 @@ export default function MatchStudio() {
           ) : null}
         </section>
       </main>
+
+      {/* <main>
+        <aside className="panel profile-panel">
+          <div className="studio-title">
+            <h2>How Roopsee matching works</h2>
+          </div>
+          <p>
+            Each product is compared using the score components applicable to its product type.
+            These can include age, concern, skin type, sensitivity and selected special conditions.
+          </p>
+          <p>
+            Applicable scores are averaged and rounded. A -100 component remains a hard blocker,
+            so an unsuitable condition is not hidden by otherwise positive scores.
+          </p>
+          <div className="warnings">
+            This tool supports product discovery and does not diagnose or treat a skin condition.
+            Seek qualified medical advice for persistent, painful, severe or worsening symptoms.
+          </div>
+        </aside>
+
+        <section className="panel shop-panel">
+          <div className="studio-title">
+            <h2>Skincare matching questions</h2>
+            <p>Clear answers about how to use the recommendations.</p>
+          </div>
+          <section>
+            <div className="routine-section-title">What does a higher match score mean?</div>
+            <p>
+              A higher score means the product aligns more closely with the selected profile using
+              the applicable catalog score components. It does not guarantee a clinical outcome.
+            </p>
+          </section>
+          <section>
+            <div className="routine-section-title">Why do different product types use different scores?</div>
+            <p>
+              Cleansers, serums, moisturisers and sunscreens play different roles, so the matcher
+              applies product-specific rules instead of treating every product identically.
+            </p>
+          </section>
+          <section>
+            <div className="routine-section-title">How should I start a new routine?</div>
+            <p>
+              Introduce products gradually, follow their directions and patch test when appropriate.
+              Stop a product that causes persistent irritation and obtain professional advice when needed.
+            </p>
+          </section>
+          <p><small>Catalog and matching guidance updated July 2026.</small></p>
+          </section>
+      </main> */}
 
       <ProductModal onClose={() => setModalProduct(null)} product={modalProduct} />
     </>

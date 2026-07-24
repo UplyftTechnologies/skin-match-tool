@@ -119,3 +119,8 @@ export function loadProducts() {
 
   return cachedProducts;
 }
+
+export function findProduct(productUid) {
+  const wantedKey = normKey(decodeURIComponent(productUid || ""));
+  return loadProducts().find((product) => normKey(product.product_uid) === wantedKey) || null;
+}

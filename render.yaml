@@ -8,6 +8,8 @@ services:
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://mymatches.roopsee.com
       - key: TELEGRAM_EVENT_BOT_TOKEN
         sync: false
       - key: TELEGRAM_EVENT_CHAT_ID

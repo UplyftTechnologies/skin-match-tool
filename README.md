@@ -82,6 +82,31 @@ Example:
 - `GET /api/options`
 - `GET /api/representative-profiles?count=72`
 - `POST /api/events`
+- `GET /robots.txt`
+- `GET /sitemap.xml`
+
+## Search and answer-engine pages
+
+The homepage server-renders the first 24 matches and links to crawlable catalog pages:
+
+```text
+/products/[uid]
+```
+
+Public answer-focused skincare guides are available under:
+
+```text
+/skincare-for/oily-skin-acne
+/skincare-for/dry-sensitive-skin
+/skincare-for/pigmentation
+/skincare-for/teen-acne
+/skincare-for/dull-skin
+/skincare-for/barrier-repair
+```
+
+The generated sitemap contains the homepage, six guides, and all catalog products. Product, organization, application, item-list and FAQ structured data are included where applicable.
+
+After deployment, add `https://mymatches.roopsee.com/sitemap.xml` to Google Search Console and Bing Webmaster Tools.
 
 ## Event tracking
 

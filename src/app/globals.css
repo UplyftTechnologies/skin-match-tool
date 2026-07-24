@@ -43,6 +43,19 @@ header {
   padding: 34px 22px 18px;
 }
 
+.back-link {
+  display: inline-grid;
+  place-items: center;
+  min-height: 42px;
+  margin-bottom: 14px;
+  border: 2px solid var(--rose);
+  border-radius: 999px;
+  color: var(--rose-dark);
+  padding: 8px 16px;
+  font-weight: 950;
+  text-decoration: none;
+}
+
 .eyebrow {
   width: fit-content;
   margin-bottom: 10px;
@@ -185,9 +198,15 @@ select {
 
 .primary,
 .secondary {
+  display: grid;
+  place-items: center;
   min-height: 54px;
   border-radius: 999px;
   font-weight: 1000;
+  line-height: 1.2;
+  padding: 12px 18px;
+  text-align: center;
+  text-decoration: none;
 }
 
 .primary {
@@ -612,6 +631,8 @@ select {
 }
 
 .details-link {
+  display: grid;
+  place-items: center;
   align-self: end;
   width: 100%;
   min-height: 42px;
@@ -620,6 +641,10 @@ select {
   background: #3d3342;
   color: #fff;
   font-weight: 950;
+  line-height: 1.2;
+  padding: 10px 14px;
+  text-align: center;
+  text-decoration: none;
 }
 
 .empty {
@@ -814,12 +839,73 @@ details.payload-details summary {
   }
 
   .summary-grid,
-  .filters,
-  .product-grid,
   .routine-board,
   .routine-list,
   .modal-grid {
     grid-template-columns: 1fr;
+  }
+
+  .filters,
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filters {
+    gap: 10px 8px;
+  }
+
+  .filters select {
+    width: 100%;
+    font-size: 0.78rem;
+  }
+
+  .product-grid {
+    gap: 12px 8px;
+  }
+
+  .product-card {
+    min-height: 0;
+    border-radius: 20px;
+  }
+
+  .product-body {
+    gap: 7px;
+    padding: 10px;
+  }
+
+  .product-card h3 {
+    font-size: 0.84rem;
+  }
+
+  .product-meta {
+    font-size: 0.7rem;
+  }
+
+  .score-badge {
+    top: 8px;
+    right: 8px;
+    width: 48px;
+    height: 48px;
+    font-size: 0.8rem;
+  }
+
+  .score-badge small {
+    font-size: 0.48rem;
+  }
+
+  .product-card .tagline {
+    gap: 4px;
+  }
+
+  .product-card .tag {
+    padding: 4px 6px;
+    font-size: 0.58rem;
+  }
+
+  .product-card .details-link {
+    min-height: 38px;
+    padding: 8px;
+    font-size: 0.76rem;
   }
 
   .studio-toolbar {
@@ -834,9 +920,9 @@ details.payload-details summary {
     min-width: 0;
   }
 
-  .row {
+  /* .row {
     grid-template-columns: 1fr;
-  }
+  } */
 
   .routine-card {
     grid-template-columns: 72px minmax(0, 1fr);
