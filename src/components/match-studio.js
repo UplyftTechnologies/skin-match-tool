@@ -453,7 +453,7 @@ export default function MatchStudio({ initialData }) {
     trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_MODE_TOGGLE, { view: nextView });
   }
 
-  function handleRefresh() {
+  async function handleRefresh() {
     trackingService.trackEvent(EVENTS.QUIZ_UPDATED, {
       ...profile,
       quizAnswerSummary: [
@@ -465,7 +465,13 @@ export default function MatchStudio({ initialData }) {
         profile.selectedGender,
       ].join(" | "),
     });
-    recommend(profile, 24);
+    await recommend(profile, 24);
+    window.requestAnimationFrame(() => {
+      document.getElementById("results")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
   }
 
   function handleLoadMore() {
@@ -537,14 +543,14 @@ export default function MatchStudio({ initialData }) {
       <header>
         <div className="eyebrow">Personalised skincare product matcher</div>
         <h1>Find skincare products for your skin profile</h1>
-        <p>
+        {/* <p>
           Select your skin type, sensitivity, age and main concern. Roopsee compares applicable
           catalog scores and ranks products for a practical morning, night and weekly routine.
-        </p>
+        </p> */}
       </header>
 
       <main id="matcher">
-        <section className="panel profile-panel">
+        <section className="panel profile-panel quiz-panel">
           <div className="section-title">Skin Type *</div>
           <ChipGroup
             isActive={(item) => profile.selectedSkinType === item}
@@ -638,22 +644,24 @@ export default function MatchStudio({ initialData }) {
             <pre className="json-box">{JSON.stringify(profile, null, 2)}</pre>
           </details>
 
-          <div className="routine-section-title">Explore skincare guides</div>
-          <div className="tagline">
-            {guideLinks.map((guide) => (
-              <Link
-                className="tag"
-                href={`/skincare-for/${guide.slug}`}
-                key={guide.slug}
-                onClick={(event) => handleGuideClick(event, guide)}
-              >
-                {guide.label}
-              </Link>
-            ))}
+          <div className="profile-guides">
+            <div className="routine-section-title">Explore skincare guides</div>
+            <div className="tagline">
+              {guideLinks.map((guide) => (
+                <Link
+                  className="tag"
+                  href={`/skincare-for/${guide.slug}`}
+                  key={guide.slug}
+                  onClick={(event) => handleGuideClick(event, guide)}
+                >
+                  {guide.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="panel shop-panel">
+        <section className="panel shop-panel" id="results">
           <div className="studio-toolbar">
             <div className="studio-title">
               <h2>Recommended for this profile</h2>

@@ -73,7 +73,7 @@ header {
 h1 {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2.2rem, 5vw, 2.7rem);
+  font-size: clamp(1.2rem, 5vw, 2.7rem);
   line-height: 0.95;
   letter-spacing: -0.055em;
 }
@@ -109,7 +109,7 @@ main {
 
 .shop-panel {
   min-width: 0;
-  padding: 20px;
+  padding: 20px 10px;;
 }
 
 .section-title {
@@ -589,9 +589,14 @@ select {
 }
 
 .product-card h3 {
+  display: -webkit-box;
+  overflow: hidden;
   margin: 0;
   font-size: 1rem;
   line-height: 1.24;
+  min-height: 2.48em;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .product-meta,
@@ -611,7 +616,7 @@ select {
 
 .price-row del {
   color: #a99daa;
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 800;
 }
 
@@ -836,6 +841,57 @@ details.payload-details summary {
 
   main {
     padding-inline: 14px;
+  }
+
+  .quiz-panel {
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  .quiz-panel .section-title {
+    margin: 0 0 5px;
+    font-size: 0.61rem;
+    letter-spacing: 0.08em;
+  }
+
+  .quiz-panel .chips {
+    gap: 5px;
+    margin-bottom: 9px;
+  }
+
+  .quiz-panel .chip {
+    min-height: 32px;
+    border-width: 1px;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 0.68rem;
+  }
+
+  .quiz-panel .row {
+    gap: 6px;
+  }
+
+  .quiz-panel select {
+    height: 36px;
+    border-width: 1px;
+    border-radius: 8px;
+    padding-inline: 8px;
+    font-size: 0.7rem;
+  }
+
+  .quiz-panel .actions {
+    margin-top: 11px;
+  }
+
+  .quiz-panel .primary {
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+  }
+
+  .quiz-panel .payload-details,
+  .quiz-panel .profile-guides {
+    display: none;
   }
 
   .summary-grid,
