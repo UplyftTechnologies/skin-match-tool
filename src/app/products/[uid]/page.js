@@ -137,7 +137,7 @@ export default async function ProductPage({ params }) {
 
   return (
     <div
-      className="min-h-screen bg-[#F3F5EF] pb-28 text-[#1E2A22] [font-family:var(--font-body,'Inter',ui-sans-serif,system-ui,sans-serif)] lg:pb-0"
+      className="rps-pdp min-h-screen bg-[#F3F5EF] pb-28 text-[#1E2A22] [font-family:var(--font-body,'Inter',ui-sans-serif,system-ui,sans-serif)] lg:pb-0"
       style={{
         backgroundImage:
           "radial-gradient(rgba(30,42,34,0.05) 1px, transparent 1px)",
@@ -150,17 +150,17 @@ export default async function ProductPage({ params }) {
       />
 
       {/* ---------------------------------------------------------------- Header */}
-      <header className="mx-auto max-w-[1400px] px-5 pt-6 sm:px-8 sm:pt-9 lg:px-12">
+      <div className="block w-full mx-auto max-w-[1400px] px-5 pt-6 sm:px-8 sm:pt-9 lg:px-12">
         <Link
           className="inline-flex items-center gap-2 text-[13px] font-medium text-[#1E2A22]/55 transition hover:text-[#5B7F62] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#5B7F62]"
           href="/"
         >
           <span aria-hidden="true">&larr;</span> Back to matches
         </Link>
-      </header>
+      </div>
 
       {/* ------------------------------------------------------------- Hero split */}
-      <main className="mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-12">
+      <div className="block w-full mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-12">
         <div className="mt-6 grid gap-10 lg:mt-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-16">
           {/* Image column */}
           <div className="lg:sticky lg:top-8 lg:self-start">
@@ -339,7 +339,7 @@ export default async function ProductPage({ params }) {
             </div>
           </div>
         </div>
-      </main>
+      </div>
 
       {/* --------------------------------------------------- Mobile sticky bar */}
       <div
