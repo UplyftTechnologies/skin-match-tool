@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: roopsee-match-studio
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: TELEGRAM_EVENT_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_EVENT_CHAT_ID
+        sync: false
+      

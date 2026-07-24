@@ -135,13 +135,23 @@ During migration, JavaScript results were compared with the former Python engine
 
 The comparison completed with zero mismatches.
 
-## Deploy
+## Deploy on Render
 
-The repository is configured as a standard Next.js project for Vercel:
+This application uses server-side API routes, so it must be deployed as a Render **Web Service**, not a Static Site.
 
-1. Import the repository into Vercel.
-2. Keep the detected framework as Next.js.
-3. Add the Telegram variables from `.env.example`.
-4. Deploy.
+Use these settings:
 
-The Next.js server and API routes are deployed together.
+```text
+Runtime: Node
+Build Command: npm ci && npm run build
+Start Command: npm start
+Health Check Path: /api/health
+```
+
+Do not set a Publish Directory. Publish directories apply to static sites, while this application needs the Next.js server for `/api/*`.
+
+The included `render.yaml` contains the same Web Service configuration. Add the Telegram variables from `.env.example` in the Render dashboard.
+
+## Deploy on Vercel
+
+Import the repository, keep the detected framework as Next.js, add the Telegram variables from `.env.example`, and deploy.
