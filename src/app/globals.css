@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   --ink: #3d3341;
   --muted: #766b7d;
@@ -640,14 +642,16 @@ select {
   place-items: center;
   align-self: end;
   width: 100%;
-  min-height: 42px;
+  min-height: 40px;
   border: 0;
   border-radius: 999px;
   background: #3d3342;
   color: #fff;
-  font-weight: 950;
-  line-height: 1.2;
-  padding: 10px 14px;
+  font-weight: 500;
+  font-size:14px;
+  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  line-height: 1;
+  padding: 9px 12px;
   text-align: center;
   text-decoration: none;
 }
@@ -959,9 +963,9 @@ details.payload-details summary {
   }
 
   .product-card .details-link {
-    min-height: 38px;
+    min-height: 35px;
     padding: 8px;
-    font-size: 0.76rem;
+    font-size: 11px;
   }
 
   .studio-toolbar {
@@ -1236,7 +1240,7 @@ details.payload-details summary {
 }
 
 .quiz-disclaimer {
-  font-size: 0.68rem;
+  font-size: 0.68rem; 
   color: #94a3b8;
   margin: 0 0 12px 0;
   line-height: 1.35;
