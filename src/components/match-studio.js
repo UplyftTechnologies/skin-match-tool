@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
@@ -326,6 +326,9 @@ function ProductModal({ product, onClose }) {
   );
 }
 
+import OtpModal from "@/components/auth/otp-modal";
+import { supabase } from "@/lib/supabase/client";
+
 export default function MatchStudio({ initialData }) {
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
   const [data, setData] = useState(initialData);
@@ -335,6 +338,38 @@ export default function MatchStudio({ initialData }) {
   const [modalProduct, setModalProduct] = useState(null);
   const [filters, setFilters] = useState({ score: "all", category: "all", type: "all", sheet: "all" });
   const [limit, setLimit] = useState(initialData?.returned || 24);
+
+  // Auth & OTP Modal State
+  const [userSession, setUserSession] = useState(null);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const quizTimerRef = useRef(null);
+
+  // Listen to Supabase Auth State
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserSession(session);
+      if (session) {
+        // User logged in: cancel any pending quiz timer and close modal
+        if (quizTimerRef.current) {
+          clearTimeout(quizTimerRef.current);
+          quizTimerRef.current = null;
+        }
+        setIsOtpModalOpen(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      if (quizTimerRef.current) {
+        clearTimeout(quizTimerRef.current);
+      }
+    };
+  }, []);
+
 
   // Page view — fires once on mount, same pattern as your other Roopsee pages.
   const recommend = useCallback(async (nextProfile, nextLimit = 24) => {
@@ -466,6 +501,19 @@ export default function MatchStudio({ initialData }) {
       ].join(" | "),
     });
     await recommend(profile, 24);
+
+    // Schedule 20-second login popup on first quiz submission if unauthenticated
+    if (!userSession) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("quiz_submitted", "true");
+      }
+      if (!quizTimerRef.current) {
+        quizTimerRef.current = setTimeout(() => {
+          setIsOtpModalOpen(true);
+        }, 15000);
+      }
+    }
+
     window.requestAnimationFrame(() => {
       document.getElementById("results")?.scrollIntoView({
         behavior: "smooth",
@@ -538,15 +586,22 @@ export default function MatchStudio({ initialData }) {
     });
   }
 
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    setUserSession(null);
+  }
+
   return (
     <>
       <header>
-        {/* <div className="eyebrow">Personalised skincare product matcher</div> */}
-        {/* <h1>Find skincare products for your skin profile</h1> */}
-        {/* <p>
-          Select your skin type, sensitivity, age and main concern. Roopsee compares applicable
-          catalog scores and ranks products for a practical morning, night and weekly routine.
-        </p> */}
+        {userSession ? (
+          <div className="user-greeting-bar">
+            <span>Hi, <strong>{userSession.user?.phone || userSession.user?.user_metadata?.phone_no || userSession.user?.user_metadata?.phone || "User"}</strong></span>
+            <button type="button" className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
+        ) : null}
       </header>
 
       <main id="matcher">
@@ -850,6 +905,19 @@ export default function MatchStudio({ initialData }) {
 
 
       <ProductModal onClose={() => setModalProduct(null)} product={modalProduct} />
+      <OtpModal
+        isOpen={isOtpModalOpen}
+        onClose={() => setIsOtpModalOpen(false)}
+        onSuccess={(user) => {
+          setIsOtpModalOpen(false);
+          if (user) {
+            setUserSession({ user });
+          }
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) setUserSession(session);
+          });
+        }}
+      />
     </>
   );
 }

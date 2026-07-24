@@ -1257,3 +1257,242 @@ details.payload-details summary {
 .find-matches-btn:hover {
   opacity: 0.95;
 }
+
+/* User Greeting Bar */
+.user-greeting-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1420px;
+  margin: 0 auto 16px auto;
+  padding: 12px 24px;
+  background: #ffffff;
+  border-radius: 999px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.user-greeting-bar strong {
+  color: #2563eb;
+  font-weight: 900;
+  margin-left: 6px;
+}
+
+.logout-btn {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.logout-btn:hover {
+  background: #fecaca;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+/* OTP Modal Styles */
+.otp-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  animation: fadeInModal 0.25s ease-out;
+}
+
+@keyframes fadeInModal {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.otp-modal-container {
+  background: #ffffff;
+  width: 100%;
+  max-width: 420px;
+  border-radius: 24px;
+  padding: 32px 24px;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid #f1f5f9;
+}
+
+.otp-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #94a3b8;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.15s ease;
+}
+
+.otp-modal-close:hover {
+  color: #1e293b;
+}
+
+.otp-modal-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.otp-modal-header h3 {
+  font-size: 1.35rem;
+  font-weight: 850;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.otp-modal-header p {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.otp-error-alert {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.otp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.otp-input-group {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f8fafc;
+  transition: border-color 0.15s ease;
+}
+
+.otp-input-group:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.otp-country-code {
+  padding: 12px 14px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #334155;
+  background: #f1f5f9;
+  border-right: 1px solid #cbd5e1;
+}
+
+.otp-input-group input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  outline: none;
+}
+
+.otp-boxes-container {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+
+.otp-box {
+  width: 52px;
+  height: 58px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #0f172a;
+  border: 2px solid #cbd5e1;
+  border-radius: 14px;
+  background: #f8fafc;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.otp-box:focus {
+  border-color: #3b82f6;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.otp-submit-btn {
+  width: 100%;
+  min-height: 48px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  transition: opacity 0.15s ease;
+}
+
+.otp-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.otp-resend-row {
+  text-align: center;
+  font-size: 0.825rem;
+}
+
+.otp-resend-timer {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.otp-resend-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.otp-back-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
