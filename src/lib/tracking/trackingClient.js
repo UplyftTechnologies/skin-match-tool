@@ -425,8 +425,12 @@ class TrackingService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ eventName, ...properties }),
       keepalive: true,
-    }).then((res) => {
-      if (!res.ok) throw new Error(`/api/events responded ${res.status}`);
+    }).then(async (res) => {
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok || !result.telegramSent) {
+        throw new Error(result.error || `/api/events responded ${res.status}`);
+      }
+      return result;
     });
   }
 

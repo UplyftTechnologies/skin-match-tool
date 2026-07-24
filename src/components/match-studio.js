@@ -367,13 +367,23 @@ export default function MatchStudio() {
       selectedGender: gender,
       selectedSpecialConditions: specials.length ? specials : ["None"],
     });
-    trackingService.trackClick("gender_option", { gender });
+    trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+      field: "gender",
+      question: "Gender",
+      answer: gender,
+      value: gender,
+    });
   }
 
   function selectSpecial(item) {
     if (item === "None") {
       update("selectedSpecialConditions", ["None"]);
-      trackingService.trackClick("special_condition_option", { condition: "None" });
+      trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+        field: "special_condition",
+        question: "Special condition",
+        answer: "None",
+        value: "None",
+      });
       return;
     }
     const current = profile.selectedSpecialConditions.filter((value) => value !== "None");
@@ -381,7 +391,12 @@ export default function MatchStudio() {
       ? current.filter((value) => value !== item)
       : [...current, item].slice(-2);
     update("selectedSpecialConditions", next.length ? next : ["None"]);
-    trackingService.trackClick("special_condition_option", { condition: item });
+    trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+      field: "special_condition",
+      question: "Special condition",
+      answer: item,
+      value: item,
+    });
   }
 
   // Every product-card / routine-card open funnels through here so the
@@ -391,6 +406,8 @@ export default function MatchStudio() {
       productId: product.product_uid,
       productName: product.product_name,
       brand: product.brand_name,
+      price: product.selling_price || product.mrp,
+      section: view,
       score: product.score,
       view,
     });
@@ -403,7 +420,17 @@ export default function MatchStudio() {
   }
 
   function handleRefresh() {
-    trackingService.trackClick("refresh_product_preview", { ...profile });
+    trackingService.trackEvent(EVENTS.QUIZ_UPDATED, {
+      ...profile,
+      quizAnswerSummary: [
+        profile.selectedSkinType,
+        profile.selectedSensitive ? "Sensitive" : "Not sensitive",
+        ...profile.selectedFaceBodyConcerns,
+        ...profile.selectedSpecialConditions,
+        profile.age,
+        profile.selectedGender,
+      ].join(" | "),
+    });
     recommend();
   }
 
@@ -434,7 +461,12 @@ export default function MatchStudio() {
             items={options.skinTypes}
             onSelect={(item) => {
               update("selectedSkinType", item);
-              trackingService.trackEvent(EVENTS.CLICKED_SKIN_TYPE_FILTER, { skin_type: item });
+              trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+                field: "skin_type",
+                question: "Skin type",
+                answer: item,
+                value: item,
+              });
             }}
           />
 
@@ -444,7 +476,12 @@ export default function MatchStudio() {
             items={options.sensitivityOptions}
             onSelect={(item) => {
               update("selectedSensitive", item === "Yes");
-              trackingService.trackClick("sensitivity_option", { sensitive: item });
+              trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+                field: "sensitivity",
+                question: "Sensitive skin",
+                answer: item,
+                value: item,
+              });
             }}
           />
 
@@ -454,7 +491,12 @@ export default function MatchStudio() {
             items={options.concerns}
             onSelect={(item) => {
               update("selectedFaceBodyConcerns", [item]);
-              trackingService.trackClick("skin_concern_option", { concern: item });
+              trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+                field: "skin_concern",
+                question: "Skin concern",
+                answer: item,
+                value: item,
+              });
             }}
           />
 
@@ -472,7 +514,12 @@ export default function MatchStudio() {
                 value={profile.age}
                 onChange={(event) => {
                   update("age", event.target.value);
-                  trackingService.trackClick("age_option", { age: event.target.value });
+                  trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+                    field: "age",
+                    question: "Age",
+                    answer: event.target.value,
+                    value: event.target.value,
+                  });
                 }}
               >
                 <option>Teen</option>

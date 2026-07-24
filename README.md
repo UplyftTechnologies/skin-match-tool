@@ -81,6 +81,24 @@ Example:
 - `GET /api/health`
 - `GET /api/options`
 - `GET /api/representative-profiles?count=72`
+- `POST /api/events`
+
+## Event tracking
+
+Copy `.env.example` to `.env` and provide the Telegram event bot credentials:
+
+```text
+TELEGRAM_EVENT_BOT_TOKEN=
+TELEGRAM_EVENT_CHAT_ID=
+```
+
+Browser events post to `/api/events`. The server enriches them with request information and sends them to Telegram, keeping the bot token out of the browser bundle.
+
+Event names are defined in one place:
+
+```text
+src/lib/tracking/events.js
+```
 
 ## Project structure
 
@@ -123,6 +141,7 @@ The repository is configured as a standard Next.js project for Vercel:
 
 1. Import the repository into Vercel.
 2. Keep the detected framework as Next.js.
-3. Deploy without additional environment variables.
+3. Add the Telegram variables from `.env.example`.
+4. Deploy.
 
 The Next.js server and API routes are deployed together.
