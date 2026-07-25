@@ -749,21 +749,7 @@ export default function MatchStudio({ initialData }) {
               <pre className="json-box">{JSON.stringify(profile, null, 2)}</pre>
             </details>
 
-            <div className="profile-guides">
-              <div className="routine-section-title">Explore skincare guides</div>
-              <div className="tagline">
-                {guideLinks.map((guide) => (
-                  <Link
-                    className="tag"
-                    href={`/skincare-for/${guide.slug}`}
-                    key={guide.slug}
-                    onClick={(event) => handleGuideClick(event, guide)}
-                  >
-                    {guide.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
+        
           </div>
         </section>
 
