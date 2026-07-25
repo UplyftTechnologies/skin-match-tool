@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
@@ -356,120 +356,8 @@ function ProductModal({ product, onClose }) {
   );
 }
 
-/* ============================================================
-   QUIZ UI PIECES — rebuilt with Tailwind, styled to match the
-   reference "Skin Match Tool" mockup
-   ============================================================ */
-
-function SectionHeading({ index, title, subtitle }) {
-  return (
-    <div className="mb-4 flex items-baseline gap-2">
-      <span className="text-[13px] font-extrabold text-sky-500">{index}.</span>
-      <div>
-        <div className="text-[13px] font-bold tracking-wide text-slate-800">
-          {title}
-        </div>
-        {subtitle ? (
-          <p className="mt-0.5 text-[12.5px] text-slate-400">{subtitle}</p>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-/* Thin line icons for the skin-type cards, drawn to feel like a
-   single connected icon set rather than mismatched emoji. */
-function SkinTypeIcon({ type }) {
-  const cls = "h-5 w-5";
-  if (type === "Oily") {
-    return (
-      <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
-        <path d="M12 3c3.6 4.1 6 7.6 6 10.6A6 6 0 1 1 6 13.6C6 10.6 8.4 7.1 12 3Z" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="9.8" cy="14.2" fill="currentColor" r="1" stroke="none" />
-      </svg>
-    );
-  }
-  if (type === "Dry") {
-    return (
-      <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="4.2" />
-        <path d="M12 3v2.4M12 18.6V21M21 12h-2.4M5.4 12H3M18.4 5.6l-1.7 1.7M7.3 16.7l-1.7 1.7M18.4 18.4l-1.7-1.7M7.3 7.3 5.6 5.6" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (type === "Combination") {
-    return (
-      <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="8" />
-        <path d="M12 4a8 8 0 0 1 0 16 4 4 0 0 1 0-8 4 4 0 0 0 0-8Z" fill="currentColor" opacity="0.16" stroke="none" />
-        <path d="M12 4a8 8 0 0 1 0 16 4 4 0 0 1 0-8 4 4 0 0 0 0-8Z" />
-      </svg>
-    );
-  }
-  return (
-    <svg className={cls} fill="none" stroke="currentColor" strokeWidth="1.6" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="9" cy="10.4" fill="currentColor" r="0.9" stroke="none" />
-      <circle cx="15" cy="10.4" fill="currentColor" r="0.9" stroke="none" />
-      <path d="M9 14.3c1.1 1 4.9 1 6 0" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-/* Shared "card with checkmark" building block used for both the
-   skin-type grid and the gender grid so the two feel consistent. */
-function OptionCard({ active, icon, label, onClick }) {
-  return (
-    <button
-      className={`group relative flex items-center gap-3 rounded-2xl border-2 p-1 lg:p-3 text-left transition-all ${active
-          ? "border-sky-400 bg-sky-50/70 shadow-sm"
-          : "border-slate-100 bg-slate-50/40 hover:border-slate-200"
-        }`}
-      onClick={onClick}
-      type="button"
-    >
-      <div
-        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${active ? "bg-sky-100 text-sky-600" : "bg-slate-100 text-slate-400"
-          }`}
-      >
-        {icon}
-      </div>
-      <span className="text-[12.5px] font-semibold tracking-wide text-slate-700">
-        {label}
-      </span>
-      {active && (
-        <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-sky-600 text-[11px] font-bold text-white shadow-md shadow-sky-300/50">
-          ✓
-        </span>
-      )}
-    </button>
-  );
-}
-
-/* Two-way segmented toggle, reused for sensitivity and age group so
-   every either/or question in the quiz reads the same way. `touched`
-   keeps both options looking neutral until the user actually picks
-   one, even though `value` already holds a default from the profile. */
-function SegmentedToggle({ options: opts, value, onChange, touched = true }) {
-  return (
-    <div className="flex gap-1 rounded-full bg-slate-100 p-1">
-      {opts.map((item) => {
-        const active = touched && value === item;
-        return (
-          <button
-            key={item}
-            onClick={() => onChange(item)}
-            type="button"
-            className={`rounded-full px-4 py-1.5 text-[12.5px] font-bold transition-colors ${active ? "bg-sky-500 text-white shadow-sm" : "text-slate-400 hover:text-slate-600"
-              }`}
-          >
-            {item}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+import OtpModal from "@/components/auth/otp-modal";
+import { supabase } from "@/lib/supabase/client";
 
 export default function MatchStudio({ initialData }) {
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
@@ -481,24 +369,39 @@ export default function MatchStudio({ initialData }) {
   const [filters, setFilters] = useState({ score: "all", category: "all", type: "all", sheet: "all" });
   const [limit, setLimit] = useState(initialData?.returned || 24);
 
-  // DEFAULT_PROFILE ships with default values so the rest of the quiz/API
-  // logic always has something to work with, but we don't want any card,
-  // chip, or toggle to look pre-selected before the user has actually
-  // interacted with it. `touched` gates the "active" styling per question
-  // only — it never changes what's sent to the API.
-  const [touched, setTouched] = useState({
-    skinType: false,
-    concern: false,
-    sensitive: false,
-    special: false,
-    age: false,
-    gender: false,
-  });
-  const markTouched = (key) => setTouched((current) => ({ ...current, [key]: true }));
-  const answeredCount = Object.values(touched).filter(Boolean).length;
-  const totalQuestions = Object.keys(touched).length;
-  const progressPercent = Math.round((answeredCount / totalQuestions) * 100);
+  // Auth & OTP Modal State
+  const [userSession, setUserSession] = useState(null);
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const quizTimerRef = useRef(null);
 
+  // Listen to Supabase Auth State
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserSession(session);
+      if (session) {
+        // User logged in: cancel any pending quiz timer and close modal
+        if (quizTimerRef.current) {
+          clearTimeout(quizTimerRef.current);
+          quizTimerRef.current = null;
+        }
+        setIsOtpModalOpen(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      if (quizTimerRef.current) {
+        clearTimeout(quizTimerRef.current);
+      }
+    };
+  }, []);
+
+
+  // Page view — fires once on mount, same pattern as your other Roopsee pages.
   const recommend = useCallback(async (nextProfile, nextLimit = 24) => {
     setLoading(true);
     setError("");
@@ -675,6 +578,19 @@ export default function MatchStudio({ initialData }) {
       ].join(" | "),
     });
     await recommend(profile, 24);
+
+    // Schedule 20-second login popup on first quiz submission if unauthenticated
+    if (!userSession) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("quiz_submitted", "true");
+      }
+      if (!quizTimerRef.current) {
+        quizTimerRef.current = setTimeout(() => {
+          setIsOtpModalOpen(true);
+        }, 15000);
+      }
+    }
+
     window.requestAnimationFrame(() => {
       document.getElementById("results")?.scrollIntoView({
         behavior: "smooth",
@@ -757,32 +673,33 @@ export default function MatchStudio({ initialData }) {
     });
   }
 
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    setUserSession(null);
+  }
+
   return (
     <>
-      {/* <header /> */}
+      <header>
+        {userSession ? (
+          <div className="user-greeting-bar">
+            <span>Hi, <strong>{userSession.user?.phone || userSession.user?.user_metadata?.phone_no || userSession.user?.user_metadata?.phone || "User"}</strong></span>
+            <button type="button" className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
+        ) : null}
+      </header>
 
-      <main
-        id="matcher"
-        className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 lg:pb-16 lg:pt-5 lg:grid-cols-[400px_1fr] lg:items-start lg:px-6"
-      >
-        {/* ===================== QUIZ PANEL ===================== */}
-        <section className="overflow-hidden rounded-[0px] lg:rounded-[18px] border border-slate-100 bg-white
-         shadow-[0_10px_40px_-12px_rgba(15,23,42,0.12)]  lg:sticky top-1 lg:top-6">
-          {/* Header banner */}
-          <div className="flex items-center gap-3 px-3 lg:px-6 pb-4 pt-6">
-            <span className="text-xl"></span>
-            <div className="flex-1">
-              <h2 className="text-[15px] flex items-center gap-2 font-bold font-[] tracking-wider text-slate-900">
-                <GiChestnutLeaf />SKIN MATCH TOOL
-              </h2>
-              <div className="mt-2 flex items-center gap-2">
-                <div className="h-[6px] flex-1 overflow-hidden rounded-full bg-slate-100">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-500 transition-all duration-300"
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                </div>
-                <span className="text-[11px] font-bold text-slate-400">{progressPercent}%</span>
+      <main id="matcher">
+        <section className="panel profile-panel quiz-panel">
+          {/* Header banner matching the design */}
+          <div className="quiz-header">
+            <span className="quiz-icon">✨</span>
+            <div className="quiz-title-group">
+              <h2>SKIN MATCH TOOL</h2>
+              <div className="progress-bar-wrap">
+                <div className="progress-bar-fill" style={{ width: "100%" }}></div>
               </div>
             </div>
           </div>
@@ -977,6 +894,19 @@ export default function MatchStudio({ initialData }) {
       </main>
 
       <ProductModal onClose={() => setModalProduct(null)} product={modalProduct} />
+      <OtpModal
+        isOpen={isOtpModalOpen}
+        onClose={() => setIsOtpModalOpen(false)}
+        onSuccess={(user) => {
+          setIsOtpModalOpen(false);
+          if (user) {
+            setUserSession({ user });
+          }
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) setUserSession(session);
+          });
+        }}
+      />
     </>
   );
 }
