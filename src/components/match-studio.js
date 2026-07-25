@@ -356,6 +356,78 @@ function ProductModal({ product, onClose }) {
   );
 }
 
+function SectionHeading({ index, icon: Icon, title, subtitle }) {
+  return (
+    <div className="mb-3">
+      <div className="flex items-center gap-2">
+        {index ? (
+          <span className="text-[13px] font-extrabold text-sky-500">{index}.</span>
+        ) : Icon ? (
+          <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-sky-500" />
+        ) : null}
+        <span className="text-[13px] font-bold tracking-wide text-slate-800">{title}</span>
+      </div>
+      {subtitle && <p className="mt-0.5 text-[11.5px] text-slate-400">{subtitle}</p>}
+    </div>
+  );
+}
+
+function SkinTypeIcon({ type }) {
+  switch (type) {
+    case "Oily":
+      return <span className="text-base">💧</span>;
+    case "Dry":
+      return <span className="text-base">🌵</span>;
+    case "Normal":
+      return <span className="text-base">✨</span>;
+    case "Combination":
+      return <span className="text-base">☯️</span>;
+    default:
+      return <span className="text-base">🧴</span>;
+  }
+}
+
+function OptionCard({ active, icon, label, onClick }) {
+  return (
+    <button
+      className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-all ${
+        active
+          ? "border-sky-400 bg-sky-50/60 text-sky-900 shadow-sm"
+          : "border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/50"
+      }`}
+      onClick={onClick}
+      type="button"
+    >
+      {icon && <div className="shrink-0">{icon}</div>}
+      <span className="text-[12.5px] font-bold tracking-wide">{label}</span>
+    </button>
+  );
+}
+
+function SegmentedToggle({ options, value, onChange, touched }) {
+  return (
+    <div className="inline-flex rounded-lg bg-slate-100 p-1">
+      {options.map((opt) => {
+        const active = touched && value === opt;
+        return (
+          <button
+            className={`rounded-md px-3 py-1 text-[12px] font-bold transition-colors ${
+              active
+                ? "bg-white text-sky-700 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+            key={opt}
+            onClick={() => onChange(opt)}
+            type="button"
+          >
+            {opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 import OtpModal from "@/components/auth/otp-modal";
 import { supabase } from "@/lib/supabase/client";
 
@@ -368,6 +440,18 @@ export default function MatchStudio({ initialData }) {
   const [modalProduct, setModalProduct] = useState(null);
   const [filters, setFilters] = useState({ score: "all", category: "all", type: "all", sheet: "all" });
   const [limit, setLimit] = useState(initialData?.returned || 24);
+  const [touched, setTouched] = useState({
+    skinType: false,
+    concern: false,
+    sensitive: false,
+    special: false,
+    age: false,
+    gender: false,
+  });
+
+  function markTouched(field) {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  }
 
   // Auth & OTP Modal State
   const [userSession, setUserSession] = useState(null);

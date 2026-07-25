@@ -111,7 +111,7 @@ export const EVENTS = {
 
   OTP_VERIFIED: 'otp_verified',
 
-  // PAGE_VIEWED_SHOP_PRODUCTS: 'page_viewed_shop_products',
+  PAGE_VIEWED_SHOP_PRODUCTS: 'page_viewed_shop_products',
 
   CLICKED_PRODUCT_CARD: 'clicked_product_card',
   CLICKED_FILTER_OPTION: 'clicked_filter_option',
