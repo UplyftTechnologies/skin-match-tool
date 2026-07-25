@@ -51,7 +51,13 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
         body: JSON.stringify({ accessToken: token }),
       });
 
-      const backendData = await backendRes.json();
+      const text = await backendRes.text();
+      let backendData = {};
+      try {
+        backendData = JSON.parse(text);
+      } catch {
+        // Fallback for non-JSON responses (HTML error pages)
+      }
 
       if (!backendRes.ok || !backendData.success) {
         const errMsg = backendData.error || backendData.message || 'Backend session verification failed.';

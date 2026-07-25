@@ -403,7 +403,13 @@ export default function MatchStudio({ initialData }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(nextProfile),
       });
-      const payload = await response.json();
+      const responseText = await response.text();
+      let payload = {};
+      try {
+        payload = JSON.parse(responseText);
+      } catch {
+        // Handle non-JSON responses (e.g. HTML error pages)
+      }
       if (!response.ok) throw new Error(payload.error || "Unable to load recommendations.");
       setData(payload);
       setLimit(nextLimit);

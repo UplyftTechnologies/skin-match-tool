@@ -58,7 +58,7 @@ export async function getIpLocation(ip) {
     clearTimeout(timer);
     if (!res.ok) return {};
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     return {
       city: data.city || '',
       region: data.region || '',

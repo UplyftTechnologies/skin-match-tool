@@ -78,7 +78,7 @@ class TrackingService {
 
       if (!res.ok) return {};
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
 
       return {
         city: data.city || null,
@@ -132,7 +132,7 @@ class TrackingService {
             );
 
             clearTimeout(timer);
-            const data = await res.json();
+            const data = await res.json().catch(() => ({}));
 
             done({
               city: data.city || data.locality || null,
