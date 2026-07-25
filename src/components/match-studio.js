@@ -909,7 +909,7 @@ export default function MatchStudio({ initialData }) {
               </pre>
             </details>
 
-            <div className="mt-5">
+            {/* <div className="mt-5">
               <div className="mb-2 text-[12px] font-extrabold uppercase tracking-wide text-slate-400">
                 Explore skincare guides
               </div>
@@ -925,7 +925,7 @@ export default function MatchStudio({ initialData }) {
                   </Link>
                 ))}
               </div>
-            </div>
+            </div> */}
           </div>
         </section>
 
