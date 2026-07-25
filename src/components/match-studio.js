@@ -909,8 +909,7 @@ export default function MatchStudio({ initialData }) {
               </pre>
             </details>
 
-        
-          </div>
+                  </div>
         </section>
 
         {/* ===================== RESULTS PANEL — product section untouched ===================== */}
