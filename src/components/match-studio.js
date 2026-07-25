@@ -8,6 +8,8 @@ import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { productPath } from "@/lib/site";
+import OtpModal from "@/components/auth/otp-modal";
+import { supabase } from "@/lib/supabase/client";
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -94,6 +96,15 @@ const guideLinks = [
     },
   },
 ];
+
+const EMPTY_PROFILE = {
+  selectedSkinType: "",
+  selectedSensitive: null,
+  selectedFaceBodyConcerns: [],
+  selectedSpecialConditions: [],
+  age: "",
+  selectedGender: "",
+};
 
 function scoreRange(score) {
   if (score >= 90) return "90_100";
@@ -337,18 +348,19 @@ function ProductModal({ product, onClose }) {
   );
 }
 
-import OtpModal from "@/components/auth/otp-modal";
-import { supabase } from "@/lib/supabase/client";
-
 export default function MatchStudio({ initialData }) {
-  const [profile, setProfile] = useState(DEFAULT_PROFILE);
-  const [data, setData] = useState(initialData);
+  const [profile, setProfile] = useState(EMPTY_PROFILE);
+  const [data, setData] = useState(null); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [view, setView] = useState("products");
   const [modalProduct, setModalProduct] = useState(null);
+  
+  // NEW: Search state
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ score: "all", category: "all", type: "all", sheet: "all" });
-  const [limit, setLimit] = useState(initialData?.returned || 24);
+  
+  const [limit, setLimit] = useState(initialData?.returned || 500);
   const [touched, setTouched] = useState({
     skinType: false,
     concern: false,
@@ -357,6 +369,33 @@ export default function MatchStudio({ initialData }) {
     age: false,
     gender: false,
   });
+
+  // NEW: Becomes true once the user tries to submit the quiz — turns on inline per-question errors
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+
+  // NEW: Check if all quiz fields are selected
+  const isQuizComplete = Boolean(
+    profile.selectedSkinType &&
+    profile.selectedSensitive !== null &&
+    profile.selectedFaceBodyConcerns.length > 0 &&
+    profile.selectedSpecialConditions.length > 0 &&
+    profile.age &&
+    profile.selectedGender
+  );
+
+  // NEW: Returns the label of the first quiz field that hasn't been answered yet, or null if complete
+  function getMissingFieldLabel() {
+    if (!profile.selectedSkinType) return "Skin Type";
+    if (profile.selectedSensitive === null) return "Sensitive Skin";
+    if (profile.selectedFaceBodyConcerns.length === 0) return "Skin Concern";
+    if (profile.selectedSpecialConditions.length === 0) return "Special Condition";
+    if (!profile.age) return "Age Group";
+    if (!profile.selectedGender) return "Gender";
+    return null;
+  }
+
+  // NEW: Only the first missing field's label, computed once a submit has been attempted
+  const missingFieldLabel = attemptedSubmit ? getMissingFieldLabel() : null;
 
   function markTouched(field) {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -367,7 +406,6 @@ export default function MatchStudio({ initialData }) {
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const quizTimerRef = useRef(null);
 
-  // Listen to Supabase Auth State
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUserSession(session);
@@ -376,7 +414,6 @@ export default function MatchStudio({ initialData }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserSession(session);
       if (session) {
-        // User logged in: cancel any pending quiz timer and close modal
         if (quizTimerRef.current) {
           clearTimeout(quizTimerRef.current);
           quizTimerRef.current = null;
@@ -393,8 +430,7 @@ export default function MatchStudio({ initialData }) {
     };
   }, []);
 
-  // Page view — fires once on mount, same pattern as your other Roopsee pages.
-  const recommend = useCallback(async (nextProfile, nextLimit = 24) => {
+  const recommend = useCallback(async (nextProfile, nextLimit = 500) => {
     setLoading(true);
     setError("");
     try {
@@ -408,7 +444,7 @@ export default function MatchStudio({ initialData }) {
       try {
         payload = JSON.parse(responseText);
       } catch {
-        // Handle non-JSON responses (e.g. HTML error pages)
+        // Handle non-JSON responses
       }
       if (!response.ok) throw new Error(payload.error || "Unable to load recommendations.");
       setData(payload);
@@ -423,13 +459,22 @@ export default function MatchStudio({ initialData }) {
     }
   }, []);
 
+  // UPDATED: Added search functionality to useMemo
   const products = useMemo(() => (data?.products || []).filter((product) => {
     if (filters.score !== "all" && scoreRange(product.score) !== filters.score) return false;
     if (filters.category !== "all" && product.category !== filters.category) return false;
     if (filters.type !== "all" && product.product_type !== filters.type) return false;
     if (filters.sheet !== "all" && product.source_sheet !== filters.sheet) return false;
+    
+    if (searchQuery.trim() !== "") {
+      const term = searchQuery.toLowerCase();
+      const matchesName = product.product_name?.toLowerCase().includes(term);
+      const matchesBrand = product.brand_name?.toLowerCase().includes(term);
+      if (!matchesName && !matchesBrand) return false;
+    }
+
     return true;
-  }), [data, filters]);
+  }), [data, filters, searchQuery]);
 
   const filterValues = (field) => [
     ...new Set((data?.products || []).map((product) => product[field]).filter(Boolean)),
@@ -450,7 +495,7 @@ export default function MatchStudio({ initialData }) {
     setProfile({
       ...profile,
       selectedGender: gender,
-      selectedSpecialConditions: specials.length ? specials : ["None"],
+      selectedSpecialConditions: specials,
     });
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "gender",
@@ -475,7 +520,7 @@ export default function MatchStudio({ initialData }) {
     const next = current.includes(item)
       ? current.filter((value) => value !== item)
       : [...current, item].slice(-2);
-    update("selectedSpecialConditions", next.length ? next : ["None"]);
+    update("selectedSpecialConditions", next);
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "special_condition",
       question: "Special condition",
@@ -484,8 +529,6 @@ export default function MatchStudio({ initialData }) {
     });
   }
 
-  // Every product-card / routine-card open funnels through here so the
-  // click event always carries which product and its score.
   function handleOpenProduct(product) {
     trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
       productId: product.product_uid,
@@ -517,20 +560,26 @@ export default function MatchStudio({ initialData }) {
   }
 
   async function handleRefresh() {
+    // NEW: Turn on inline per-question errors; block submission if any quiz option is missing
+    setAttemptedSubmit(true);
+    const missingField = getMissingFieldLabel();
+    if (missingField) {
+      return;
+    }
+
     trackingService.trackEvent(EVENTS.QUIZ_UPDATED, {
       ...profile,
       quizAnswerSummary: [
         profile.selectedSkinType,
-        profile.selectedSensitive ? "Sensitive" : "Not sensitive",
+        profile.selectedSensitive !== null ? (profile.selectedSensitive ? "Sensitive" : "Not sensitive") : "Unknown",
         ...profile.selectedFaceBodyConcerns,
         ...profile.selectedSpecialConditions,
         profile.age,
         profile.selectedGender,
       ].join(" | "),
     });
-    await recommend(profile, 24);
+    await recommend(profile, 500);
 
-    // Schedule 20-second login popup on first quiz submission if unauthenticated
     if (!userSession) {
       if (typeof window !== "undefined") {
         sessionStorage.setItem("quiz_submitted", "true");
@@ -538,20 +587,21 @@ export default function MatchStudio({ initialData }) {
       if (!quizTimerRef.current) {
         quizTimerRef.current = setTimeout(() => {
           setIsOtpModalOpen(true);
-        }, 15000);
+        }, 5000);
       }
     }
 
-    window.requestAnimationFrame(() => {
+    // UPDATED: Added a short timeout to ensure the data loads and #results section renders before scroll.
+    setTimeout(() => {
       document.getElementById("results")?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
-    });
+    }, 150);
   }
 
   function handleLoadMore() {
-    const nextLimit = Math.min(limit + 24, data?.total_matches || limit + 24);
+    const nextLimit = Math.min(limit + 500, data?.total_matches || limit + 500);
     trackingService.trackEvent(EVENTS.CLICKED_LOAD_MORE, {
       current_count: data?.returned || 0,
       requested_count: nextLimit,
@@ -566,15 +616,17 @@ export default function MatchStudio({ initialData }) {
     };
     setProfile(nextProfile);
     setFilters({ score: "all", category: "all", type: "all", sheet: "all" });
+    setSearchQuery("");
     setView("products");
     setModalProduct(null);
+    setAttemptedSubmit(false); // NEW: clear inline errors when a guide pre-fills the quiz
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "skincare_guide",
       question: "Skincare guide",
       answer: guide.label,
       value: guide.slug,
     });
-    recommend(nextProfile, 24);
+    recommend(nextProfile, 500);
     if (shouldScroll) window.scrollTo({ top: 0, behavior: "smooth" });
   }, [recommend]);
 
@@ -634,7 +686,6 @@ export default function MatchStudio({ initialData }) {
 
       <main id="matcher">
         <section className="panel profile-panel quiz-panel">
-          {/* Header banner matching the design */}
           <div className="quiz-header">
             <span className="quiz-icon">✨</span>
             <div className="quiz-title-group">
@@ -650,7 +701,6 @@ export default function MatchStudio({ initialData }) {
             <div className="section-title" style={{ marginBottom: "12px" }}>
               1. YOUR SKIN TYPE
             </div>
-            {/* <p className="section-subtitle">Tap to select your primary skin type.</p> */}
             <div className="chips skin-type-grid">
               {options.skinTypes.map((item) => {
                 const active = profile.selectedSkinType === item;
@@ -687,7 +737,7 @@ export default function MatchStudio({ initialData }) {
               </span>
               <div className="sensitivity-toggle" style={{ marginRight: "58px" }}>
                 {options.sensitivityOptions.map((item) => {
-                  const active = profile.selectedSensitive === (item === "Yes");
+                  const active = profile.selectedSensitive !== null && profile.selectedSensitive === (item === "Yes");
                   return (
                     <button
                       key={item}
@@ -709,6 +759,17 @@ export default function MatchStudio({ initialData }) {
                 })}
               </div>
             </div>
+            {/* NEW: Inline errors for skin type / sensitivity, shown after a submit attempt */}
+            {missingFieldLabel === "Skin Type" ? (
+              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                Please select your skin type
+              </p>
+            ) : null}
+            {missingFieldLabel === "Sensitive Skin" ? (
+              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                Please select whether your skin is sensitive
+              </p>
+            ) : null}
           </div>
 
 
@@ -738,13 +799,17 @@ export default function MatchStudio({ initialData }) {
                 );
               })}
             </div>
+            {/* NEW: Inline error for skin concerns, shown after a submit attempt */}
+            {missingFieldLabel === "Skin Concern" ? (
+              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                Please select a skin concern
+              </p>
+            ) : null}
           </div>
 
           {/* Question 3: Sensitive & Special Conditions */}
           <div className="quiz-section">
             <div className="section-title">3. SPECIAL CONDITIONS</div>
-
-
             <div className="special-conditions-wrap" style={{ marginTop: "8px" }}>
               <div className="concern-pills-wrap">
                 {availableSpecials.map((item) => {
@@ -762,6 +827,12 @@ export default function MatchStudio({ initialData }) {
                 })}
               </div>
             </div>
+            {/* NEW: Inline error for special conditions, shown after a submit attempt */}
+            {missingFieldLabel === "Special Condition" ? (
+              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                Please select a special condition
+              </p>
+            ) : null}
           </div>
 
           {/* Question 4: Age & Gender */}
@@ -783,9 +854,16 @@ export default function MatchStudio({ initialData }) {
                     });
                   }}
                 >
+                  <option value="" disabled>Select Age Group</option>
                   <option value="Teen">Teen</option>
                   <option value="Adult">Adult</option>
                 </select>
+                {/* NEW: Inline error for age group, shown after a submit attempt */}
+                {missingFieldLabel === "Age Group" ? (
+                  <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                    Please select age group
+                  </p>
+                ) : null}
               </div>
 
               <div className="select-field">
@@ -795,70 +873,79 @@ export default function MatchStudio({ initialData }) {
                   value={profile.selectedGender}
                   onChange={(event) => selectGender(event.target.value)}
                 >
+                  <option value="" disabled>Select Gender</option>
                   <option value="female">Female</option>
                   <option value="male">Male</option>
                   <option value="other">Other</option>
                   <option value="prefer not to say">Prefer not to say</option>
                 </select>
+                {/* NEW: Inline error for gender, shown after a submit attempt */}
+                {missingFieldLabel === "Gender" ? (
+                  <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                    Please select gender
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>
 
-          {/* Disclaimer & Action */}
           <div className="quiz-footer">
-            {/* <p className="quiz-disclaimer">
-              * Your answers help us find the best product recommendations for your unique skin.
-            </p> */}
-
             <div className="actions">
-              <button className="primary find-matches-btn" disabled={loading} onClick={handleRefresh} type="button">
+              {/* UPDATED: Button stays clickable so the missing-option prompt can show; loading still disables it */}
+              <button 
+                className="primary find-matches-btn" 
+                disabled={loading} 
+                onClick={handleRefresh} 
+                type="button"
+              >
                 {loading ? "FINDING MATCHES..." : "FIND MY MATCHES"}
               </button>
             </div>
-
-            <details className="payload-details">
-              <summary>Testing payload</summary>
-              <pre className="json-box">{JSON.stringify(profile, null, 2)}</pre>
-            </details>
           </div>
         </section>
 
-        <section className="panel shop-panel" id="results">
-          <div className="studio-toolbar">
-            <div className="studio-title">
-              <p style={{ textAlign: "center" }}>Your Matches!</p>
-              {/* <p>
-                {view === "routine"
-                  ? "Routine picks are split into Premium and Value Fit, using score plus effective price."
-                  : `Showing ${products.length} of ${data?.total_matches || 0} matching catalog products. Any -100 component stays a hard blocker.`}
-              </p> */}
+        {data ? (
+          <section className="panel shop-panel" id="results">
+            <div className="studio-toolbar">
+              <div className="studio-title">
+                <p style={{ textAlign: "center" }}>Your Matches!</p>
+              </div>
+              <div className="profile-pill">
+                {profile.selectedSkinType} · {profile.selectedSensitive ? "Sensitive" : "Non-sensitive"} · {profile.selectedFaceBodyConcerns.join(", ")}
+              </div>
             </div>
-            <div className="profile-pill">
-              {profile.selectedSkinType} · {profile.selectedSensitive ? "Sensitive" : "Non-sensitive"} · {profile.selectedFaceBodyConcerns.join(", ")}
+
+            <div aria-label="Result view" className="view-tabs">
+              <button className={`view-tab ${view === "products" ? "active" : ""}`} onClick={() => handleViewChange("products")} type="button">Products</button>
+              <button className={`view-tab ${view === "routine" ? "active" : ""}`} onClick={() => handleViewChange("routine")} type="button">Routine</button>
             </div>
-          </div>
 
-          <div aria-label="Result view" className="view-tabs">
-            <button className={`view-tab ${view === "products" ? "active" : ""}`} onClick={() => handleViewChange("products")} type="button">Products</button>
-            <button className={`view-tab ${view === "routine" ? "active" : ""}`} onClick={() => handleViewChange("routine")} type="button">Routine</button>
-          </div>
+            {error ? <div className="empty">{error}</div> : null}
+            {loading ? <div className="empty">Loading Roopsee-style product preview...</div> : null}
 
-          {error ? <div className="empty">{error}</div> : null}
-          {loading ? <div className="empty">Loading Roopsee-style product preview...</div> : null}
+            {!loading && !error && view === "products" ? (
+              <div className="products-view">
+              
+              {/* NEW: Search Bar implementation */}
+              <div className="search-bar" style={{ marginBottom: "16px" }}>
+                <input
+                  type="text"
+                  placeholder="Search products or brands..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    padding: "10px",
+                    width: "100%",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    border: "1px solid #ff0000",
+                    fontSize: "15px",
+                    fontcolor: "#333",
+                  }}
+                />
+              </div>
 
-          {!loading && !error && view === "products" ? (
-            <div className="products-view">
-              {/* <div className="summary-grid">
-                <Metric label="Showing" value={products.length} />
-                <Metric label="90-100" value={counts["90_100"]} />
-                <Metric label="80-89" value={counts["80_89"]} />
-                <Metric label="70-79" value={counts["70_79"]} />
-                <Metric label="60-69" value={counts["60_69"]} />
-                <Metric label="50-59" value={counts["50_59"]} />
-                <Metric label="Below 50" value={counts.below50} />
-              </div> */}
-
-              {/* <div className="filters" style={{ display: "grid" }}>
+              <div className="filters" style={{ display: "grid" }}>
                 <label>
                   Score Range
                   <select value={filters.score} onChange={(event) => handleFilterChange("score", event.target.value)}>
@@ -885,40 +972,33 @@ export default function MatchStudio({ initialData }) {
                     {filterValues("product_type").map((value) => <option key={value}>{value}</option>)}
                   </select>
                 </label>
-                <label>
-                  Score Sheet
-                  <select value={filters.sheet} onChange={(event) => handleFilterChange("sheet", event.target.value)}>
-                    <option value="all">All sheets</option>
-                    {filterValues("source_sheet").map((value) => <option key={value}>{value}</option>)}
-                  </select>
-                </label>
-              </div> */}
+              </div>
+                {products.length ? (
+                  <div className="product-grid">
+                    {products.map((product) => (
+                      <ProductCard key={product.product_uid} onVisit={handleVisitProduct} product={product} />
+                    ))}
+                  </div>
+                ) : <div className="empty">No matching catalog products found for your criteria.</div>}
+                
+                {data?.returned < data?.total_matches && !searchQuery.trim() ? (
+                  <div className="actions">
+                    <button className="secondary" disabled={loading} onClick={handleLoadMore} type="button">
+                      Load 500 more products
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
 
-              {products.length ? (
-                <div className="product-grid">
-                  {products.map((product) => (
-                    <ProductCard key={product.product_uid} onVisit={handleVisitProduct} product={product} />
-                  ))}
-                </div>
-              ) : <div className="empty">No matching catalog products found for this profile.</div>}
-              {data?.returned < data?.total_matches ? (
-                <div className="actions">
-                  <button className="secondary" disabled={loading} onClick={handleLoadMore} type="button">
-                    Load 24 more products
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
-          {!loading && !error && view === "routine" ? (
-            <div className="routine-view">
-              <RoutineView onOpen={handleOpenProduct} routine={data?.routine} />
-            </div>
-          ) : null}
-        </section>
+            {!loading && !error && view === "routine" ? (
+              <div className="routine-view">
+                <RoutineView onOpen={handleOpenProduct} routine={data?.routine} />
+              </div>
+            ) : null}
+          </section>
+        ) : null}
       </main>
-
 
       <ProductModal onClose={() => setModalProduct(null)} product={modalProduct} />
       <OtpModal
