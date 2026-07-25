@@ -4,7 +4,7 @@
   --ink: #3d3341;
   --muted: #766b7d;
   --line: #e8dfe8;
-  --panel: #fffdfb;
+  /* --panel: #fffdfb; */
   --cream: #fff9f2;
   --rose: #c255a8;
   --rose-dark: #963d7e;
@@ -17,6 +17,14 @@
 
 * {
   box-sizing: border-box;
+}
+
+body {
+  /* min-height: 100vh; */
+  /* margin: 10; */
+  background: #E7EBEE;
+  /* font-family: ui-rounded, "Avenir Next", "Nunito Sans", "Trebuchet MS", sans-serif; */
+  font-family: "Arial", sans-serif;
 }
 
 /* body {
@@ -74,7 +82,7 @@ header {
 
 h1 {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: Georgia, "Poppins", serif;
   font-size: clamp(1.2rem, 5vw, 2.7rem);
   line-height: 0.95;
   letter-spacing: -0.055em;
@@ -97,12 +105,12 @@ main {
   padding: 0 22px 52px;
 }
 
-.panel {
+/* .panel {
   background: rgba(255, 253, 251, 0.9);
   border: 1px solid rgba(232, 223, 232, 0.9);
   border-radius: 30px;
   box-shadow: var(--shadow);
-}
+} */
 
 .profile-panel {
   align-self: start;
@@ -233,7 +241,7 @@ select {
 
 .studio-title h2 {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: Georgia, "Poppins", serif;
   font-size: clamp(1.7rem, 3vw, 2.55rem);
   line-height: 1;
   letter-spacing: -0.045em;
@@ -360,7 +368,7 @@ select {
 
 .routine-column h3 {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: Georgia, "Poppins", serif;
   font-size: 1.45rem;
   letter-spacing: -0.035em;
 }
@@ -642,16 +650,14 @@ select {
   place-items: center;
   align-self: end;
   width: 100%;
-  min-height: 40px;
+  min-height: 42px;
   border: 0;
   border-radius: 999px;
   background: #3d3342;
   color: #fff;
-  font-weight: 500;
-  font-size:14px;
-  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-  line-height: 1;
-  padding: 9px 12px;
+  font-weight: 950;
+  line-height: 1.2;
+  padding: 10px 14px;
   text-align: center;
   text-decoration: none;
 }
@@ -755,7 +761,7 @@ details.payload-details summary {
 
 .modal h2 {
   margin: 0 0 8px;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: Georgia, "Poppins", serif;
   font-size: clamp(1.5rem, 3vw, 2.25rem);
   line-height: 1.05;
   letter-spacing: -0.04em;
@@ -853,7 +859,7 @@ details.payload-details summary {
   }
 
   .quiz-panel .section-title {
-    margin: 0 0 5px;
+    /* margin: 0 0 5px; */
     font-size: 0.61rem;
     letter-spacing: 0.08em;
   }
@@ -963,9 +969,9 @@ details.payload-details summary {
   }
 
   .product-card .details-link {
-    min-height: 35px;
+    min-height: 38px;
     padding: 8px;
-    font-size: 11px;
+    font-size: 0.76rem;
   }
 
   .studio-toolbar {
@@ -1001,11 +1007,11 @@ details.payload-details summary {
    ========================================================================== */
 
 .quiz-panel {
-  background: #ffffff;
-  border-radius: 28px;
-  border: 1px solid #e1e8ed;
+  background: #E7EBEE;
+  /* border-radius: 28px; */
+  /* border: 1px solid #e1e8ed; */
   /* padding: 20px 18px; */
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05);
+  /* box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05); */
 }
 
 .quiz-header {
@@ -1049,18 +1055,19 @@ details.payload-details summary {
 }
 
 .quiz-section {
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
+  background: #ffffff;
+  /* border: 1px solid #f1f5f9; */
   border-radius: 18px;
   padding: 14px;
-  padding-top: 8px;
-  padding-bottom: 4px;
-  margin-bottom: 4px;
+  /* padding-top: 8px;
+  padding-bottom: 8px; */
+  margin-bottom: 12px;
+  box-shadow: 0px 4px 4px rgb(189, 189, 189);
 }
 
 .quiz-section .section-title {
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: 850;
   color: #1e293b;
   letter-spacing: 0.05em;
@@ -1146,7 +1153,7 @@ details.payload-details summary {
   background: #ffffff;
   border: 1.5px solid #e2e8f0;
   border-radius: 999px;
-  font-size: 0.72rem;
+  font-size: .82rem;
   font-weight: 700;
   color: #475569;
   cursor: pointer;
@@ -1240,7 +1247,7 @@ details.payload-details summary {
 }
 
 .quiz-disclaimer {
-  font-size: 0.68rem; 
+  font-size: 0.68rem;
   color: #94a3b8;
   margin: 0 0 12px 0;
   line-height: 1.35;

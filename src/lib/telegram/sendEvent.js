@@ -1,239 +1,400 @@
-import {
+// lib/telegram/sendEvent.js
+// Ported from your Express service.js. Two changes from the original:
+//   1. Uses `fetch` instead of Node's `https` module — Next.js route
+//      handlers run fine with fetch, no need for the manual req/Buffer setup.
+//   2. Takes plain objects instead of an Express `req` — App Router request
+//      bodies must be read with `await req.json()` before you can pass
+//      pieces of it around, so the "build event from request" step now takes
+//      the already-parsed body + headers instead of the raw req.
+    import {
   getClientIp,
-  getIpLocation,
   getVisitorLocationFromHeaders,
-} from "../location/ipLocation.js";
+  getIpLocation,
+} from '../location/ipLocation.js';
 
+// Group where all website events are sent
+const EVENT_BOT_TOKEN = process.env.TELEGRAM_EVENT_BOT_TOKEN;
+const EVENT_CHAT_ID = process.env.TELEGRAM_EVENT_CHAT_ID;
+
+// Second group where only login-related events are sent
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+
+// Events that should also be shared in the second Telegram group
 const SECOND_GROUP_EVENTS = new Set([
-  "login_successful",
-  "existing_user_login",
-  "clicked_send_otp",
+  'login_successful',
+  'existing_user_login',
+  'clicked_send_otp',
 ]);
 
-function escapeHtml(value = "") {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+// ─── Save event in Supabase ────────────────────────────────────────────────
 
-function readableValue(value) {
-  if (value === null || value === undefined || value === "") return "Not available";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
-}
+export const saveEventLog = async ({
+  userId,
+  userName,
+  phone,
+  visitorId,
+  sessionId,
+  country,
+  city,
+  region,
+  ip,
+  device,
+  platform,
+  browser,
+  language,
+  time,
+  page,
+  eventName,
+  value,
+  referrer,
+  extraData = {},
+}) => {
+  const supabase = getSupabaseServerClient();
+  if (!supabase) return null;
 
-function normalizeEventName(value = "") {
-  return String(value).trim().toLowerCase().replace(/[\s-]+/g, "_");
-}
+  const { data, error } = await supabase
+    .from('event_log')
+    .insert({
+      user_id: userId || null,
+      user_name: userName || '',
+      phone_no: phone || '',
+      visitor_id: visitorId || '',
+      session_id: sessionId || '',
+      country: country || '',
+      city: city || '',
+      region: region || '',
+      ip_address: ip || '',
+      device: device || '',
+      platform: platform || '',
+      browser: browser || '',
+      language: language || '',
+      time_ist: time || '',
+      page_link: page || '',
+      event_name: eventName || 'website_event',
+      value: value ?? extraData?.value ?? '',
+      referrer: referrer || '',
+      extra_data: {
+        ...extraData,
+        phone: phone || extraData?.phone || '',
+        visitorId: visitorId || extraData?.visitorId || '',
+      },
+    })
+    .select()
+    .maybeSingle();
 
-async function telegramRequest({ botToken, chatId, text, groupName }) {
+  if (error) {
+    console.error('Event log insert error:', error);
+    return null;
+  }
+
+  return data;
+};
+
+// ─── Generic Telegram request helper ───────────────────────────────────────
+
+const telegramRequest = async ({
+  botToken,
+  chatId,
+  path = 'sendMessage',
+  payload,
+  groupName = 'Telegram',
+}) => {
   if (!botToken || !chatId) {
-    console.error(`[events] ${groupName} credentials are missing.`);
-    return { ok: false, description: `${groupName} is not configured` };
+    console.error(`${groupName} env missing. Notification skipped.`);
+    return null;
   }
 
-  const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json; charset=utf-8" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      parse_mode: "HTML",
-    }),
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        ...payload,
+        parse_mode: 'HTML',
+      }),
+    });
+
+    const parsed = await response.json().catch(async () => response.text());
+
+    if (parsed?.ok === false) {
+      console.error(`${groupName} notification failed:`, parsed);
+    }
+
+    return parsed;
+  } catch (error) {
+    console.error(`${groupName} request error:`, error);
+    throw error;
+  }
+};
+
+// Send notification to the main event group
+const telegramEventRequest = (path, payload) =>
+  telegramRequest({
+    botToken: EVENT_BOT_TOKEN,
+    chatId: EVENT_CHAT_ID,
+    path,
+    payload,
+    groupName: 'Telegram event group',
   });
-  const result = await response.json().catch(() => ({
-    ok: false,
-    description: `Telegram responded ${response.status}`,
-  }));
-  if (!response.ok || result.ok === false) {
-    console.error(`[events] ${groupName} delivery failed:`, result);
+
+// Send notification to the second group
+const telegramSecondGroupRequest = (path, payload) =>
+  telegramRequest({
+    botToken: TELEGRAM_BOT_TOKEN,
+    chatId: TELEGRAM_CHAT_ID,
+    path,
+    payload,
+    groupName: 'Telegram login group',
+  });
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+const escapeHtml = (value = '') =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+const getValue = (value, fallback = 'Not available') => {
+  if (value === null || value === undefined || value === '') {
+    return fallback;
   }
-  return result;
-}
+  return escapeHtml(value);
+};
 
-export function parseUserAgent(userAgent = "") {
-  const value = String(userAgent);
-  let browser = "Unknown Browser";
-  let platform = "Unknown Platform";
-  let device = "Desktop";
+const normalizeEventName = (eventName = '') =>
+  String(eventName).trim().toLowerCase().replace(/[\s-]+/g, '_');
 
-  if (/edg/i.test(value)) browser = "Microsoft Edge";
-  else if (/chrome|crios/i.test(value)) browser = "Chrome";
-  else if (/safari/i.test(value) && !/chrome|crios/i.test(value)) browser = "Safari";
-  else if (/firefox|fxios/i.test(value)) browser = "Firefox";
-  else if (/opr|opera/i.test(value)) browser = "Opera";
+export const parseUserAgent = (userAgent = '') => {
+  const ua = String(userAgent);
 
-  if (/windows/i.test(value)) platform = "Windows";
-  else if (/mac os|macintosh/i.test(value)) platform = "macOS";
-  else if (/android/i.test(value)) platform = "Android";
-  else if (/iphone|ipad|ios/i.test(value)) platform = "iOS";
-  else if (/linux/i.test(value)) platform = "Linux";
+  let browser = 'Unknown Browser';
+  let platform = 'Unknown Platform';
+  let device = 'Desktop';
 
-  if (/tablet|ipad/i.test(value)) device = "Tablet";
-  else if (/mobile/i.test(value)) device = "Mobile";
+  if (/edg/i.test(ua)) browser = 'Microsoft Edge';
+  else if (/chrome|crios/i.test(ua)) browser = 'Chrome';
+  else if (/safari/i.test(ua) && !/chrome|crios/i.test(ua)) browser = 'Safari';
+  else if (/firefox|fxios/i.test(ua)) browser = 'Firefox';
+  else if (/opr|opera/i.test(ua)) browser = 'Opera';
+
+  if (/windows/i.test(ua)) platform = 'Windows';
+  else if (/mac os|macintosh/i.test(ua)) platform = 'macOS';
+  else if (/android/i.test(ua)) platform = 'Android';
+  else if (/iphone|ipad|ios/i.test(ua)) platform = 'iOS';
+  else if (/linux/i.test(ua)) platform = 'Linux';
+
+  if (/mobile/i.test(ua)) device = 'Mobile';
+  else if (/tablet|ipad/i.test(ua)) device = 'Tablet';
+
   return { browser, platform, device };
-}
+};
 
-const CORE_BODY_KEYS = new Set([
-  "eventName",
-  "userId",
-  "userName",
-  "phone",
-  "visitorId",
-  "sessionId",
-  "country",
-  "city",
-  "region",
-  "latitude",
-  "longitude",
-  "ip",
-  "device",
-  "platform",
-  "browser",
-  "language",
-  "timestamp",
-  "time",
-  "time_ist",
-  "url",
-  "page",
-  "user_agent",
-  "referrer",
-  "screen_resolution",
-  "timezone",
-  "productName",
-  "productId",
-  "brand",
-  "price",
-  "section",
-  "score",
-  "question",
-  "answer",
-  "field",
-  "value",
-]);
+// ─── Main Telegram notification ────────────────────────────────────────────
 
-export async function buildVisitorEventFromRequest(body, headers) {
-  const ip = getClientIp(headers);
-  const headerLocation = getVisitorLocationFromHeaders(headers);
-  const ipLocation = headerLocation ? null : await getIpLocation(ip);
-  const userAgent = parseUserAgent(headers.get("user-agent") || "");
-  const extraData = Object.fromEntries(
-    Object.entries(body || {}).filter(([key, value]) => (
-      !CORE_BODY_KEYS.has(key)
-      && value !== null
-      && value !== undefined
-      && value !== ""
-    )),
-  );
+export const sendWebsiteVisitorEvent = async ({
+  userId,
+  userName,
+  sessionId,
+  phone,
+  country,
+  city,
+  region,
+  ip,
+  device,
+  platform,
+  browser,
+  language,
+  time,
+  page,
+  referrer,
+  eventName,
+  productName,
+  productId,
+  brand,
+  price,
+  section,
+  cartItems,
+  cartTotal,
+  question,
+  answer,
+  value,
+  field,
+  answerType,
+  step,
+  quizAnswerSummary,
+}) => {
+  const hasProductDetails = productName || productId || brand || price || section;
+  const hasCartDetails = cartItems !== null && cartItems !== undefined && cartItems !== '';
+  const hasAnswerDetails = quizAnswerSummary || question || answer || field || answerType || step;
 
-  return {
-    eventName: body.eventName,
-    userId: body.userId || null,
-    userName: body.userName || "",
-    phone: body.phone || "",
-    visitorId: body.visitorId || "",
-    sessionId: body.sessionId || "",
-    country: body.country || headerLocation?.country || ipLocation?.country || "",
-    city: body.city || headerLocation?.city || ipLocation?.city || "",
-    region: body.region || headerLocation?.region || ipLocation?.region || "",
-    ip: body.ip || ip,
-    device: body.device || userAgent.device,
-    platform: body.platform || userAgent.platform,
-    browser: body.browser || userAgent.browser,
-    language: body.language || headers.get("accept-language")?.split(",")?.[0] || "",
-    time: body.time || body.time_ist || new Date().toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-    }),
-    page: body.page || body.url || "",
-    referrer: body.referrer || "",
-    productName: body.productName || "",
-    productId: body.productId || "",
-    brand: body.brand || "",
-    price: body.price ?? "",
-    section: body.section || "",
-    score: body.score ?? "",
-    question: body.question || "",
-    answer: body.answer ?? "",
-    field: body.field || "",
-    value: body.value ?? body.answer ?? "",
-    extraData,
+  const cleanListValue = (itemValue) => {
+    const result = getValue(itemValue);
+    return result && result !== 'Not available' ? result : '';
   };
-}
 
-function detailLines(extraData) {
-  return Object.entries(extraData || {}).map(([key, value]) => (
-    `${escapeHtml(key)}: ${escapeHtml(readableValue(value).slice(0, 700))}`
-  ));
-}
+  const answerBlock = hasAnswerDetails
+    ? `
 
-export async function sendWebsiteVisitorEvent(event) {
-  const location = [event.country, event.city, event.region].filter(Boolean).join(", ");
-  const lines = [
-    `<b>${escapeHtml(event.eventName)}</b>`,
-    "",
-    `👤 User: ${escapeHtml(event.userName || "Guest")}`,
-    `🆔 User ID: ${escapeHtml(readableValue(event.userId))}`,
-    `📞 Phone: ${escapeHtml(readableValue(event.phone))}`,
-    ``,
-    `🧩Visitor ID: ${escapeHtml(readableValue(event.visitorId))}`,
-    `🧩Session ID: ${escapeHtml(readableValue(event.sessionId))}`,
-    `📍 Location: ${escapeHtml(location || "Not available")}`,
-    `🌐 IP: ${escapeHtml(readableValue(event.ip))}`,
-    `📱 Device: ${escapeHtml([event.device, event.platform, event.browser].filter(Boolean).join(", "))}`,
-    ``,
-    `🌎 Language: ${escapeHtml(readableValue(event.language))}`,
-    `⏰Time: ${escapeHtml(readableValue(event.time))}`,
-    `🔗 Page: ${escapeHtml(readableValue(event.page))}`,
-    `💬 Referrer: ${escapeHtml(readableValue(event.referrer))}`,
-  ];
+🧾 Quiz Answer: ${quizAnswerSummary ? getValue(quizAnswerSummary) : `${getValue(question)}: ${getValue(answer)}`}
+📝 Question: ${getValue(question)}
+✅ Answer: ${getValue(answer)}
+🔢 Step: ${getValue(step)}
+🏷 Answer Type: ${getValue(answerType)}
+📌 Field: ${getValue(field)}`
+    : '';
 
-  if (event.productName || event.productId || event.brand || event.price || event.section || event.score !== "") {
-    lines.push(
-      "",
-      `Product: ${escapeHtml(readableValue(event.productName))}`,
-      `Brand: ${escapeHtml(readableValue(event.brand))}`,
-      `Product ID: ${escapeHtml(readableValue(event.productId))}`,
-      `Price: ${escapeHtml(readableValue(event.price))}`,
-      `Section: ${escapeHtml(readableValue(event.section))}`,
-      `Match score: ${escapeHtml(readableValue(event.score))}`,
-    );
-  }
-  if (event.question || event.answer || event.field) {
-    lines.push(
-      "",
-      `Question: ${escapeHtml(readableValue(event.question || event.field))}`,
-      `Answer: ${escapeHtml(readableValue(event.answer || event.value))}`,
-      `Field: ${escapeHtml(readableValue(event.field))}`,
-    );
-  }
+  const productBlock = hasProductDetails
+    ? `
 
-  const extras = detailLines(event.extraData);
-  if (extras.length) lines.push("", "Event data:", ...extras);
-  const text = lines.join("\n").slice(0, 4000);
+🛒 Product: ${getValue(productName)}
+🏷 Brand: ${getValue(brand)}
+🆔 Product ID: ${getValue(productId)}
+💰 Price: ${getValue(price)}
+📦 Section: ${getValue(section)}`
+    : '';
+
+  const cartBlock = hasCartDetails
+    ? `
+
+🛒 Cart Items: ${getValue(cartItems)}
+💰 Cart Total: ${getValue(cartTotal)}`
+    : '';
+
+  const isExistingUser = userName && userName !== 'Guest';
+
+  const text = `${isExistingUser ? '💌' : '🟢'} <b>${getValue(eventName)}</b>
+
+👤 ${getValue(userName || 'Guest')}
+🆔 User ID: ${getValue(userId)}
+📞 Phone: ${getValue(phone)}
+🧩 Session ID: ${getValue(sessionId)}
+📍 ${[cleanListValue(country), cleanListValue(city), cleanListValue(region)].filter(Boolean).join(', ')}
+🌐 IP: ${getValue(ip)}
+📱 ${[cleanListValue(device), cleanListValue(platform), cleanListValue(browser)].filter(Boolean).join(', ')}
+🌎 Language: ${getValue(language)}
+⏰ ${getValue(time)}
+
+📄 Page: ${getValue(page)}
+🔗 Referrer: ${getValue(referrer)}
+💬 Value: ${getValue(value)}${answerBlock}${productBlock}${cartBlock}`;
+
+  const normalizedEventName = normalizeEventName(eventName);
 
   const requests = [
-    telegramRequest({
-      botToken: process.env.TELEGRAM_EVENT_BOT_TOKEN,
-      chatId: process.env.TELEGRAM_EVENT_CHAT_ID,
-      text,
-      groupName: "Telegram event group",
-    }),
+    // Every event goes to the main event group
+    telegramEventRequest('sendMessage', { text }),
   ];
 
-  if (
-    SECOND_GROUP_EVENTS.has(normalizeEventName(event.eventName))
-    && process.env.TELEGRAM_EVENT_BOT_TOKEN
-    && process.env.TELEGRAM_EVENT_CHAT_ID
-  ) {
-    requests.push(telegramRequest({
-      botToken: process.env.TELEGRAM_EVENT_BOT_TOKEN,
-      chatId: process.env.TELEGRAM_EVENT_CHAT_ID,
-      text,
-      groupName: "Telegram login group",
-    }));
+  // Only these events also go to the second Telegram group
+  if (SECOND_GROUP_EVENTS.has(normalizedEventName)) {
+    requests.push(telegramSecondGroupRequest('sendMessage', { text }));
   }
 
-  return Promise.allSettled(requests);
-}
+  const results = await Promise.allSettled(requests);
+
+  results.forEach((result, index) => {
+    if (result.status === 'rejected') {
+      console.error(
+        index === 0
+          ? 'Main event Telegram notification rejected:'
+          : 'Second Telegram notification rejected:',
+        result.reason
+      );
+    }
+  });
+
+  return results;
+};
+
+// ─── Build event data from a parsed Next.js request ────────────────────────
+// Call this with `await req.json()` and `req.headers` from your route handler
+// (see app/api/events/route.js) — NOT the raw Request object, since App
+// Router bodies can only be read once and async.
+
+export const buildVisitorEventFromRequest = async (body, headers) => {
+  const ip = getClientIp(headers);
+  const locationFromHeaders = getVisitorLocationFromHeaders(headers);
+  const locationFromIp = locationFromHeaders ? null : await getIpLocation(ip);
+  const userAgentInfo = parseUserAgent(headers.get('user-agent') || '');
+
+  let userName = body?.userName || '';
+  const userId = body?.userId;
+
+  if (userId) {
+    try {
+      const supabase = getSupabaseServerClient();
+      if (supabase) {
+        const { data: userRow, error: userError } = await supabase
+          .from('users')
+          .select('name')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (userError) {
+          console.error('Error fetching user name in buildVisitorEventFromRequest:', userError);
+        }
+
+        if (userRow?.name) {
+          userName = userRow.name;
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user name in buildVisitorEventFromRequest:', error);
+    }
+  }
+
+  return {
+    userId: userId || null,
+    userName,
+    phone: body?.phone || '',
+    sessionId: body?.sessionId || '',
+    visitorId: body?.visitorId || '',
+
+    country: body?.country || locationFromHeaders?.country || locationFromIp?.country || '',
+    city: body?.city || locationFromHeaders?.city || locationFromIp?.city || '',
+    region: body?.region || locationFromHeaders?.region || locationFromIp?.region || '',
+
+    ip: body?.ip || ip,
+
+    device: body?.device || userAgentInfo.device,
+    platform: body?.platform || userAgentInfo.platform,
+    browser: body?.browser || userAgentInfo.browser,
+
+    language: body?.language || headers.get('accept-language')?.split(',')?.[0] || '',
+
+    time:
+      body?.time ||
+      new Date().toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+      }),
+
+    page: body?.page || '',
+    referrer: body?.referrer || '',
+    eventName: body?.eventName || 'website_visitor',
+
+    value: body?.value ?? body?.answer ?? '',
+
+    productName: body?.productName || '',
+    productId: body?.productId || '',
+    brand: body?.brand || '',
+    price: body?.price ?? '',
+    section: body?.section || '',
+
+    cartItems: body?.cartItems || '',
+    cartTotal: body?.cartTotal ?? '',
+
+    question: body?.question || '',
+    answer: body?.answer || '',
+    field: body?.field || '',
+    answerType: body?.answerType || body?.field || '',
+    step: body?.step || body?.field || '',
+
+    quizAnswerSummary:
+      body?.quizAnswerSummary ||
+      (body?.question && body?.answer ? `${body.question}: ${body.answer}` : ''),
+  };
+};

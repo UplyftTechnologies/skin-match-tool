@@ -352,7 +352,7 @@ export default async function ProductPage({ params }) {
            text-white shadow-md shadow-sky-300/40 transition hover:-translate-y-0.5 sm:px-6 sm:text-[13.5px]"
           href="/"
         >
-          FIND MATCHES
+          Save Product
         </Link>
       </div>
     </div>
