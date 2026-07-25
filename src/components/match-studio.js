@@ -909,23 +909,7 @@ export default function MatchStudio({ initialData }) {
               </pre>
             </details>
 
-            <div className="mt-5">
-              <div className="mb-2 text-[12px] font-extrabold uppercase tracking-wide text-slate-400">
-                Explore skincare guides
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {guideLinks.map((guide) => (
-                  <Link
-                    className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1.5 text-[12px] font-bold text-sky-700 transition-colors hover:bg-sky-100"
-                    href={`/skincare-for/${guide.slug}`}
-                    key={guide.slug}
-                    onClick={(event) => handleGuideClick(event, guide)}
-                  >
-                    {guide.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
+        
           </div>
         </section>
 
