@@ -7,8 +7,8 @@ import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { productPath } from "@/lib/site";
-import { Blend, Droplet, Mars, Smile, Sun, Transgender, UserRound, Venus } from "lucide-react";
 import { GiChestnutLeaf } from "react-icons/gi";
+import { useRouter } from "next/navigation";
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -170,8 +170,25 @@ function ChipGroup({ items, isActive, onSelect }) {
 
 function ProductCard({ product, onVisit }) {
   const band = scoreBand(product.score);
+  const router = useRouter();
+
+  function goToProduct() {
+    onVisit(product);
+    router.push(productPath(product.product_uid));
+  }
+
   return (
-    <article className="product-card" onClick={() => onVisit(product)}
+    <article
+      className="product-card cursor-pointer"
+      onClick={goToProduct}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          goToProduct();
+        }
+      }}
+      role="button"
+      tabIndex={0}
     >
       <div className="product-image-wrap">
         <ProductImage product={product} />
@@ -198,6 +215,7 @@ function ProductCard({ product, onVisit }) {
         <Link
           className="details-link"
           href={productPath(product.product_uid)}
+          onClick={(event) => event.stopPropagation()}
         >
           View product details
         </Link>
@@ -403,7 +421,7 @@ function SkinTypeIcon({ type }) {
 function OptionCard({ active, icon, label, onClick }) {
   return (
     <button
-      className={`group relative flex items-center gap-3 rounded-2xl border-2 p-2 lg:p-3 text-left transition-all ${active
+      className={`group relative flex items-center gap-3 rounded-2xl border-2 p-1 lg:p-3 text-left transition-all ${active
           ? "border-sky-400 bg-sky-50/70 shadow-sm"
           : "border-slate-100 bg-slate-50/40 hover:border-slate-200"
         }`}
@@ -429,12 +447,14 @@ function OptionCard({ active, icon, label, onClick }) {
 }
 
 /* Two-way segmented toggle, reused for sensitivity and age group so
-   every either/or question in the quiz reads the same way. */
-function SegmentedToggle({ options: opts, value, onChange }) {
+   every either/or question in the quiz reads the same way. `touched`
+   keeps both options looking neutral until the user actually picks
+   one, even though `value` already holds a default from the profile. */
+function SegmentedToggle({ options: opts, value, onChange, touched = true }) {
   return (
     <div className="flex gap-1 rounded-full bg-slate-100 p-1">
       {opts.map((item) => {
-        const active = value === item;
+        const active = touched && value === item;
         return (
           <button
             key={item}
@@ -460,6 +480,24 @@ export default function MatchStudio({ initialData }) {
   const [modalProduct, setModalProduct] = useState(null);
   const [filters, setFilters] = useState({ score: "all", category: "all", type: "all", sheet: "all" });
   const [limit, setLimit] = useState(initialData?.returned || 24);
+
+  // DEFAULT_PROFILE ships with default values so the rest of the quiz/API
+  // logic always has something to work with, but we don't want any card,
+  // chip, or toggle to look pre-selected before the user has actually
+  // interacted with it. `touched` gates the "active" styling per question
+  // only — it never changes what's sent to the API.
+  const [touched, setTouched] = useState({
+    skinType: false,
+    concern: false,
+    sensitive: false,
+    special: false,
+    age: false,
+    gender: false,
+  });
+  const markTouched = (key) => setTouched((current) => ({ ...current, [key]: true }));
+  const answeredCount = Object.values(touched).filter(Boolean).length;
+  const totalQuestions = Object.keys(touched).length;
+  const progressPercent = Math.round((answeredCount / totalQuestions) * 100);
 
   const recommend = useCallback(async (nextProfile, nextLimit = 24) => {
     setLoading(true);
@@ -508,6 +546,7 @@ export default function MatchStudio({ initialData }) {
 
   function selectSkinType(item) {
     update("selectedSkinType", item);
+    markTouched("skinType");
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "skin_type",
       question: "Skin type",
@@ -518,6 +557,7 @@ export default function MatchStudio({ initialData }) {
 
   function selectConcern(item) {
     update("selectedFaceBodyConcerns", [item]);
+    markTouched("concern");
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "skin_concern",
       question: "Skin concern",
@@ -528,6 +568,7 @@ export default function MatchStudio({ initialData }) {
 
   function selectSensitive(item) {
     update("selectedSensitive", item === "Yes");
+    markTouched("sensitive");
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "sensitivity",
       question: "Sensitive skin",
@@ -538,6 +579,7 @@ export default function MatchStudio({ initialData }) {
 
   function selectAge(item) {
     update("age", item);
+    markTouched("age");
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "age",
       question: "Age",
@@ -555,6 +597,7 @@ export default function MatchStudio({ initialData }) {
       selectedGender: gender,
       selectedSpecialConditions: specials.length ? specials : ["None"],
     });
+    markTouched("gender");
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "gender",
       question: "Gender",
@@ -566,6 +609,7 @@ export default function MatchStudio({ initialData }) {
   function selectSpecial(item) {
     if (item === "None") {
       update("selectedSpecialConditions", ["None"]);
+      markTouched("special");
       trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
         field: "special_condition",
         question: "Special condition",
@@ -579,6 +623,7 @@ export default function MatchStudio({ initialData }) {
       ? current.filter((value) => value !== item)
       : [...current, item].slice(-2);
     update("selectedSpecialConditions", next.length ? next : ["None"]);
+    markTouched("special");
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "special_condition",
       question: "Special condition",
@@ -656,6 +701,16 @@ export default function MatchStudio({ initialData }) {
     setFilters({ score: "all", category: "all", type: "all", sheet: "all" });
     setView("products");
     setModalProduct(null);
+    // A guide link picks every answer on the user's behalf, so treat that
+    // the same as if they'd manually answered each question.
+    setTouched({
+      skinType: true,
+      concern: true,
+      sensitive: true,
+      special: true,
+      age: true,
+      gender: true,
+    });
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "skincare_guide",
       question: "Skincare guide",
@@ -724,10 +779,10 @@ export default function MatchStudio({ initialData }) {
                 <div className="h-[6px] flex-1 overflow-hidden rounded-full bg-slate-100">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-500 transition-all duration-300"
-                    style={{ width: "100%" }}
+                    style={{ width: `${progressPercent}%` }}
                   />
                 </div>
-                <span className="text-[11px] font-bold text-slate-400">100%</span>
+                <span className="text-[11px] font-bold text-slate-400">{progressPercent}%</span>
               </div>
             </div>
           </div>
@@ -738,7 +793,7 @@ export default function MatchStudio({ initialData }) {
             <div className="grid grid-cols-2 gap-3">
               {options.skinTypes.map((item) => (
                 <OptionCard
-                  active={profile.selectedSkinType === item}
+                  active={touched.skinType && profile.selectedSkinType === item}
                   icon={<SkinTypeIcon type={item} />}
                   key={item}
                   label={item.toUpperCase()}
@@ -753,7 +808,7 @@ export default function MatchStudio({ initialData }) {
             <SectionHeading index={2} title="YOUR SKIN CONCERNS" />
             <div className="flex flex-wrap gap-2">
               {options.concerns.map((item) => {
-                const active = profile.selectedFaceBodyConcerns.includes(item);
+                const active = touched.concern && profile.selectedFaceBodyConcerns.includes(item);
                 return (
                   <button
                     className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-[12.5px] font-semibold transition-colors ${active
@@ -780,13 +835,14 @@ export default function MatchStudio({ initialData }) {
               <SegmentedToggle
                 onChange={selectSensitive}
                 options={options.sensitivityOptions}
+                touched={touched.sensitive}
                 value={profile.selectedSensitive ? "Yes" : "No"}
               />
             </div>
 
             <div className="flex flex-wrap gap-2">
               {availableSpecials.map((item) => {
-                const active = profile.selectedSpecialConditions.includes(item);
+                const active = touched.special && profile.selectedSpecialConditions.includes(item);
                 return (
                   <button
                     className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-[12.5px] font-semibold transition-colors ${active
@@ -809,7 +865,7 @@ export default function MatchStudio({ initialData }) {
           <div className="border-t border-slate-100 px-3 lg:px-6 py-5">
             <div className="flex items-center justify-between">
               <SectionHeading index={4} title="YOUR AGE GROUP" />
-              <SegmentedToggle onChange={selectAge} options={options.ageGroups} value={profile.age} />
+              <SegmentedToggle onChange={selectAge} options={options.ageGroups} touched={touched.age} value={profile.age} />
             </div>
           </div>
 
@@ -819,7 +875,7 @@ export default function MatchStudio({ initialData }) {
             <div className="grid grid-cols-2 gap-3">
               {availableGenders.map((item) => (
                 <OptionCard
-                  active={profile.selectedGender === item.value}
+                  active={touched.gender && profile.selectedGender === item.value}
                   icon={<span className="text-base font-light">{item.symbol}</span>}
                   key={item.value}
                   label={item.label.toUpperCase()}

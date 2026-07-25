@@ -97,14 +97,7 @@ export const EVENTS = {
   CLICKED_NAV_LIBRARY: 'clicked_nav_library',
   CLICKED_NAV_SKIN_QUIZ: 'clicked_nav_skin_quiz',
   CLICKED_NAV_WISHLIST: 'clicked_nav_wishlist',
-  CLICKED_NAV_PROFILE: 'clicked_nav_profile',
-  CLICKED_NAV_QUICK_FIX: 'clicked_nav_quick_fix',
-  CLICKED_NAV_MY_PROGRAMS: 'clicked_nav_my_programs',
-  CLICKED_NAV_ITEM: 'clicked_nav_item',
-  CLICKED_NOTIFICATION_BELL: 'clicked_notification_bell',
-  CLICKED_OPEN_CART: 'clicked_open_cart',
-  CLICKED_WALLET_ICON: 'clicked_wallet_icon',
-  CLICKED_MOBILE_MENU: 'clicked_mobile_menu',
+
   ADDED_TO_WISHLIST: 'added_to_wishlist',
   REMOVED_FROM_WISHLIST: 'removed_from_wishlist',
   PAGE_VIEWED_LOGIN: 'page_viewed_login',
@@ -118,7 +111,7 @@ export const EVENTS = {
 
   OTP_VERIFIED: 'otp_verified',
 
-  PAGE_VIEWED_SHOP_PRODUCTS: 'page_viewed_shop_products',
+  // PAGE_VIEWED_SHOP_PRODUCTS: 'page_viewed_shop_products',
 
   CLICKED_PRODUCT_CARD: 'clicked_product_card',
   CLICKED_FILTER_OPTION: 'clicked_filter_option',
