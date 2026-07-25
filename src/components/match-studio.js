@@ -8,6 +8,8 @@ import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { productPath } from "@/lib/site";
+import OtpModal from "@/components/auth/otp-modal";
+import { supabase } from "@/lib/supabase/client";
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -94,6 +96,15 @@ const guideLinks = [
     },
   },
 ];
+
+const EMPTY_PROFILE = {
+  selectedSkinType: "",
+  selectedSensitive: null,
+  selectedFaceBodyConcerns: [],
+  selectedSpecialConditions: [],
+  age: "",
+  selectedGender: "",
+};
 
 function scoreRange(score) {
   if (score >= 90) return "90_100";
@@ -337,12 +348,9 @@ function ProductModal({ product, onClose }) {
   );
 }
 
-import OtpModal from "@/components/auth/otp-modal";
-import { supabase } from "@/lib/supabase/client";
-
 export default function MatchStudio({ initialData }) {
-  const [profile, setProfile] = useState(DEFAULT_PROFILE);
-  const [data, setData] = useState(initialData);
+  const [profile, setProfile] = useState(EMPTY_PROFILE);
+  const [data, setData] = useState(null); // Set to null so no products render initially
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [view, setView] = useState("products");
@@ -376,7 +384,6 @@ export default function MatchStudio({ initialData }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserSession(session);
       if (session) {
-        // User logged in: cancel any pending quiz timer and close modal
         if (quizTimerRef.current) {
           clearTimeout(quizTimerRef.current);
           quizTimerRef.current = null;
@@ -393,7 +400,6 @@ export default function MatchStudio({ initialData }) {
     };
   }, []);
 
-  // Page view — fires once on mount, same pattern as your other Roopsee pages.
   const recommend = useCallback(async (nextProfile, nextLimit = 24) => {
     setLoading(true);
     setError("");
@@ -408,7 +414,7 @@ export default function MatchStudio({ initialData }) {
       try {
         payload = JSON.parse(responseText);
       } catch {
-        // Handle non-JSON responses (e.g. HTML error pages)
+        // Handle non-JSON responses
       }
       if (!response.ok) throw new Error(payload.error || "Unable to load recommendations.");
       setData(payload);
@@ -450,7 +456,7 @@ export default function MatchStudio({ initialData }) {
     setProfile({
       ...profile,
       selectedGender: gender,
-      selectedSpecialConditions: specials.length ? specials : ["None"],
+      selectedSpecialConditions: specials,
     });
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "gender",
@@ -475,7 +481,7 @@ export default function MatchStudio({ initialData }) {
     const next = current.includes(item)
       ? current.filter((value) => value !== item)
       : [...current, item].slice(-2);
-    update("selectedSpecialConditions", next.length ? next : ["None"]);
+    update("selectedSpecialConditions", next);
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "special_condition",
       question: "Special condition",
@@ -484,8 +490,6 @@ export default function MatchStudio({ initialData }) {
     });
   }
 
-  // Every product-card / routine-card open funnels through here so the
-  // click event always carries which product and its score.
   function handleOpenProduct(product) {
     trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
       productId: product.product_uid,
@@ -521,7 +525,7 @@ export default function MatchStudio({ initialData }) {
       ...profile,
       quizAnswerSummary: [
         profile.selectedSkinType,
-        profile.selectedSensitive ? "Sensitive" : "Not sensitive",
+        profile.selectedSensitive !== null ? (profile.selectedSensitive ? "Sensitive" : "Not sensitive") : "Unknown",
         ...profile.selectedFaceBodyConcerns,
         ...profile.selectedSpecialConditions,
         profile.age,
@@ -530,7 +534,6 @@ export default function MatchStudio({ initialData }) {
     });
     await recommend(profile, 24);
 
-    // Schedule 20-second login popup on first quiz submission if unauthenticated
     if (!userSession) {
       if (typeof window !== "undefined") {
         sessionStorage.setItem("quiz_submitted", "true");
@@ -538,7 +541,7 @@ export default function MatchStudio({ initialData }) {
       if (!quizTimerRef.current) {
         quizTimerRef.current = setTimeout(() => {
           setIsOtpModalOpen(true);
-        }, 15000);
+        }, 3000);
       }
     }
 
@@ -634,7 +637,6 @@ export default function MatchStudio({ initialData }) {
 
       <main id="matcher">
         <section className="panel profile-panel quiz-panel">
-          {/* Header banner matching the design */}
           <div className="quiz-header">
             <span className="quiz-icon">✨</span>
             <div className="quiz-title-group">
@@ -650,7 +652,6 @@ export default function MatchStudio({ initialData }) {
             <div className="section-title" style={{ marginBottom: "12px" }}>
               1. YOUR SKIN TYPE
             </div>
-            {/* <p className="section-subtitle">Tap to select your primary skin type.</p> */}
             <div className="chips skin-type-grid">
               {options.skinTypes.map((item) => {
                 const active = profile.selectedSkinType === item;
@@ -687,7 +688,7 @@ export default function MatchStudio({ initialData }) {
               </span>
               <div className="sensitivity-toggle" style={{ marginRight: "58px" }}>
                 {options.sensitivityOptions.map((item) => {
-                  const active = profile.selectedSensitive === (item === "Yes");
+                  const active = profile.selectedSensitive !== null && profile.selectedSensitive === (item === "Yes");
                   return (
                     <button
                       key={item}
@@ -743,8 +744,6 @@ export default function MatchStudio({ initialData }) {
           {/* Question 3: Sensitive & Special Conditions */}
           <div className="quiz-section">
             <div className="section-title">3. SPECIAL CONDITIONS</div>
-
-
             <div className="special-conditions-wrap" style={{ marginTop: "8px" }}>
               <div className="concern-pills-wrap">
                 {availableSpecials.map((item) => {
@@ -783,6 +782,7 @@ export default function MatchStudio({ initialData }) {
                     });
                   }}
                 >
+                  <option value="" disabled>Select Age Group</option>
                   <option value="Teen">Teen</option>
                   <option value="Adult">Adult</option>
                 </select>
@@ -795,6 +795,7 @@ export default function MatchStudio({ initialData }) {
                   value={profile.selectedGender}
                   onChange={(event) => selectGender(event.target.value)}
                 >
+                  <option value="" disabled>Select Gender</option>
                   <option value="female">Female</option>
                   <option value="male">Male</option>
                   <option value="other">Other</option>
@@ -804,121 +805,67 @@ export default function MatchStudio({ initialData }) {
             </div>
           </div>
 
-          {/* Disclaimer & Action */}
           <div className="quiz-footer">
-            {/* <p className="quiz-disclaimer">
-              * Your answers help us find the best product recommendations for your unique skin.
-            </p> */}
-
             <div className="actions">
               <button className="primary find-matches-btn" disabled={loading} onClick={handleRefresh} type="button">
                 {loading ? "FINDING MATCHES..." : "FIND MY MATCHES"}
               </button>
             </div>
 
-            <details className="payload-details">
+            {/* <details className="payload-details">
               <summary>Testing payload</summary>
               <pre className="json-box">{JSON.stringify(profile, null, 2)}</pre>
-            </details>
+            </details> */}
           </div>
         </section>
 
-        <section className="panel shop-panel" id="results">
-          <div className="studio-toolbar">
-            <div className="studio-title">
-              <p style={{ textAlign: "center" }}>Your Matches!</p>
-              {/* <p>
-                {view === "routine"
-                  ? "Routine picks are split into Premium and Value Fit, using score plus effective price."
-                  : `Showing ${products.length} of ${data?.total_matches || 0} matching catalog products. Any -100 component stays a hard blocker.`}
-              </p> */}
+        {/* Data conditional - Only show results if data has been fetched */}
+        {data ? (
+          <section className="panel shop-panel" id="results">
+            <div className="studio-toolbar">
+              <div className="studio-title">
+                <p style={{ textAlign: "center" }}>Your Matches!</p>
+              </div>
+              <div className="profile-pill">
+                {profile.selectedSkinType} · {profile.selectedSensitive ? "Sensitive" : "Non-sensitive"} · {profile.selectedFaceBodyConcerns.join(", ")}
+              </div>
             </div>
-            <div className="profile-pill">
-              {profile.selectedSkinType} · {profile.selectedSensitive ? "Sensitive" : "Non-sensitive"} · {profile.selectedFaceBodyConcerns.join(", ")}
+
+            <div aria-label="Result view" className="view-tabs">
+              <button className={`view-tab ${view === "products" ? "active" : ""}`} onClick={() => handleViewChange("products")} type="button">Products</button>
+              <button className={`view-tab ${view === "routine" ? "active" : ""}`} onClick={() => handleViewChange("routine")} type="button">Routine</button>
             </div>
-          </div>
 
-          <div aria-label="Result view" className="view-tabs">
-            <button className={`view-tab ${view === "products" ? "active" : ""}`} onClick={() => handleViewChange("products")} type="button">Products</button>
-            <button className={`view-tab ${view === "routine" ? "active" : ""}`} onClick={() => handleViewChange("routine")} type="button">Routine</button>
-          </div>
+            {error ? <div className="empty">{error}</div> : null}
+            {loading ? <div className="empty">Loading Roopsee-style product preview...</div> : null}
 
-          {error ? <div className="empty">{error}</div> : null}
-          {loading ? <div className="empty">Loading Roopsee-style product preview...</div> : null}
+            {!loading && !error && view === "products" ? (
+              <div className="products-view">
+                {products.length ? (
+                  <div className="product-grid">
+                    {products.map((product) => (
+                      <ProductCard key={product.product_uid} onVisit={handleVisitProduct} product={product} />
+                    ))}
+                  </div>
+                ) : <div className="empty">No matching catalog products found for this profile.</div>}
+                {data?.returned < data?.total_matches ? (
+                  <div className="actions">
+                    <button className="secondary" disabled={loading} onClick={handleLoadMore} type="button">
+                      Load 24 more products
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
 
-          {!loading && !error && view === "products" ? (
-            <div className="products-view">
-              {/* <div className="summary-grid">
-                <Metric label="Showing" value={products.length} />
-                <Metric label="90-100" value={counts["90_100"]} />
-                <Metric label="80-89" value={counts["80_89"]} />
-                <Metric label="70-79" value={counts["70_79"]} />
-                <Metric label="60-69" value={counts["60_69"]} />
-                <Metric label="50-59" value={counts["50_59"]} />
-                <Metric label="Below 50" value={counts.below50} />
-              </div> */}
-
-              {/* <div className="filters" style={{ display: "grid" }}>
-                <label>
-                  Score Range
-                  <select value={filters.score} onChange={(event) => handleFilterChange("score", event.target.value)}>
-                    <option value="all">All score ranges</option>
-                    <option value="90_100">90-100</option>
-                    <option value="80_89">80-89</option>
-                    <option value="70_79">70-79</option>
-                    <option value="60_69">60-69</option>
-                    <option value="50_59">50-59</option>
-                    <option value="below50">Below 50</option>
-                  </select>
-                </label>
-                <label>
-                  Category
-                  <select value={filters.category} onChange={(event) => handleFilterChange("category", event.target.value)}>
-                    <option value="all">All categories</option>
-                    {filterValues("category").map((value) => <option key={value}>{value}</option>)}
-                  </select>
-                </label>
-                <label>
-                  Product Type
-                  <select value={filters.type} onChange={(event) => handleFilterChange("type", event.target.value)}>
-                    <option value="all">All types</option>
-                    {filterValues("product_type").map((value) => <option key={value}>{value}</option>)}
-                  </select>
-                </label>
-                <label>
-                  Score Sheet
-                  <select value={filters.sheet} onChange={(event) => handleFilterChange("sheet", event.target.value)}>
-                    <option value="all">All sheets</option>
-                    {filterValues("source_sheet").map((value) => <option key={value}>{value}</option>)}
-                  </select>
-                </label>
-              </div> */}
-
-              {products.length ? (
-                <div className="product-grid">
-                  {products.map((product) => (
-                    <ProductCard key={product.product_uid} onVisit={handleVisitProduct} product={product} />
-                  ))}
-                </div>
-              ) : <div className="empty">No matching catalog products found for this profile.</div>}
-              {data?.returned < data?.total_matches ? (
-                <div className="actions">
-                  <button className="secondary" disabled={loading} onClick={handleLoadMore} type="button">
-                    Load 24 more products
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-
-          {!loading && !error && view === "routine" ? (
-            <div className="routine-view">
-              <RoutineView onOpen={handleOpenProduct} routine={data?.routine} />
-            </div>
-          ) : null}
-        </section>
+            {!loading && !error && view === "routine" ? (
+              <div className="routine-view">
+                <RoutineView onOpen={handleOpenProduct} routine={data?.routine} />
+              </div>
+            ) : null}
+          </section>
+        ) : null}
       </main>
-
 
       <ProductModal onClose={() => setModalProduct(null)} product={modalProduct} />
       <OtpModal
