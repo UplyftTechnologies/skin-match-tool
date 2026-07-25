@@ -820,8 +820,6 @@ export default function MatchStudio({ initialData }) {
               <summary>Testing payload</summary>
               <pre className="json-box">{JSON.stringify(profile, null, 2)}</pre>
             </details>
-
-        
           </div>
         </section>
 
