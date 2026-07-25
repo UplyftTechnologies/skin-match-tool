@@ -1130,7 +1130,7 @@ details.payload-details summary {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: #65B1E8;
   color: #ffffff;
   font-size: 0.65rem;
   font-weight: 900;
@@ -1161,8 +1161,8 @@ details.payload-details summary {
 }
 
 .concern-pill.active {
-  background: #3b82f6;
-  border-color: #3b82f6;
+  background: #65B1E8;
+  border-color: #65B1E8;
   color: #ffffff;
 }
 
@@ -1256,7 +1256,7 @@ details.payload-details summary {
 .find-matches-btn {
   width: 100%;
   min-height: 48px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, #65B1E8, #65B1E8);
   color: #ffffff;
   font-size: 0.85rem;
   font-weight: 900;
