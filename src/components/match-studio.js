@@ -370,6 +370,9 @@ export default function MatchStudio({ initialData }) {
     gender: false,
   });
 
+  // NEW: Becomes true once the user tries to submit the quiz — turns on inline per-question errors
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+
   // NEW: Check if all quiz fields are selected
   const isQuizComplete = Boolean(
     profile.selectedSkinType &&
@@ -379,6 +382,20 @@ export default function MatchStudio({ initialData }) {
     profile.age &&
     profile.selectedGender
   );
+
+  // NEW: Returns the label of the first quiz field that hasn't been answered yet, or null if complete
+  function getMissingFieldLabel() {
+    if (!profile.selectedSkinType) return "Skin Type";
+    if (profile.selectedSensitive === null) return "Sensitive Skin";
+    if (profile.selectedFaceBodyConcerns.length === 0) return "Skin Concern";
+    if (profile.selectedSpecialConditions.length === 0) return "Special Condition";
+    if (!profile.age) return "Age Group";
+    if (!profile.selectedGender) return "Gender";
+    return null;
+  }
+
+  // NEW: Only the first missing field's label, computed once a submit has been attempted
+  const missingFieldLabel = attemptedSubmit ? getMissingFieldLabel() : null;
 
   function markTouched(field) {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -543,6 +560,13 @@ export default function MatchStudio({ initialData }) {
   }
 
   async function handleRefresh() {
+    // NEW: Turn on inline per-question errors; block submission if any quiz option is missing
+    setAttemptedSubmit(true);
+    const missingField = getMissingFieldLabel();
+    if (missingField) {
+      return;
+    }
+
     trackingService.trackEvent(EVENTS.QUIZ_UPDATED, {
       ...profile,
       quizAnswerSummary: [
@@ -595,6 +619,7 @@ export default function MatchStudio({ initialData }) {
     setSearchQuery("");
     setView("products");
     setModalProduct(null);
+    setAttemptedSubmit(false); // NEW: clear inline errors when a guide pre-fills the quiz
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
       field: "skincare_guide",
       question: "Skincare guide",
@@ -734,6 +759,17 @@ export default function MatchStudio({ initialData }) {
                 })}
               </div>
             </div>
+            {/* NEW: Inline errors for skin type / sensitivity, shown after a submit attempt */}
+            {missingFieldLabel === "Skin Type" ? (
+              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                Please select your skin type
+              </p>
+            ) : null}
+            {missingFieldLabel === "Sensitive Skin" ? (
+              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                Please select whether your skin is sensitive
+              </p>
+            ) : null}
           </div>
 
 
@@ -763,6 +799,12 @@ export default function MatchStudio({ initialData }) {
                 );
               })}
             </div>
+            {/* NEW: Inline error for skin concerns, shown after a submit attempt */}
+            {missingFieldLabel === "Skin Concern" ? (
+              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                Please select a skin concern
+              </p>
+            ) : null}
           </div>
 
           {/* Question 3: Sensitive & Special Conditions */}
@@ -785,6 +827,12 @@ export default function MatchStudio({ initialData }) {
                 })}
               </div>
             </div>
+            {/* NEW: Inline error for special conditions, shown after a submit attempt */}
+            {missingFieldLabel === "Special Condition" ? (
+              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                Please select a special condition
+              </p>
+            ) : null}
           </div>
 
           {/* Question 4: Age & Gender */}
@@ -810,6 +858,12 @@ export default function MatchStudio({ initialData }) {
                   <option value="Teen">Teen</option>
                   <option value="Adult">Adult</option>
                 </select>
+                {/* NEW: Inline error for age group, shown after a submit attempt */}
+                {missingFieldLabel === "Age Group" ? (
+                  <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                    Please select age group
+                  </p>
+                ) : null}
               </div>
 
               <div className="select-field">
@@ -825,16 +879,22 @@ export default function MatchStudio({ initialData }) {
                   <option value="other">Other</option>
                   <option value="prefer not to say">Prefer not to say</option>
                 </select>
+                {/* NEW: Inline error for gender, shown after a submit attempt */}
+                {missingFieldLabel === "Gender" ? (
+                  <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                    Please select gender
+                  </p>
+                ) : null}
               </div>
             </div>
           </div>
 
           <div className="quiz-footer">
             <div className="actions">
-              {/* UPDATED: Disabled property bound to loading state and quiz completion check */}
+              {/* UPDATED: Button stays clickable so the missing-option prompt can show; loading still disables it */}
               <button 
                 className="primary find-matches-btn" 
-                disabled={loading || !isQuizComplete} 
+                disabled={loading} 
                 onClick={handleRefresh} 
                 type="button"
               >
