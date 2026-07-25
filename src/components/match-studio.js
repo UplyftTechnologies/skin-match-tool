@@ -350,13 +350,17 @@ function ProductModal({ product, onClose }) {
 
 export default function MatchStudio({ initialData }) {
   const [profile, setProfile] = useState(EMPTY_PROFILE);
-  const [data, setData] = useState(null); // Set to null so no products render initially
+  const [data, setData] = useState(null); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [view, setView] = useState("products");
   const [modalProduct, setModalProduct] = useState(null);
+  
+  // NEW: Search state
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ score: "all", category: "all", type: "all", sheet: "all" });
-  const [limit, setLimit] = useState(initialData?.returned || 24);
+  
+  const [limit, setLimit] = useState(initialData?.returned || 500);
   const [touched, setTouched] = useState({
     skinType: false,
     concern: false,
@@ -365,6 +369,16 @@ export default function MatchStudio({ initialData }) {
     age: false,
     gender: false,
   });
+
+  // NEW: Check if all quiz fields are selected
+  const isQuizComplete = Boolean(
+    profile.selectedSkinType &&
+    profile.selectedSensitive !== null &&
+    profile.selectedFaceBodyConcerns.length > 0 &&
+    profile.selectedSpecialConditions.length > 0 &&
+    profile.age &&
+    profile.selectedGender
+  );
 
   function markTouched(field) {
     setTouched((prev) => ({ ...prev, [field]: true }));
@@ -375,7 +389,6 @@ export default function MatchStudio({ initialData }) {
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const quizTimerRef = useRef(null);
 
-  // Listen to Supabase Auth State
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUserSession(session);
@@ -400,7 +413,7 @@ export default function MatchStudio({ initialData }) {
     };
   }, []);
 
-  const recommend = useCallback(async (nextProfile, nextLimit = 24) => {
+  const recommend = useCallback(async (nextProfile, nextLimit = 500) => {
     setLoading(true);
     setError("");
     try {
@@ -429,13 +442,22 @@ export default function MatchStudio({ initialData }) {
     }
   }, []);
 
+  // UPDATED: Added search functionality to useMemo
   const products = useMemo(() => (data?.products || []).filter((product) => {
     if (filters.score !== "all" && scoreRange(product.score) !== filters.score) return false;
     if (filters.category !== "all" && product.category !== filters.category) return false;
     if (filters.type !== "all" && product.product_type !== filters.type) return false;
     if (filters.sheet !== "all" && product.source_sheet !== filters.sheet) return false;
+    
+    if (searchQuery.trim() !== "") {
+      const term = searchQuery.toLowerCase();
+      const matchesName = product.product_name?.toLowerCase().includes(term);
+      const matchesBrand = product.brand_name?.toLowerCase().includes(term);
+      if (!matchesName && !matchesBrand) return false;
+    }
+
     return true;
-  }), [data, filters]);
+  }), [data, filters, searchQuery]);
 
   const filterValues = (field) => [
     ...new Set((data?.products || []).map((product) => product[field]).filter(Boolean)),
@@ -532,7 +554,7 @@ export default function MatchStudio({ initialData }) {
         profile.selectedGender,
       ].join(" | "),
     });
-    await recommend(profile, 24);
+    await recommend(profile, 500);
 
     if (!userSession) {
       if (typeof window !== "undefined") {
@@ -541,20 +563,21 @@ export default function MatchStudio({ initialData }) {
       if (!quizTimerRef.current) {
         quizTimerRef.current = setTimeout(() => {
           setIsOtpModalOpen(true);
-        }, 50000000);
+        }, 5000);
       }
     }
 
-    window.requestAnimationFrame(() => {
+    // UPDATED: Added a short timeout to ensure the data loads and #results section renders before scroll.
+    setTimeout(() => {
       document.getElementById("results")?.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
-    });
+    }, 150);
   }
 
   function handleLoadMore() {
-    const nextLimit = Math.min(limit + 24, data?.total_matches || limit + 24);
+    const nextLimit = Math.min(limit + 500, data?.total_matches || limit + 500);
     trackingService.trackEvent(EVENTS.CLICKED_LOAD_MORE, {
       current_count: data?.returned || 0,
       requested_count: nextLimit,
@@ -569,6 +592,7 @@ export default function MatchStudio({ initialData }) {
     };
     setProfile(nextProfile);
     setFilters({ score: "all", category: "all", type: "all", sheet: "all" });
+    setSearchQuery("");
     setView("products");
     setModalProduct(null);
     trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
@@ -577,7 +601,7 @@ export default function MatchStudio({ initialData }) {
       answer: guide.label,
       value: guide.slug,
     });
-    recommend(nextProfile, 24);
+    recommend(nextProfile, 500);
     if (shouldScroll) window.scrollTo({ top: 0, behavior: "smooth" });
   }, [recommend]);
 
@@ -807,19 +831,19 @@ export default function MatchStudio({ initialData }) {
 
           <div className="quiz-footer">
             <div className="actions">
-              <button className="primary find-matches-btn" disabled={loading} onClick={handleRefresh} type="button">
+              {/* UPDATED: Disabled property bound to loading state and quiz completion check */}
+              <button 
+                className="primary find-matches-btn" 
+                disabled={loading || !isQuizComplete} 
+                onClick={handleRefresh} 
+                type="button"
+              >
                 {loading ? "FINDING MATCHES..." : "FIND MY MATCHES"}
               </button>
             </div>
-
-            {/* <details className="payload-details">
-              <summary>Testing payload</summary>
-              <pre className="json-box">{JSON.stringify(profile, null, 2)}</pre>
-            </details> */}
           </div>
         </section>
 
-        {/* Data conditional - Only show results if data has been fetched */}
         {data ? (
           <section className="panel shop-panel" id="results">
             <div className="studio-toolbar">
@@ -841,15 +865,25 @@ export default function MatchStudio({ initialData }) {
 
             {!loading && !error && view === "products" ? (
               <div className="products-view">
-                {/* <div className="summary-grid">
-                <Metric label="Showing" value={products.length} />
-                <Metric label="90-100" value={counts["90_100"]} />
-                <Metric label="80-89" value={counts["80_89"]} />
-                <Metric label="70-79" value={counts["70_79"]} />
-                <Metric label="60-69" value={counts["60_69"]} />
-                <Metric label="50-59" value={counts["50_59"]} />
-                <Metric label="Below 50" value={counts.below50} />
-              </div> */}
+              
+              {/* NEW: Search Bar implementation */}
+              <div className="search-bar" style={{ marginBottom: "16px" }}>
+                <input
+                  type="text"
+                  placeholder="Search products or brands..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    padding: "10px",
+                    width: "100%",
+                    borderRadius: "8px",
+                    backgroundColor: "#fff",
+                    border: "1px solid #ff0000",
+                    fontSize: "15px",
+                    fontcolor: "#333",
+                  }}
+                />
+              </div>
 
               <div className="filters" style={{ display: "grid" }}>
                 <label>
@@ -878,13 +912,6 @@ export default function MatchStudio({ initialData }) {
                     {filterValues("product_type").map((value) => <option key={value}>{value}</option>)}
                   </select>
                 </label>
-                {/* <label>
-                  Score Sheet
-                  <select value={filters.sheet} onChange={(event) => handleFilterChange("sheet", event.target.value)}>
-                    <option value="all">All sheets</option>
-                    {filterValues("source_sheet").map((value) => <option key={value}>{value}</option>)}
-                  </select>
-                </label> */}
               </div>
                 {products.length ? (
                   <div className="product-grid">
@@ -892,11 +919,12 @@ export default function MatchStudio({ initialData }) {
                       <ProductCard key={product.product_uid} onVisit={handleVisitProduct} product={product} />
                     ))}
                   </div>
-                ) : <div className="empty">No matching catalog products found for this profile.</div>}
-                {data?.returned < data?.total_matches ? (
+                ) : <div className="empty">No matching catalog products found for your criteria.</div>}
+                
+                {data?.returned < data?.total_matches && !searchQuery.trim() ? (
                   <div className="actions">
                     <button className="secondary" disabled={loading} onClick={handleLoadMore} type="button">
-                      Load 24 more products
+                      Load 500 more products
                     </button>
                   </div>
                 ) : null}
