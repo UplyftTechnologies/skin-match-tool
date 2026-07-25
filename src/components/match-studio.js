@@ -541,7 +541,7 @@ export default function MatchStudio({ initialData }) {
       if (!quizTimerRef.current) {
         quizTimerRef.current = setTimeout(() => {
           setIsOtpModalOpen(true);
-        }, 3000);
+        }, 50000000);
       }
     }
 
@@ -841,6 +841,51 @@ export default function MatchStudio({ initialData }) {
 
             {!loading && !error && view === "products" ? (
               <div className="products-view">
+                {/* <div className="summary-grid">
+                <Metric label="Showing" value={products.length} />
+                <Metric label="90-100" value={counts["90_100"]} />
+                <Metric label="80-89" value={counts["80_89"]} />
+                <Metric label="70-79" value={counts["70_79"]} />
+                <Metric label="60-69" value={counts["60_69"]} />
+                <Metric label="50-59" value={counts["50_59"]} />
+                <Metric label="Below 50" value={counts.below50} />
+              </div> */}
+
+              <div className="filters" style={{ display: "grid" }}>
+                <label>
+                  Score Range
+                  <select value={filters.score} onChange={(event) => handleFilterChange("score", event.target.value)}>
+                    <option value="all">All score ranges</option>
+                    <option value="90_100">90-100</option>
+                    <option value="80_89">80-89</option>
+                    <option value="70_79">70-79</option>
+                    <option value="60_69">60-69</option>
+                    <option value="50_59">50-59</option>
+                    <option value="below50">Below 50</option>
+                  </select>
+                </label>
+                <label>
+                  Category
+                  <select value={filters.category} onChange={(event) => handleFilterChange("category", event.target.value)}>
+                    <option value="all">All categories</option>
+                    {filterValues("category").map((value) => <option key={value}>{value}</option>)}
+                  </select>
+                </label>
+                <label>
+                  Product Type
+                  <select value={filters.type} onChange={(event) => handleFilterChange("type", event.target.value)}>
+                    <option value="all">All types</option>
+                    {filterValues("product_type").map((value) => <option key={value}>{value}</option>)}
+                  </select>
+                </label>
+                {/* <label>
+                  Score Sheet
+                  <select value={filters.sheet} onChange={(event) => handleFilterChange("sheet", event.target.value)}>
+                    <option value="all">All sheets</option>
+                    {filterValues("source_sheet").map((value) => <option key={value}>{value}</option>)}
+                  </select>
+                </label> */}
+              </div>
                 {products.length ? (
                   <div className="product-grid">
                     {products.map((product) => (
