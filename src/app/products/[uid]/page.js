@@ -14,8 +14,8 @@ import {
 import { findProduct, loadProducts } from "@/lib/data";
 import { SKIN_GUIDES } from "@/lib/seo-pages";
 import { absoluteUrl, productPath } from "@/lib/site";
-import ProductViewTracker from "@/components/tracking/product-view-tracker";
-import SaveProductLink from "@/components/save-product-link";
+import SaveProductButton from "@/components/save-product-button";
+import Header from "@/components/header";
 
 export const dynamicParams = false;
 
@@ -104,6 +104,21 @@ export default async function ProductPage({ params }) {
   const hasDiscount = mrpValue && spValue && mrpValue > spValue;
   const percentOff = hasDiscount ? Math.round(((mrpValue - spValue) / mrpValue) * 100) : null;
 
+  // Shape the product to match what ProductCard / WishlistContext expect
+  const wishlistProduct = {
+    product_uid: product.product_uid,
+    product_name: product.product_name,
+    brand_name: product.brand_name,
+    category: product.category,
+    product_type: product.product_type,
+    image: product.image,
+    selling_price: product.sp,
+    mrp: product.mrp,
+    size: product.sku_size,
+    when_to_use: product.when_to_use,
+    score: product.score, // may be undefined here — ProductCard handles that gracefully
+  };
+
   const canonical = absoluteUrl(productPath(product.product_uid));
   const structuredData = {
     "@context": "https://schema.org",
@@ -152,7 +167,9 @@ export default async function ProductPage({ params }) {
 
   return (
     <div className="rps-pdp min-h-screen bg-slate-50 pb-28 text-slate-800 lg:pb-0">
-      <ProductViewTracker product={product} />
+      <Header
+       
+      />
       <script
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
         type="application/ld+json"
@@ -221,24 +238,16 @@ export default async function ProductPage({ params }) {
             </div>
             <p className="mt-1 text-[12px] text-slate-400">Inclusive of all taxes</p>
 
-            {/* CTA */}
-            {/* <Link
-              className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r
-               from-sky-400 to-cyan-500 px-7 py-3.5 text-[13.5px] font-semibold tracking-wide text-white
-               shadow-lg shadow-sky-300/40 transition-all hover:-translate-y-0.5 hover:shadow-xl
-               focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400 sm:w-auto"
-              href="/"
-            >
-              SAVE PRODUCT
-            </Link> */}
-            <SaveProductLink
-              product={product}
-              className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full
-   bg-gradient-to-r from-sky-400 to-cyan-500 px-5 py-3 text-[13px] font-extrabold tracking-wide
-   text-white shadow-md shadow-sky-300/40 transition hover:-translate-y-0.5 sm:px-6 sm:text-[13.5px]"
-            >
-              Save Product
-            </SaveProductLink>
+            {/* CTA — desktop / tablet button, hidden below lg since the mobile sticky bar covers it there */}
+            <div className="mt-5 hidden lg:block">
+              <SaveProductButton
+                product={wishlistProduct}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r
+                 from-sky-400 to-cyan-500 px-7 py-3.5 text-[13.5px] font-semibold tracking-wide text-white
+                 shadow-lg shadow-sky-300/40 transition-all hover:-translate-y-0.5 hover:shadow-xl
+                 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
+              />
+            </div>
 
             {/* Signature: catalog spec "label" card */}
             <div className="mt-6 rounded-[14px] border border-slate-100 bg-slate-50/60 px-4 py-4 sm:px-5">
@@ -357,14 +366,13 @@ export default async function ProductPage({ params }) {
             {product.sp || product.mrp ? `Rs. ${product.sp || product.mrp}` : "\u2014"}
           </div>
         </div>
-        <Link
-          className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full
+        <SaveProductButton
+          product={wishlistProduct}
+          mobile
+          className="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full
            bg-gradient-to-r from-sky-400 to-cyan-500 px-5 py-3 text-[13px] font-extrabold tracking-wide
            text-white shadow-md shadow-sky-300/40 transition hover:-translate-y-0.5 sm:px-6 sm:text-[13.5px]"
-          href="/"
-        >
-          Save Product
-        </Link>
+        />
       </div>
     </div>
   );

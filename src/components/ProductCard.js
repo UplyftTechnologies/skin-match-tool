@@ -125,8 +125,8 @@ export default function ProductCard({ product, onVisit }) {
                     </div>
 
                     <div className="tagline">
-                        <span className="tag">{rangeLabel(scoreRange(product.score))}</span>
-                        <span className="tag">{product.when_to_use || "Routine"}</span>
+                        {/* <span className="tag">{rangeLabel(scoreRange(product.score))}</span> */}
+                        {/* <span className="tag">{product.when_to_use || "Routine"}</span> */}
                         <span className="tag">{product.size || "Size unavailable"}</span>
                     </div>
 

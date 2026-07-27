@@ -17,6 +17,7 @@ import ProductCard from "./ProductCard";
 import { getSessionId, getVisitorId, setLoggedInUser } from "@/lib/tracking/identity";
 import { IoExitOutline, IoPersonCircleOutline } from "react-icons/io5";
 import { saveSkinProfile } from "@/lib/profile-storage";
+import Header from "./header";
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -800,6 +801,20 @@ export default function MatchStudio({ initialData }) {
     return () => window.clearTimeout(applyTimer);
   }, [applyGuide]);
 
+  useEffect(() => {
+    const term = searchQuery.trim();
+    if (!term) return;
+
+    const debounceTimer = setTimeout(() => {
+      trackingService.trackEvent(EVENTS.SEARCH_PERFORMED, {
+        query: term,
+        results_count: products.length,
+      });
+    }, 800); // waits 800ms after the user stops typing
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
   function handleFilterChange(filterKey, value) {
     setFilters((current) => ({ ...current, [filterKey]: value }));
     trackingService.trackEvent(EVENTS.CLICKED_FILTER_OPTION, {
@@ -820,49 +835,11 @@ export default function MatchStudio({ initialData }) {
 
   return (
     <>
-      <header className="px-2 mx-auto">
-        {userSession ? (
-          <div className="user-greeting-bar ">
-            <span>Hi, <strong>{userSession.user?.phone || userSession.user?.user_metadata?.phone_no || userSession.user?.user_metadata?.phone || "User"}</strong></span>
-            <div className="flex items-center gap-2 lg:gap-3">
-              {wishlistIds.length > 0 && (
-                <Link
-                  href="/wishlist"
-                  aria-label="View wishlist"
-                  className="relative flex items-center"
-                  onClick={() =>
-                    trackingService.trackEvent(EVENTS.CLICKED_WISHLIST_ICON, {
-                      wishlist_count: wishlistIds.length,
-                    })
-                  }
-                >
-                  <BiHeart className="text-gray-800" size={22} />
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
-                    {wishlistIds.length}
-                  </span>
-                </Link>
-              )}
-
-              <Link
-                href="/profile"
-                aria-label="View your skin profile"
-                className="flex items-center text-gray-800"
-                onClick={() =>
-                  trackingService.trackEvent(EVENTS.CLICKED_PROFILE_ICON)
-                }
-              >
-                <IoPersonCircleOutline size={24} />
-              </Link>
-
-
-              <button type="button" className="logout-btn " onClick={handleLogout}>
-                <IoExitOutline />
-              </button>
-            </div>
-
-          </div>
-        ) : null}
-      </header>
+      <Header
+        userSession={userSession}
+        wishlistIds={wishlistIds}
+        onLogout={handleLogout}
+      />
 
       <main id="matcher">
         <section className="panel profile-panel quiz-panel">
@@ -1106,7 +1083,6 @@ export default function MatchStudio({ initialData }) {
             {!loading && !error && view === "products" ? (
               <div className="products-view">
 
-                {/* NEW: Search Bar implementation */}
                 <div className="search-bar" style={{ marginBottom: "16px" }}>
                   <input
                     type="text"

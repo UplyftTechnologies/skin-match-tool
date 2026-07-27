@@ -1275,7 +1275,7 @@ details.payload-details summary {
   align-items: center;
   justify-content: space-between;
   max-width: 1420px;
-  margin: 0 auto 16px auto;
+  /* margin: 0 auto 16px auto; */
   padding: 12px 24px;
   background: #ffffff;
   border-radius: 999px;
