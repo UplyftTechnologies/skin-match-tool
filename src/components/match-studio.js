@@ -893,6 +893,11 @@ export default function MatchStudio({ initialData }) {
                   href="/wishlist"
                   aria-label="View wishlist"
                   className="relative flex items-center"
+                  onClick={() =>
+                    trackingService.trackEvent(EVENTS.CLICKED_WISHLIST_ICON, {
+                      wishlist_count: wishlistIds.length,
+                    })
+                  }
                 >
                   <BiHeart className="text-gray-800" size={22} />
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">

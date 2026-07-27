@@ -1,16 +1,26 @@
-// app/wishlist/page.js
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BiHeart, BiArrowBack } from "react-icons/bi";
 import { useWishlist } from "@/context/WishlistContext";
 import ProductCard from "@/components/ProductCard";
+import { trackingService } from "@/lib/tracking/trackingClient";
+import { EVENTS } from "@/lib/tracking/events";
 
 export default function WishlistPage() {
   const router = useRouter();
   const { wishlistItems, hydrated } = useWishlist();
 
+  useEffect(() => {
+    if (!hydrated) return;
+    trackingService.trackPageLoad(EVENTS.PAGE_VIEWED_WISHLIST, {
+      page_type: "wishlist",
+      item_count: wishlistItems.length,
+    });
+  }, [hydrated]);
+  
   function handleVisit(product) {
     // your existing analytics/tracking call, if any
   }

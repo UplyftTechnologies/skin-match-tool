@@ -14,6 +14,8 @@ import {
 import { findProduct, loadProducts } from "@/lib/data";
 import { SKIN_GUIDES } from "@/lib/seo-pages";
 import { absoluteUrl, productPath } from "@/lib/site";
+import ProductViewTracker from "@/components/tracking/product-view-tracker";
+import SaveProductLink from "@/components/save-product-link";
 
 export const dynamicParams = false;
 
@@ -150,6 +152,7 @@ export default async function ProductPage({ params }) {
 
   return (
     <div className="rps-pdp min-h-screen bg-slate-50 pb-28 text-slate-800 lg:pb-0">
+      <ProductViewTracker product={product} />
       <script
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
         type="application/ld+json"
@@ -219,7 +222,7 @@ export default async function ProductPage({ params }) {
             <p className="mt-1 text-[12px] text-slate-400">Inclusive of all taxes</p>
 
             {/* CTA */}
-            <Link
+            {/* <Link
               className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-gradient-to-r
                from-sky-400 to-cyan-500 px-7 py-3.5 text-[13.5px] font-semibold tracking-wide text-white
                shadow-lg shadow-sky-300/40 transition-all hover:-translate-y-0.5 hover:shadow-xl
@@ -227,7 +230,15 @@ export default async function ProductPage({ params }) {
               href="/"
             >
               SAVE PRODUCT
-            </Link>
+            </Link> */}
+            <SaveProductLink
+              product={product}
+              className="inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full
+   bg-gradient-to-r from-sky-400 to-cyan-500 px-5 py-3 text-[13px] font-extrabold tracking-wide
+   text-white shadow-md shadow-sky-300/40 transition hover:-translate-y-0.5 sm:px-6 sm:text-[13.5px]"
+            >
+              Save Product
+            </SaveProductLink>
 
             {/* Signature: catalog spec "label" card */}
             <div className="mt-6 rounded-[14px] border border-slate-100 bg-slate-50/60 px-4 py-4 sm:px-5">
