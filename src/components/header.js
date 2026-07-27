@@ -25,11 +25,7 @@ export default function Header() {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function handleLogout() {
-    trackingService.trackEvent(EVENTS.CLICKED_LOGOUT, { source: "header" });
-    await supabase.auth.signOut();
-    setUserSession(null);
-  }
+
 
   if (!userSession) return null;
 
@@ -71,9 +67,7 @@ export default function Header() {
             <IoPersonCircleOutline size={24} />
           </Link>
 
-          <button type="button" className="logout-btn" onClick={handleLogout}>
-            <IoExitOutline />
-          </button>
+      
         </div>
       </div>
     </header>

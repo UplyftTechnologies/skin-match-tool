@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BiArrowBack, BiHeart } from "react-icons/bi";
 import { HiPencil } from "react-icons/hi";
+import { IoExitOutline } from "react-icons/io5";
+import { supabase } from "@/lib/supabase/client";
 import { useWishlist } from "@/context/WishlistContext";
 import { getSavedSkinProfile } from "@/lib/profile-storage";
 import ProductCard from "@/components/ProductCard";
@@ -35,7 +37,7 @@ function ConcernPill({ label }) {
 
 export default function ProfilePage() {
     const router = useRouter();
-    const { wishlistItems, hydrated } = useWishlist();
+    const { wishlistItems, hydrated, clearWishlist } = useWishlist();
     const [savedProfile, setSavedProfile] = useState(null);
     const [profileLoaded, setProfileLoaded] = useState(false);
 
@@ -43,8 +45,6 @@ export default function ProfilePage() {
         setSavedProfile(getSavedSkinProfile());
         setProfileLoaded(true);
     }, []);
-
-
 
     useEffect(() => {
         if (!profileLoaded) return;
@@ -67,6 +67,25 @@ export default function ProfilePage() {
         });
     }
 
+    async function handleLogout() {
+        trackingService.trackEvent(EVENTS.CLICKED_LOGOUT, { source: "profile_page" });
+
+        await supabase.auth.signOut();
+
+        try {
+            clearWishlist?.();
+            localStorage.removeItem("wishlist_products");
+            localStorage.removeItem("roopsee_skin_profile");
+            sessionStorage.removeItem("roopsee_matcher_history");
+            sessionStorage.removeItem("quiz_submitted");
+            sessionStorage.removeItem("app_landing_tracked");
+        } catch {
+            // ignore
+        }
+
+        router.push("/");
+    }
+
     return (
         <div className="min-h-screen bg-[#FAFAF8]">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
@@ -87,18 +106,30 @@ export default function ProfilePage() {
                             <h2 className="text-xl sm:text-[22px] font-bold text-gray-900" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
                                 Your Skin Profile
                             </h2>
-                            <Link
-                                href="/#matcher"
-                                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2 text-[13px] font-semibold text-white hover:opacity-90 transition-opacity"
-                                onClick={() =>
-                                    trackingService.trackEvent(EVENTS.CLICKED_EDIT_PROFILE, {
-                                        source: "profile_page",
-                                    })
-                                }
-                            >
-                                <HiPencil size={14} />
-                                Edit
-                            </Link>
+                            <div className="flex items-center gap-2">
+                                <Link
+                                    href="/#matcher"
+                                    className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2 text-[13px] font-semibold text-white hover:opacity-90 transition-opacity"
+                                    onClick={() =>
+                                        trackingService.trackEvent(EVENTS.CLICKED_EDIT_PROFILE, {
+                                            source: "profile_page",
+                                        })
+                                    }
+                                >
+                                    <HiPencil size={14} />
+                                    Edit
+                                </Link>
+
+                                <button
+                                    type="button"
+                                    onClick={handleLogout}
+                                    aria-label="Logout"
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-2 text-[13px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                                >
+                                    <IoExitOutline size={15} />
+                                    Logout
+                                </button>
+                            </div>
                         </div>
 
                         <div>
