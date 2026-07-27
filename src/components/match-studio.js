@@ -37,8 +37,10 @@ const options = {
     "Dehydration",
     "Dullness",
     "Tanning",
+    "none"
   ],
   specials: ["Excessive Dryness", "Pregnant", "Breastfeeding", "None"],
+
 };
 
 const guideLinks = [
@@ -494,7 +496,7 @@ export default function MatchStudio({ initialData }) {
       let payload = {};
       try {
         payload = JSON.parse(responseText);
-      } catch {
+        } catch {
         // Handle non-JSON responses
       }
       if (!response.ok) throw new Error(payload.error || "Unable to load recommendations.");
@@ -509,6 +511,8 @@ export default function MatchStudio({ initialData }) {
       setLoading(false);
     }
   }, []);
+
+  // console.log(payload,"payload")
 
   useEffect(() => {
     const restoreTimer = window.setTimeout(() => {
