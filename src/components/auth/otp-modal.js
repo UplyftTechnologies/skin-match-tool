@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase/client';
-import {trackingService} from '@/lib/tracking/trackingClient.js';
+import { trackingService } from '@/lib/tracking/trackingClient.js';
 import { EVENTS } from '@/lib/tracking/events.js';
 
 export default function OtpModal({ isOpen, onClose, onSuccess }) {
@@ -289,8 +289,10 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
 
           {step === 1 ? (
             <form onSubmit={handleSendOtp} className="otp-form">
-              <div className="otp-input-group">
-                <span className="otp-country-code">+91</span>
+              <div className="flex items-center rounded-lg border border-gray-300 focus-within:border-rose-400 focus-within:ring-2 focus-within:ring-rose-100 transition-colors overflow-hidden">
+                <span className="flex items-center px-3 sm:px-4 py-3 text-[15px] sm:text-base font-medium text-gray-600 border-r border-gray-300 bg-gray-50 shrink-0">
+                  +91
+                </span>
                 <input
                   type="tel"
                   maxLength="10"
@@ -299,6 +301,7 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                   disabled={loading}
                   autoFocus
+                  className="flex-1 min-w-0 px-3 sm:px-4 py-3 text-[15px] sm:text-base text-gray-900 placeholder:text-gray-400 disabled:bg-gray-50 disabled:text-gray-400 focus:outline-none"
                 />
               </div>
 
@@ -312,7 +315,10 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
             </form>
           ) : (
             <form onSubmit={(e) => { e.preventDefault(); triggerVerify(); }} className="otp-form">
-              <div className="otp-boxes-container" onPaste={handlePaste}>
+              <div
+                className="flex justify-between gap-1.5 xs:gap-2 sm:gap-3"
+                onPaste={handlePaste}
+              >
                 {otp.map((digit, idx) => (
                   <input
                     key={idx}
@@ -324,7 +330,7 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
                     onChange={(e) => handleOtpChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}
                     disabled={loading}
-                    className="otp-box"
+                    className="w-10 h-12 sm:w-12 sm:h-14 rounded-lg border border-gray-300 text-center text-lg sm:text-xl font-semibold text-gray-900 focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-100 disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
                   />
                 ))}
               </div>
