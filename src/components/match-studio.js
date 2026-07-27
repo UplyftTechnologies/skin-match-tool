@@ -15,6 +15,10 @@ import { BiHeart } from "react-icons/bi";
 import { BsHeartFill } from "react-icons/bs";
 import { useWishlist } from "@/context/WishlistContext";
 import ProductCard from "./ProductCard";
+import { getSessionId, getVisitorId, setLoggedInUser } from "@/lib/tracking/identity";
+import { IoExitOutline, IoPersonCircleOutline } from "react-icons/io5";
+import { saveSkinProfile } from "@/lib/profile-storage";
+import Header from "./header";
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -34,8 +38,10 @@ const options = {
     "Dehydration",
     "Dullness",
     "Tanning",
+    "none"
   ],
   specials: ["Excessive Dryness", "Pregnant", "Breastfeeding", "None"],
+
 };
 
 const guideLinks = [
@@ -253,76 +259,6 @@ function ChipGroup({ items, isActive, onSelect }) {
   );
 }
 
-// function ProductCard({ product, onVisit }) {
-//   const band = scoreBand(product.score);
-//   const { isWishlisted, toggleWishlist } = useWishlist();
-//   const wishlisted = isWishlisted(product.product_uid);
-
-//   function handleToggle(event) {
-//     event.preventDefault();
-//     event.stopPropagation();
-//     toggleWishlist(product.product_uid);
-//   }
-
-//   return (
-//     <div className="product-card-wrap relative">
-//       <button
-//         type="button"
-//         onClick={handleToggle}
-//         aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-//         className="absolute z-10 top-1 left-1 lg:top-2 lg:left-2"
-//       >
-//         {wishlisted ? (
-//           <BsHeartFill color="red" size={26} />
-//         ) : (
-//           <BiHeart className="text-black" size={28} />
-//         )}
-//       </button>
-
-//       <Link
-//         href={productPath(product.product_uid)}
-//         className="product-card"
-//         onClick={() => onVisit(product)}
-//       >
-//         <div className="product-image-wrap">
-//           <ProductImage product={product} />
-//           <div className={`score-badge score-${band.className}`}>
-//             <div>
-//               {product.score}
-//               <small>{band.label}</small>
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className="product-body">
-//           <div>
-//             <h3>{product.product_name}</h3>
-//             <p className="product-meta">
-//               {product.brand_name} · {product.category} · {product.product_type}
-//             </p>
-//           </div>
-
-//           <div className="price-row">
-//             <span>{formatPrice(product)}</span>
-//             {product.mrp &&
-//               product.selling_price &&
-//               product.mrp !== product.selling_price ? (
-//               <del>Rs. {product.mrp}</del>
-//             ) : null}
-//           </div>
-
-//           <div className="tagline">
-//             <span className="tag">{rangeLabel(scoreRange(product.score))}</span>
-//             <span className="tag">{product.when_to_use || "Routine"}</span>
-//             <span className="tag">{product.size || "Size unavailable"}</span>
-//           </div>
-
-//           <span className="details-link">View product details</span>
-//         </div>
-//       </Link>
-//     </div>
-//   );
-// }
 
 function RoutineCard({ item, onOpen }) {
   const product = item.product;
@@ -561,7 +497,7 @@ export default function MatchStudio({ initialData }) {
       let payload = {};
       try {
         payload = JSON.parse(responseText);
-      } catch {
+        } catch {
         // Handle non-JSON responses
       }
       if (!response.ok) throw new Error(payload.error || "Unable to load recommendations.");
@@ -576,6 +512,8 @@ export default function MatchStudio({ initialData }) {
       setLoading(false);
     }
   }, []);
+
+  // console.log(payload,"payload")
 
   useEffect(() => {
     const restoreTimer = window.setTimeout(() => {
@@ -788,6 +726,7 @@ export default function MatchStudio({ initialData }) {
           });
         }),
     ]);
+    saveSkinProfile(profile);
 
     if (!userSession) {
       if (typeof window !== "undefined") {
@@ -867,6 +806,20 @@ export default function MatchStudio({ initialData }) {
     return () => window.clearTimeout(applyTimer);
   }, [applyGuide]);
 
+  useEffect(() => {
+    const term = searchQuery.trim();
+    if (!term) return;
+
+    const debounceTimer = setTimeout(() => {
+      trackingService.trackEvent(EVENTS.SEARCH_PERFORMED, {
+        query: term,
+        results_count: products.length,
+      });
+    }, 800); // waits 800ms after the user stops typing
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
   function handleFilterChange(filterKey, value) {
     setFilters((current) => ({ ...current, [filterKey]: value }));
     trackingService.trackEvent(EVENTS.CLICKED_FILTER_OPTION, {
@@ -876,6 +829,10 @@ export default function MatchStudio({ initialData }) {
   }
 
   async function handleLogout() {
+    trackingService.trackEvent(EVENTS.CLICKED_LOGOUT, {
+      source: "profile_page", // or "header" if this button also lives there
+    });
+
     await supabase.auth.signOut();
     setLoggedInUser(null);
     setUserSession(null);
@@ -883,37 +840,11 @@ export default function MatchStudio({ initialData }) {
 
   return (
     <>
-      <header>
-        {userSession ? (
-          <div className="user-greeting-bar">
-            <span>Hi, <strong>{userSession.user?.phone || userSession.user?.user_metadata?.phone_no || userSession.user?.user_metadata?.phone || "User"}</strong></span>
-            <div className="flex items-center gap-3">
-              {wishlistIds.length > 0 && (
-                <Link
-                  href="/wishlist"
-                  aria-label="View wishlist"
-                  className="relative flex items-center"
-                  onClick={() =>
-                    trackingService.trackEvent(EVENTS.CLICKED_WISHLIST_ICON, {
-                      wishlist_count: wishlistIds.length,
-                    })
-                  }
-                >
-                  <BiHeart className="text-gray-800" size={22} />
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
-                    {wishlistIds.length}
-                  </span>
-                </Link>
-              )}
-
-              <button type="button" className="logout-btn" onClick={handleLogout}>
-                Logout
-              </button>
-            </div>
-
-          </div>
-        ) : null}
-      </header>
+      <Header
+        userSession={userSession}
+        wishlistIds={wishlistIds}
+        onLogout={handleLogout}
+      />
 
       <main id="matcher">
         <section className="panel profile-panel quiz-panel">
@@ -1157,7 +1088,6 @@ export default function MatchStudio({ initialData }) {
             {!loading && !error && view === "products" ? (
               <div className="products-view">
 
-                {/* NEW: Search Bar implementation */}
                 <div className="search-bar" style={{ marginBottom: "16px" }}>
                   <input
                     type="text"

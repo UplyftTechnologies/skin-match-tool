@@ -23,6 +23,12 @@ export const EVENTS = {
   PAGE_VIEWED_WISHLIST: 'page_viewed_wishlist',
 
   // Product details page events
+  PAGE_VIEWED_PROFILE: 'page_viewed_profile',
   PAGE_VIEWED_PRODUCT_DETAILS: 'page_viewed_product_details',
   CLICKED_SAVE_PRODUCT: 'clicked_save_product',
+
+    // Profile page events
+  CLICKED_EDIT_PROFILE: 'clicked_edit_profile',
+  CLICKED_LOGOUT: 'clicked_logout',
+
 };
