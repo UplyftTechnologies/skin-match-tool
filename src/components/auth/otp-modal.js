@@ -12,13 +12,23 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [resendTimer, setResendTimer] = useState(30);
-  const [canResend, setCanResend] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendCount, setResendCount] = useState(0);
 
   const otpInputsRef = useRef([]);
   const verifyingRef = useRef(false);
 
   const widgetId = process.env.NEXT_PUBLIC_MSG91_WIDGET_ID;
   const tokenAuth = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH;
+
+  // Resend OTP countdown timer effect
+  useEffect(() => {
+    if (step !== 2 || resendTimer <= 0) return;
+    const timer = setTimeout(() => {
+      setResendTimer((prev) => prev - 1);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [step, resendTimer]);
 
   // Helper to extract clean token from MSG91 responses
   const extractToken = (data) => {
@@ -148,6 +158,9 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
   const handleSendOtp = async (e) => {
     e?.preventDefault();
     setError('');
+    setResending(false);
+    setResendCount(0);
+    verifyingRef.current = false;
 
     const cleanPhone = phone.replace(/\D/g, '');
     if (cleanPhone.length !== 10) {
@@ -169,7 +182,11 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
         `91${cleanPhone}`,
         () => {
           setLoading(false);
+          setError('');
           setStep(2);
+          setResendTimer(30);
+          setResendCount(0);
+          setOtp(['', '', '', '', '', '']);
           setTimeout(() => otpInputsRef.current[0]?.focus(), 100);
           trackingService.trackEvent(EVENTS.CLICKED_SEND_OTP, {
             phone_number: cleanPhone,
@@ -177,12 +194,79 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
         },
         (errorRes) => {
           setLoading(false);
-          setError(typeof errorRes === 'string' ? errorRes : errorRes?.message || 'Failed to send OTP.');
+          const msg = typeof errorRes === 'string' ? errorRes : errorRes?.message;
+          if (msg && msg !== widgetId && !/^[a-f0-9]{24}$/i.test(msg)) {
+            setError(msg);
+          }
         }
       );
     } catch (err) {
       setLoading(false);
       setError(err.message || 'An error occurred sending OTP.');
+    }
+  };
+
+  // Handle Resend OTP matching skinmeta
+  const handleResend = async () => {
+    if (resending || resendTimer > 0 || resendCount >= 2) return;
+    setError('');
+    setOtp(['', '', '', '', '', '']);
+    setResending(true);
+    setResendCount((prev) => prev + 1);
+
+    trackingService.trackEvent(EVENTS.CLICKED_RESEND_OTP, { phone_number: phone });
+
+    const cleanPhone = phone.replace(/\D/g, '');
+    const sendOtpFunc = window.sendOtp || window.sendOTP;
+
+    let callbackCalled = false;
+
+    const handleSuccess = () => {
+      callbackCalled = true;
+      setResending(false);
+      setError('');
+      setResendTimer(30);
+      setTimeout(() => otpInputsRef.current[0]?.focus(), 100);
+    };
+
+    const handleError = (errorRes) => {
+      callbackCalled = true;
+      setResending(false);
+      const msg = typeof errorRes === 'string' ? errorRes : errorRes?.message;
+      if (msg && msg !== widgetId && !/^[a-f0-9]{24}$/i.test(msg)) {
+        setError(msg || 'Failed to resend OTP.');
+      }
+      if (msg && (msg.toLowerCase().includes('limit') || msg.toLowerCase().includes('max') || msg.toLowerCase().includes('exceed'))) {
+        setResendCount(2);
+      }
+    };
+
+    // Safety fallback: if MSG91 SDK callback doesn't respond in 4s, unlock resending
+    setTimeout(() => {
+      if (!callbackCalled) {
+        setResending(false);
+      }
+    }, 4000);
+
+    try {
+      if (typeof window.retryOtp === 'function') {
+        try {
+          window.retryOtp(handleSuccess, handleError);
+        } catch {
+          if (sendOtpFunc) {
+            sendOtpFunc(`91${cleanPhone}`, handleSuccess, handleError);
+          } else {
+            handleError('Failed to resend OTP.');
+          }
+        }
+      } else if (sendOtpFunc) {
+        sendOtpFunc(`91${cleanPhone}`, handleSuccess, handleError);
+      } else {
+        handleError('Resend service not available.');
+      }
+    } catch (err) {
+      console.error('Resend failed:', err);
+      handleError(err?.message || 'Failed to resend OTP.');
     }
   };
 
@@ -265,7 +349,12 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
       },
       (err) => {
         setLoading(false);
-        setError(typeof err === 'string' ? err : err?.message || 'Invalid OTP code.');
+        const msg = typeof err === 'string' ? err : err?.message;
+        if (msg && msg !== widgetId && !/^[a-f0-9]{24}$/i.test(msg)) {
+          setError(msg || 'Invalid OTP code.');
+        } else {
+          setError('Invalid OTP code.');
+        }
       }
     );
   };
@@ -335,6 +424,32 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
                 ))}
               </div>
 
+              <div className="flex items-center justify-between text-xs sm:text-sm mt-3 mb-1">
+                {resendCount >= 2 ? (
+                  <div className="w-full flex items-center justify-between gap-2">
+                    <span className="text-amber-600 font-medium text-xs">Max resends reached</span>
+                    <button
+                      type="button"
+                      disabled={true}
+                      className="text-gray-400 font-semibold cursor-not-allowed opacity-60 text-xs sm:text-sm select-none"
+                    >
+                      Resend code
+                    </button>
+                  </div>
+                ) : resendTimer > 0 ? (
+                  <span className="text-gray-500 font-medium">Resend code in {resendTimer}s</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={resending || resendCount >= 2}
+                    className="text-rose-500 hover:text-rose-600 font-semibold focus:outline-none disabled:opacity-50 transition-colors"
+                  >
+                    {resending ? 'Sending...' : 'Resend code'}
+                  </button>
+                )}
+              </div>
+
               <button
                 type="submit"
                 className="otp-submit-btn"
@@ -349,6 +464,11 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
                 onClick={() => {
                   setStep(1);
                   setError('');
+                  setResending(false);
+                  setResendTimer(30);
+                  setResendCount(0);
+                  setOtp(['', '', '', '', '', '']);
+                  verifyingRef.current = false;
                 }}
               >
                 Change Phone Number
