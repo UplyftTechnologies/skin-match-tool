@@ -86,7 +86,7 @@ export default function ProductCard({ product, onVisit }) {
                 className="absolute z-10 top-1 left-1 lg:top-2 lg:left-2"
             >
                 {wishlisted ? (
-                    <BsHeartFill color="red" size={26} />
+                    <BsHeartFill color="red" size={24} />
                 ) : (
                     <BiHeart className="text-black" size={28} />
                 )}

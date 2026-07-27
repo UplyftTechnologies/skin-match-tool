@@ -51,6 +51,7 @@ header {
   max-width: 1420px;
   margin: 0 auto;
   /* padding: 34px 22px 18px; */
+  margin-top: 5px;
 }
 
 .back-link {
@@ -847,6 +848,7 @@ details.payload-details summary {
 @media (max-width: 760px) {
   header {
     padding-top: 4px;
+    margin-top: 0px;
   }
 
   main {
