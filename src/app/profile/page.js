@@ -78,6 +78,7 @@ export default function ProfilePage() {
             localStorage.removeItem("roopsee_skin_profile");
             sessionStorage.removeItem("roopsee_matcher_history");
             sessionStorage.removeItem("quiz_submitted");
+            sessionStorage.removeItem("quiz_login_popup_due_at");
             sessionStorage.removeItem("app_landing_tracked");
         } catch {
             // ignore

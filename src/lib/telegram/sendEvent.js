@@ -26,6 +26,7 @@ const SECOND_GROUP_EVENTS = new Set([
   'login_successful',
   'existing_user_login',
   'clicked_send_otp',
+  'clicked_resend_otp',
 ]);
 
 // ─── Save event in Supabase ────────────────────────────────────────────────

@@ -6,6 +6,7 @@ export const EVENTS = {
   CLICKED_QUIZ_OPTION: 'clicked_quiz_option',
   LOGIN_POPUP_SHOWN: 'login_popup_shown',
   CLICKED_SEND_OTP: 'clicked_send_otp',
+  CLICKED_RESEND_OTP: 'clicked_resend_otp',
   OTP_VERIFIED: 'otp_verified',
   PAGE_VIEWED_SKIN_MATCH_TOOL: 'page_viewed_skin_match_tool',
   ACCOUNT_CREATED: 'login_successful',
@@ -20,6 +21,7 @@ export const EVENTS = {
   CLICKED_ADD_TO_WISHLIST: 'clicked_add_to_wishlist',
   CLICKED_REMOVE_FROM_WISHLIST: 'clicked_remove_from_wishlist',
   CLICKED_WISHLIST_ICON: 'clicked_wishlist_icon',
+  CLICKED_PROFILE_ICON: 'clicked_profile_icon',
   PAGE_VIEWED_WISHLIST: 'page_viewed_wishlist',
 
   // Product details page events

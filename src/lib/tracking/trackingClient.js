@@ -336,7 +336,14 @@ class TrackingService {
           return;
         }
 
-        const eventData = { ...properties, event_source: 'unified_tracking' };
+        const eventData = {
+          ...properties,
+          // Keep Supabase's canonical field names available in GA as well.
+          event_name: eventName,
+          visitor_id: properties.visitorId,
+          session_id: properties.sessionId,
+          event_source: 'unified_tracking',
+        };
 
         if (eventName.startsWith('page_viewed_')) {
           eventData.event_category = 'page_view';
@@ -376,15 +383,15 @@ class TrackingService {
 
         const { phone, ...safeProperties } = properties;
 
-        window.clarity('set', 'custom_event', eventName);
-        window.clarity('set', 'custom_properties', JSON.stringify(safeProperties));
-
         if (properties.userId) {
           window.clarity('set', 'user_id', properties.userId);
         }
 
+        window.clarity('set', 'event_name', eventName);
         window.clarity('set', 'visitor_id', properties.visitorId);
         window.clarity('set', 'session_id', properties.sessionId);
+        window.clarity('set', 'custom_properties', JSON.stringify(safeProperties));
+        window.clarity('event', eventName);
 
         resolve();
       } catch (error) {
@@ -642,7 +649,14 @@ class TrackingService {
     try {
       if (this.config.googleAnalyticsEnabled && window.gtag) {
         const { phone, ...gaProps } = properties;
-        window.gtag('event', eventName, { ...gaProps, event_category: 'exit' });
+        window.gtag('event', eventName, {
+          ...gaProps,
+          event_name: eventName,
+          visitor_id: properties.visitorId,
+          session_id: properties.sessionId,
+          event_category: 'exit',
+          event_source: 'unified_tracking',
+        });
       }
     } catch {
       /* ignore */
@@ -650,7 +664,12 @@ class TrackingService {
 
     try {
       if (this.config.clarityEnabled && window.clarity) {
-        window.clarity('set', 'custom_event', eventName);
+        const { phone, ...safeProperties } = properties;
+        window.clarity('set', 'event_name', eventName);
+        window.clarity('set', 'visitor_id', properties.visitorId);
+        window.clarity('set', 'session_id', properties.sessionId);
+        window.clarity('set', 'custom_properties', JSON.stringify(safeProperties));
+        window.clarity('event', eventName);
       }
     } catch {
       /* ignore */
