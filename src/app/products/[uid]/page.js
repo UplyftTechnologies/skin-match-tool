@@ -226,7 +226,7 @@ export default async function ProductPage({ params }) {
                focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400 sm:w-auto"
               href="/"
             >
-              FIND MY PERSONALISED MATCHES
+              SAVE PRODUCT
             </Link>
 
             {/* Signature: catalog spec "label" card */}

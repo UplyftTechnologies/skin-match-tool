@@ -4,7 +4,7 @@ import { recommend } from "@/lib/engine";
 import { absoluteUrl, SITE_NAME, SITE_URL } from "@/lib/site";
 
 export default function Home() {
-  const initialData = recommend(DEFAULT_PROFILE, 24);
+  const initialData = recommend(DEFAULT_PROFILE, 500);
   const structuredData = [
     {
       "@context": "https://schema.org",

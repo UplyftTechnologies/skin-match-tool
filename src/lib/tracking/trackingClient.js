@@ -19,7 +19,9 @@ import {
   getLoggedInUserName,
   getLoggedInUserPhone,
   identifyAcrossTools,
+  setLoggedInUser,
 } from './identity.js';
+import { supabase } from '../supabase/client.js';
 
 // Hard ceiling on how long location lookup may delay an event.
 const LOCATION_BUDGET_MS = 4000;
@@ -252,6 +254,23 @@ class TrackingService {
     }
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (user) {
+        const metadata = user.user_metadata || {};
+        setLoggedInUser({
+          id: user.id,
+          name: metadata.full_name || metadata.name || '',
+          phone: user.phone || metadata.phone_no || metadata.phone || '',
+        });
+      } else {
+        setLoggedInUser(null);
+      }
+    } catch (error) {
+      console.warn('Supabase tracking identity sync failed:', error);
+    }
+
+    try {
       identifyAcrossTools();
     } catch (error) {
       console.warn('identifyAcrossTools failed:', error);
@@ -427,7 +446,7 @@ class TrackingService {
       keepalive: true,
     }).then(async (res) => {
       const result = await res.json().catch(() => ({}));
-      if (!res.ok || !result.telegramSent) {
+      if (!res.ok || !result.eventSaved) {
         throw new Error(result.error || `/api/events responded ${res.status}`);
       }
       return result;
