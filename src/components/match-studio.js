@@ -15,6 +15,8 @@ import { BsHeartFill } from "react-icons/bs";
 import { useWishlist } from "@/context/WishlistContext";
 import ProductCard from "./ProductCard";
 import { getSessionId, getVisitorId, setLoggedInUser } from "@/lib/tracking/identity";
+import { IoExitOutline, IoPersonCircleOutline } from "react-icons/io5";
+import { saveSkinProfile } from "@/lib/profile-storage";
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -253,76 +255,6 @@ function ChipGroup({ items, isActive, onSelect }) {
   );
 }
 
-// function ProductCard({ product, onVisit }) {
-//   const band = scoreBand(product.score);
-//   const { isWishlisted, toggleWishlist } = useWishlist();
-//   const wishlisted = isWishlisted(product.product_uid);
-
-//   function handleToggle(event) {
-//     event.preventDefault();
-//     event.stopPropagation();
-//     toggleWishlist(product.product_uid);
-//   }
-
-//   return (
-//     <div className="product-card-wrap relative">
-//       <button
-//         type="button"
-//         onClick={handleToggle}
-//         aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
-//         className="absolute z-10 top-1 left-1 lg:top-2 lg:left-2"
-//       >
-//         {wishlisted ? (
-//           <BsHeartFill color="red" size={26} />
-//         ) : (
-//           <BiHeart className="text-black" size={28} />
-//         )}
-//       </button>
-
-//       <Link
-//         href={productPath(product.product_uid)}
-//         className="product-card"
-//         onClick={() => onVisit(product)}
-//       >
-//         <div className="product-image-wrap">
-//           <ProductImage product={product} />
-//           <div className={`score-badge score-${band.className}`}>
-//             <div>
-//               {product.score}
-//               <small>{band.label}</small>
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className="product-body">
-//           <div>
-//             <h3>{product.product_name}</h3>
-//             <p className="product-meta">
-//               {product.brand_name} · {product.category} · {product.product_type}
-//             </p>
-//           </div>
-
-//           <div className="price-row">
-//             <span>{formatPrice(product)}</span>
-//             {product.mrp &&
-//               product.selling_price &&
-//               product.mrp !== product.selling_price ? (
-//               <del>Rs. {product.mrp}</del>
-//             ) : null}
-//           </div>
-
-//           <div className="tagline">
-//             <span className="tag">{rangeLabel(scoreRange(product.score))}</span>
-//             <span className="tag">{product.when_to_use || "Routine"}</span>
-//             <span className="tag">{product.size || "Size unavailable"}</span>
-//           </div>
-
-//           <span className="details-link">View product details</span>
-//         </div>
-//       </Link>
-//     </div>
-//   );
-// }
 
 function RoutineCard({ item, onOpen }) {
   const product = item.product;
@@ -788,6 +720,7 @@ export default function MatchStudio({ initialData }) {
           });
         }),
     ]);
+    saveSkinProfile(profile);
 
     if (!userSession) {
       if (typeof window !== "undefined") {
@@ -876,6 +809,10 @@ export default function MatchStudio({ initialData }) {
   }
 
   async function handleLogout() {
+    trackingService.trackEvent(EVENTS.CLICKED_LOGOUT, {
+      source: "profile_page", // or "header" if this button also lives there
+    });
+
     await supabase.auth.signOut();
     setLoggedInUser(null);
     setUserSession(null);
@@ -883,11 +820,11 @@ export default function MatchStudio({ initialData }) {
 
   return (
     <>
-      <header>
+      <header className="px-2 mx-auto">
         {userSession ? (
-          <div className="user-greeting-bar">
+          <div className="user-greeting-bar ">
             <span>Hi, <strong>{userSession.user?.phone || userSession.user?.user_metadata?.phone_no || userSession.user?.user_metadata?.phone || "User"}</strong></span>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 lg:gap-3">
               {wishlistIds.length > 0 && (
                 <Link
                   href="/wishlist"
@@ -906,8 +843,20 @@ export default function MatchStudio({ initialData }) {
                 </Link>
               )}
 
-              <button type="button" className="logout-btn" onClick={handleLogout}>
-                Logout
+              <Link
+                href="/profile"
+                aria-label="View your skin profile"
+                className="flex items-center text-gray-800"
+                onClick={() =>
+                  trackingService.trackEvent(EVENTS.CLICKED_PROFILE_ICON)
+                }
+              >
+                <IoPersonCircleOutline size={24} />
+              </Link>
+
+
+              <button type="button" className="logout-btn " onClick={handleLogout}>
+                <IoExitOutline />
               </button>
             </div>
 
