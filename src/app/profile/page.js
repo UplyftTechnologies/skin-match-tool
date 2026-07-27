@@ -88,20 +88,33 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-[#FAFAF8]">
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-                <button
-                    type="button"
-                    onClick={() => router.back()}
-                    aria-label="Go back"
-                    className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors mb-6"
-                >
-                    <BiArrowBack size={18} />
-                    Back
-                </button>
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5 sm:py-10">
+                <div className="flex items-start justify-between">
+                    <button
+                        type="button"
+                        onClick={() => router.back()}
+                        aria-label="Go back"
+                        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors mb- mt-2"
+                    >
+                        <BiArrowBack size={18} />
+                        Back
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleLogout}
+                        aria-label="Logout"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-1  
+                         text-[13px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                        <IoExitOutline size={15} />
+                        Logout
+                    </button>
+                </div>
+
 
                 {/* Skin profile card */}
                 {profileLoaded && profile ? (
-                    <div className="rounded-2xl bg-white shadow-sm border border-gray-100 px-6 py-6 sm:px-7 sm:py-7">
+                    <div className="rounded-2xl mt-4 bg-white shadow-sm border border-gray-100 px-6 py-6 sm:px-7 sm:py-7">
                         <div className="flex items-center justify-between mb-5">
                             <h2 className="text-xl sm:text-[22px] font-bold text-gray-900" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
                                 Your Skin Profile
@@ -120,15 +133,7 @@ export default function ProfilePage() {
                                     Edit
                                 </Link>
 
-                                <button
-                                    type="button"
-                                    onClick={handleLogout}
-                                    aria-label="Logout"
-                                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-2 text-[13px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                                >
-                                    <IoExitOutline size={15} />
-                                    Logout
-                                </button>
+
                             </div>
                         </div>
 
