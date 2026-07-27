@@ -10,6 +10,7 @@ import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { productPath } from "@/lib/site";
 import OtpModal from "@/components/auth/otp-modal";
 import { supabase } from "@/lib/supabase/client";
+import { getSessionId, getVisitorId, setLoggedInUser } from "@/lib/tracking/identity";
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -105,6 +106,87 @@ const EMPTY_PROFILE = {
   age: "",
   selectedGender: "",
 };
+
+const MATCHER_HISTORY_KEY = "roopsee_matcher_history";
+
+function isCompleteStoredProfile(profile) {
+  return Boolean(
+    profile?.selectedSkinType
+    && profile.selectedSensitive !== null
+    && profile.selectedFaceBodyConcerns?.length
+    && profile.selectedSpecialConditions?.length
+    && profile.age
+    && profile.selectedGender
+  );
+}
+
+async function claimGuestQuizResults(session) {
+  if (!session?.access_token) return;
+
+  try {
+    const response = await fetch("/api/quiz-results", {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ guestSessionId: getSessionId() }),
+    });
+
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      console.warn(
+        "[match-studio] Unable to attach phone number to quiz results:",
+        result.error || response.statusText,
+      );
+    }
+  } catch (error) {
+    console.warn("[match-studio] Quiz result claim request failed:", error.message);
+  }
+}
+
+async function claimGuestEventLogs(session) {
+  if (!session?.access_token) return;
+
+  try {
+    const response = await fetch("/api/events", {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sessionId: getSessionId(),
+        visitorId: getVisitorId(),
+      }),
+    });
+
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      console.warn(
+        "[match-studio] Unable to attach user to event records:",
+        result.error || response.statusText,
+      );
+    }
+  } catch (error) {
+    console.warn("[match-studio] Event identity claim request failed:", error.message);
+  }
+}
+
+function syncTrackingIdentity(session) {
+  const user = session?.user;
+  if (!user) {
+    setLoggedInUser(null);
+    return;
+  }
+
+  const metadata = user.user_metadata || {};
+  setLoggedInUser({
+    id: user.id,
+    name: metadata.full_name || metadata.name || "",
+    phone: user.phone || metadata.phone_no || metadata.phone || "",
+  });
+}
 
 function scoreRange(score) {
   if (score >= 90) return "90_100";
@@ -361,6 +443,7 @@ export default function MatchStudio({ initialData }) {
   const [filters, setFilters] = useState({ score: "all", category: "all", type: "all", sheet: "all" });
   
   const [limit, setLimit] = useState(initialData?.returned || 500);
+  const [historyRestored, setHistoryRestored] = useState(false);
   const [touched, setTouched] = useState({
     skinType: false,
     concern: false,
@@ -409,11 +492,19 @@ export default function MatchStudio({ initialData }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUserSession(session);
+      syncTrackingIdentity(session);
+      if (session) {
+        void claimGuestQuizResults(session);
+        void claimGuestEventLogs(session);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserSession(session);
+      syncTrackingIdentity(session);
       if (session) {
+        void claimGuestQuizResults(session);
+        void claimGuestEventLogs(session);
         if (quizTimerRef.current) {
           clearTimeout(quizTimerRef.current);
           quizTimerRef.current = null;
@@ -458,6 +549,55 @@ export default function MatchStudio({ initialData }) {
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    const restoreTimer = window.setTimeout(() => {
+      const selectedGuide = new URLSearchParams(window.location.search).get("guide");
+      if (selectedGuide) {
+        setHistoryRestored(true);
+        return;
+      }
+
+      try {
+        const savedValue = sessionStorage.getItem(MATCHER_HISTORY_KEY);
+        const savedState = savedValue ? JSON.parse(savedValue) : null;
+
+        if (savedState?.profile) setProfile(savedState.profile);
+        if (savedState?.filters) setFilters(savedState.filters);
+        if (typeof savedState?.searchQuery === "string") setSearchQuery(savedState.searchQuery);
+        if (["products", "routine"].includes(savedState?.view)) setView(savedState.view);
+        if (Number.isFinite(savedState?.limit)) setLimit(savedState.limit);
+
+        if (savedState?.hasResults && isCompleteStoredProfile(savedState.profile)) {
+          void recommend(savedState.profile, savedState.limit || 500);
+        }
+      } catch (restoreError) {
+        console.warn("[match-studio] Unable to restore matcher history:", restoreError.message);
+        sessionStorage.removeItem(MATCHER_HISTORY_KEY);
+      } finally {
+        setHistoryRestored(true);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(restoreTimer);
+  }, [recommend]);
+
+  useEffect(() => {
+    if (!historyRestored) return;
+
+    try {
+      sessionStorage.setItem(MATCHER_HISTORY_KEY, JSON.stringify({
+        profile,
+        filters,
+        searchQuery,
+        view,
+        limit,
+        hasResults: Boolean(data),
+      }));
+    } catch (saveError) {
+      console.warn("[match-studio] Unable to save matcher history:", saveError.message);
+    }
+  }, [data, filters, historyRestored, limit, profile, searchQuery, view]);
 
   // UPDATED: Added search functionality to useMemo
   const products = useMemo(() => (data?.products || []).filter((product) => {
@@ -559,6 +699,32 @@ export default function MatchStudio({ initialData }) {
     trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_MODE_TOGGLE, { view: nextView });
   }
 
+  async function saveQuizResult(nextProfile) {
+    const headers = { "Content-Type": "application/json" };
+    if (userSession?.access_token) {
+      headers.Authorization = `Bearer ${userSession.access_token}`;
+    }
+
+    const response = await fetch("/api/quiz-results", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        profile: nextProfile,
+        guestSessionId: getSessionId(),
+      }),
+    });
+    const result = await response.json().catch(() => ({
+      error: "The quiz-results API returned an invalid response",
+    }));
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: result.error || "Unable to save quiz result",
+      };
+    }
+    return result;
+  }
+
   async function handleRefresh() {
     // NEW: Turn on inline per-question errors; block submission if any quiz option is missing
     setAttemptedSubmit(true);
@@ -578,7 +744,23 @@ export default function MatchStudio({ initialData }) {
         profile.selectedGender,
       ].join(" | "),
     });
-    await recommend(profile, 500);
+    await Promise.all([
+      recommend(profile, 500),
+      saveQuizResult(profile)
+        .then((saveResult) => {
+          if (saveResult.ok) return;
+          console.warn("[match-studio] Quiz result save failed:", saveResult.error);
+          trackingService.trackError("quiz_result_save_failed", {
+            message: saveResult.error,
+          });
+        })
+        .catch((saveError) => {
+          console.warn("[match-studio] Quiz result request failed:", saveError.message);
+          trackingService.trackError("quiz_result_save_failed", {
+            message: saveError.message,
+          });
+        }),
+    ]);
 
     if (!userSession) {
       if (typeof window !== "undefined") {
@@ -668,6 +850,7 @@ export default function MatchStudio({ initialData }) {
 
   async function handleLogout() {
     await supabase.auth.signOut();
+    setLoggedInUser(null);
     setUserSession(null);
   }
 

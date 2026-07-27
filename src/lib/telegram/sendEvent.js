@@ -6,11 +6,12 @@
 //      bodies must be read with `await req.json()` before you can pass
 //      pieces of it around, so the "build event from request" step now takes
 //      the already-parsed body + headers instead of the raw req.
-    import {
+import {
   getClientIp,
   getVisitorLocationFromHeaders,
   getIpLocation,
 } from '../location/ipLocation.js';
+import { supabaseAdmin } from '../supabase/server.js';
 
 // Group where all website events are sent
 const EVENT_BOT_TOKEN = process.env.TELEGRAM_EVENT_BOT_TOKEN;
@@ -50,38 +51,40 @@ export const saveEventLog = async ({
   referrer,
   extraData = {},
 }) => {
-  const supabase = getSupabaseServerClient();
-  if (!supabase) return null;
+  const textValue = (input) => {
+    if (input === null || input === undefined) return null;
+    if (typeof input === 'string') return input.slice(0, 2000);
+    if (typeof input === 'number' || typeof input === 'boolean') return String(input);
+    return JSON.stringify(input).slice(0, 2000);
+  };
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('event_log')
     .insert({
       user_id: userId || null,
-      user_name: userName || '',
-      phone_no: phone || '',
-      visitor_id: visitorId || '',
-      session_id: sessionId || '',
-      country: country || '',
-      city: city || '',
-      region: region || '',
-      ip_address: ip || '',
-      device: device || '',
-      platform: platform || '',
-      browser: browser || '',
-      language: language || '',
-      time_ist: time || '',
-      page_link: page || '',
+      user_name: userName || null,
+      phone_no: phone || null,
+      visitor_id: visitorId || null,
+      session_id: sessionId || null,
+      country: country || null,
+      city: city || null,
+      region: region || null,
+      ip_address: ip || null,
+      device: device || null,
+      platform: platform || null,
+      browser: browser || null,
+      language: language || null,
+      time_ist: time || null,
+      page_link: page || null,
       event_name: eventName || 'website_event',
-      value: value ?? extraData?.value ?? '',
-      referrer: referrer || '',
+      value: textValue(value ?? extraData?.value),
+      referrer: referrer || null,
       extra_data: {
         ...extraData,
-        phone: phone || extraData?.phone || '',
-        visitorId: visitorId || extraData?.visitorId || '',
       },
     })
-    .select()
-    .maybeSingle();
+    .select('id, created_at')
+    .single();
 
   if (error) {
     console.error('Event log insert error:', error);
@@ -167,6 +170,59 @@ const getValue = (value, fallback = 'Not available') => {
 
 const normalizeEventName = (eventName = '') =>
   String(eventName).trim().toLowerCase().replace(/[\s-]+/g, '_');
+
+const EXTRA_DATA_IGNORED_FIELDS = new Set([
+  'eventName',
+  'userId',
+  'userName',
+  'phone',
+  'visitorId',
+  'sessionId',
+  'country',
+  'city',
+  'region',
+  'ip',
+  'device',
+  'platform',
+  'browser',
+  'language',
+  'time',
+  'time_ist',
+  'page',
+  'url',
+  'referrer',
+  'value',
+  'timestamp',
+]);
+
+const buildExtraData = (body = {}) => {
+  const extraData = {};
+
+  Object.entries(body).slice(0, 60).forEach(([key, value]) => {
+    if (EXTRA_DATA_IGNORED_FIELDS.has(key) || value === undefined) return;
+
+    if (typeof value === 'string') {
+      extraData[key] = value.slice(0, 2000);
+      return;
+    }
+
+    if (value === null || typeof value === 'number' || typeof value === 'boolean') {
+      extraData[key] = value;
+      return;
+    }
+
+    try {
+      const serialized = JSON.stringify(value);
+      extraData[key] = serialized.length <= 5000
+        ? value
+        : `${serialized.slice(0, 5000)}…`;
+    } catch {
+      extraData[key] = String(value).slice(0, 2000);
+    }
+  });
+
+  return extraData;
+};
 
 export const parseUserAgent = (userAgent = '') => {
   const ua = String(userAgent);
@@ -322,35 +378,34 @@ export const buildVisitorEventFromRequest = async (body, headers) => {
   const userAgentInfo = parseUserAgent(headers.get('user-agent') || '');
 
   let userName = body?.userName || '';
-  const userId = body?.userId;
+  let phone = body?.phone || '';
+  let userId = null;
+  const requestedUserId = body?.userId;
 
-  if (userId) {
+  if (requestedUserId) {
     try {
-      const supabase = getSupabaseServerClient();
-      if (supabase) {
-        const { data: userRow, error: userError } = await supabase
-          .from('users')
-          .select('name')
-          .eq('id', userId)
-          .maybeSingle();
+      const { data: userRow, error: userError } = await supabaseAdmin
+        .from('users')
+        .select('*')
+        .eq('id', requestedUserId)
+        .maybeSingle();
 
-        if (userError) {
-          console.error('Error fetching user name in buildVisitorEventFromRequest:', userError);
-        }
-
-        if (userRow?.name) {
-          userName = userRow.name;
-        }
+      if (userError) {
+        console.error('Error fetching event user in buildVisitorEventFromRequest:', userError);
+      } else if (userRow) {
+        userId = userRow.id;
+        userName = userRow.name || userName;
+        phone = userRow.phone_no || phone;
       }
     } catch (error) {
-      console.error('Error fetching user name in buildVisitorEventFromRequest:', error);
+      console.error('Error fetching event user in buildVisitorEventFromRequest:', error);
     }
   }
 
   return {
     userId: userId || null,
     userName,
-    phone: body?.phone || '',
+    phone,
     sessionId: body?.sessionId || '',
     visitorId: body?.visitorId || '',
 
@@ -396,5 +451,7 @@ export const buildVisitorEventFromRequest = async (body, headers) => {
     quizAnswerSummary:
       body?.quizAnswerSummary ||
       (body?.question && body?.answer ? `${body.question}: ${body.answer}` : ''),
+
+    extraData: buildExtraData(body),
   };
 };
