@@ -1,15 +1,4 @@
-// lib/tracking/trackingClient.js
-// Ported from your Vite tracking.js. Key changes:
-//   1. import.meta.env.VITE_* -> process.env.NEXT_PUBLIC_* (Next.js only
-//      inlines env vars into the client bundle if they're prefixed
-//      NEXT_PUBLIC_, same rule as Vite's VITE_ prefix).
-//   2. Telegram no longer sends directly from the browser (that meant
-//      shipping your bot token in the client bundle). It now POSTs to
-//      /api/events, which forwards to Telegram server-side.
-//   3. Supabase removed entirely — no event_log inserts, no session-attach-
-//      after-login logic. GA / Clarity / Amplitude still fire directly from
-//      the browser, Telegram goes through the server route.
-//   4. Needs "use client" since it touches window/navigator/sessionStorage.
+
 'use client';
 
 import {

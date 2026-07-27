@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import {trackingService} from '@/lib/tracking/trackingClient.js';
+import { EVENTS } from '@/lib/tracking/events.js';
 
 export default function OtpModal({ isOpen, onClose, onSuccess }) {
   const [step, setStep] = useState(1); // 1: Phone, 2: OTP
@@ -70,6 +72,9 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
 
       // Set Supabase session on client
       if (backendData.token && backendData.refresh_token) {
+        trackingService.trackEvent(EVENTS.OTP_VERIFIED, {
+          phone_number: backendData.user?.phone || phone,
+        });
         await supabase.auth.setSession({
           access_token: backendData.token,
           refresh_token: backendData.refresh_token,
@@ -90,6 +95,7 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
 
   // Load & initialize MSG91 Widget script dynamically
   useEffect(() => {
+
     if (typeof window === 'undefined' || !isOpen) return;
 
     const scriptId = 'msg91-otp-script';
@@ -133,6 +139,11 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
     }
   }, [isOpen, widgetId, tokenAuth]);
 
+  useEffect(() => {
+    if (isOpen) {
+      trackingService.trackEvent(EVENTS.LOGIN_POPUP_SHOWN);
+    }
+  }, [isOpen]);
   // Handle Send OTP
   const handleSendOtp = async (e) => {
     e?.preventDefault();
@@ -160,6 +171,9 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
           setLoading(false);
           setStep(2);
           setTimeout(() => otpInputsRef.current[0]?.focus(), 100);
+          trackingService.trackEvent(EVENTS.CLICKED_SEND_OTP, {
+            phone_number: cleanPhone,
+          });
         },
         (errorRes) => {
           setLoading(false);
