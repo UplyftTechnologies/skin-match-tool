@@ -1,15 +1,35 @@
 import "./globals.css";
 import Script from "next/script";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-
+import { WishlistProvider } from "@/context/WishlistContext";
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
   title: {
-    default: "Personalised Skincare Product Matcher | Roopsee",
-    template: "%s | Roopsee",
+    default: "Match My Skin | Roopsee",
+    template: "%s | Match My Skin",
   },
-  description: "Find skincare products matched to your skin type, sensitivity, age and main concern using Roopsee's product-specific scoring system.",
+  icons: {
+    icon: [
+      {
+        url: "/icons/icon-48.webp",
+        type: "image/webp",
+        sizes: "48x48",
+      },
+      {
+        url: "/icons/icon-96.webp",
+        type: "image/webp",
+        sizes: "96x96",
+      },
+    ],
+
+    shortcut: "/icons/icon-48.webp",
+
+    apple: "/apple-icon.png",
+  },
+
+  description:
+    "Discover your skin type and get personalized skincare recommendations with Match My Skin by Roopsee.",
   alternates: {
     canonical: "/",
   },
@@ -28,6 +48,7 @@ export const metadata = {
     description: "Find skincare products matched to your skin type, sensitivity, age and main concern.",
     images: ["/opengraph-image"],
   },
+  manifest: "/manifest.webmanifest",
   robots: {
     index: true,
     follow: true,
@@ -46,7 +67,26 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+        <WishlistProvider>
         {children}
+                </WishlistProvider>
+
+        {process.env.NEXT_PUBLIC_GA_ID ? (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');
+              `}
+            </Script>
+          </>
+        ) : null}
 
         {process.env.NEXT_PUBLIC_CLARITY_ID ? (
           <Script id="microsoft-clarity" strategy="afterInteractive">

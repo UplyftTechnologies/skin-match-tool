@@ -33,7 +33,7 @@
     "**/*.mts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/app/wishlist/page.js"  ],
   "exclude": [
     "node_modules"
   ]
