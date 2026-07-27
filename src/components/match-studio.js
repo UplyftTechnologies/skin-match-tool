@@ -10,6 +10,10 @@ import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { productPath } from "@/lib/site";
 import OtpModal from "@/components/auth/otp-modal";
 import { supabase } from "@/lib/supabase/client";
+import { BiHeart } from "react-icons/bi";
+import { BsHeartFill } from "react-icons/bs";
+import { useWishlist } from "@/context/WishlistContext";
+import ProductCard from "./ProductCard";
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -167,54 +171,76 @@ function ChipGroup({ items, isActive, onSelect }) {
   );
 }
 
-function ProductCard({ product, onVisit }) {
-  const band = scoreBand(product.score);
-  return (
-    <Link
-      href={productPath(product.product_uid)}
-      className="product-card"
-      onClick={() => onVisit(product)}
-    >
-      <div className="product-image-wrap">
-        <ProductImage product={product} />
-        <div className={`score-badge score-${band.className}`}>
-          <div>
-            {product.score}
-            <small>{band.label}</small>
-          </div>
-        </div>
-      </div>
+// function ProductCard({ product, onVisit }) {
+//   const band = scoreBand(product.score);
+//   const { isWishlisted, toggleWishlist } = useWishlist();
+//   const wishlisted = isWishlisted(product.product_uid);
 
-      <div className="product-body">
-        <div>
-          <h3>{product.product_name}</h3>
-          <p className="product-meta">
-            {product.brand_name} · {product.category} · {product.product_type}
-          </p>
-        </div>
+//   function handleToggle(event) {
+//     event.preventDefault();
+//     event.stopPropagation();
+//     toggleWishlist(product.product_uid);
+//   }
 
-        <div className="price-row">
-          <span>{formatPrice(product)}</span>
-          {product.mrp &&
-            product.selling_price &&
-            product.mrp !== product.selling_price ? (
-            <del>Rs. {product.mrp}</del>
-          ) : null}
-        </div>
+//   return (
+//     <div className="product-card-wrap relative">
+//       <button
+//         type="button"
+//         onClick={handleToggle}
+//         aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+//         className="absolute z-10 top-1 left-1 lg:top-2 lg:left-2"
+//       >
+//         {wishlisted ? (
+//           <BsHeartFill color="red" size={26} />
+//         ) : (
+//           <BiHeart className="text-black" size={28} />
+//         )}
+//       </button>
 
-        <div className="tagline">
-          <span className="tag">{rangeLabel(scoreRange(product.score))}</span>
-          <span className="tag">{product.when_to_use || "Routine"}</span>
-          <span className="tag">{product.size || "Size unavailable"}</span>
-        </div>
+//       <Link
+//         href={productPath(product.product_uid)}
+//         className="product-card"
+//         onClick={() => onVisit(product)}
+//       >
+//         <div className="product-image-wrap">
+//           <ProductImage product={product} />
+//           <div className={`score-badge score-${band.className}`}>
+//             <div>
+//               {product.score}
+//               <small>{band.label}</small>
+//             </div>
+//           </div>
+//         </div>
 
-        <span className="details-link">
-          View product details
-        </span>
-      </div>
-    </Link>
-  );
-}
+//         <div className="product-body">
+//           <div>
+//             <h3>{product.product_name}</h3>
+//             <p className="product-meta">
+//               {product.brand_name} · {product.category} · {product.product_type}
+//             </p>
+//           </div>
+
+//           <div className="price-row">
+//             <span>{formatPrice(product)}</span>
+//             {product.mrp &&
+//               product.selling_price &&
+//               product.mrp !== product.selling_price ? (
+//               <del>Rs. {product.mrp}</del>
+//             ) : null}
+//           </div>
+
+//           <div className="tagline">
+//             <span className="tag">{rangeLabel(scoreRange(product.score))}</span>
+//             <span className="tag">{product.when_to_use || "Routine"}</span>
+//             <span className="tag">{product.size || "Size unavailable"}</span>
+//           </div>
+
+//           <span className="details-link">View product details</span>
+//         </div>
+//       </Link>
+//     </div>
+//   );
+// }
 
 function RoutineCard({ item, onOpen }) {
   const product = item.product;
@@ -350,16 +376,17 @@ function ProductModal({ product, onClose }) {
 
 export default function MatchStudio({ initialData }) {
   const [profile, setProfile] = useState(EMPTY_PROFILE);
-  const [data, setData] = useState(null); 
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [view, setView] = useState("products");
   const [modalProduct, setModalProduct] = useState(null);
-  
+  const { wishlistIds } = useWishlist();
+
   // NEW: Search state
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({ score: "all", category: "all", type: "all", sheet: "all" });
-  
+
   const [limit, setLimit] = useState(initialData?.returned || 500);
   const [touched, setTouched] = useState({
     skinType: false,
@@ -465,7 +492,7 @@ export default function MatchStudio({ initialData }) {
     if (filters.category !== "all" && product.category !== filters.category) return false;
     if (filters.type !== "all" && product.product_type !== filters.type) return false;
     if (filters.sheet !== "all" && product.source_sheet !== filters.sheet) return false;
-    
+
     if (searchQuery.trim() !== "") {
       const term = searchQuery.toLowerCase();
       const matchesName = product.product_name?.toLowerCase().includes(term);
@@ -677,9 +704,25 @@ export default function MatchStudio({ initialData }) {
         {userSession ? (
           <div className="user-greeting-bar">
             <span>Hi, <strong>{userSession.user?.phone || userSession.user?.user_metadata?.phone_no || userSession.user?.user_metadata?.phone || "User"}</strong></span>
-            <button type="button" className="logout-btn" onClick={handleLogout}>
-              Logout
-            </button>
+            <div className="flex items-center gap-3">
+              {wishlistIds.length > 0 && (
+                <Link
+                  href="/wishlist"
+                  aria-label="View wishlist"
+                  className="relative flex items-center"
+                >
+                  <BiHeart className="text-gray-800" size={22} />
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
+                    {wishlistIds.length}
+                  </span>
+                </Link>
+              )}
+
+              <button type="button" className="logout-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
+
           </div>
         ) : null}
       </header>
@@ -892,10 +935,10 @@ export default function MatchStudio({ initialData }) {
           <div className="quiz-footer">
             <div className="actions">
               {/* UPDATED: Button stays clickable so the missing-option prompt can show; loading still disables it */}
-              <button 
-                className="primary find-matches-btn" 
-                disabled={loading} 
-                onClick={handleRefresh} 
+              <button
+                className="primary find-matches-btn"
+                disabled={loading}
+                onClick={handleRefresh}
                 type="button"
               >
                 {loading ? "FINDING MATCHES..." : "FIND MY MATCHES"}
@@ -925,54 +968,54 @@ export default function MatchStudio({ initialData }) {
 
             {!loading && !error && view === "products" ? (
               <div className="products-view">
-              
-              {/* NEW: Search Bar implementation */}
-              <div className="search-bar" style={{ marginBottom: "16px" }}>
-                <input
-                  type="text"
-                  placeholder="Search products or brands..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    padding: "10px",
-                    width: "100%",
-                    borderRadius: "8px",
-                    backgroundColor: "#fff",
-                    border: "1px solid #ff0000",
-                    fontSize: "15px",
-                    fontcolor: "#333",
-                  }}
-                />
-              </div>
 
-              <div className="filters" style={{ display: "grid" }}>
-                <label>
-                  Score Range
-                  <select value={filters.score} onChange={(event) => handleFilterChange("score", event.target.value)}>
-                    <option value="all">All score ranges</option>
-                    <option value="90_100">90-100</option>
-                    <option value="80_89">80-89</option>
-                    <option value="70_79">70-79</option>
-                    <option value="60_69">60-69</option>
-                    <option value="50_59">50-59</option>
-                    <option value="below50">Below 50</option>
-                  </select>
-                </label>
-                <label>
-                  Category
-                  <select value={filters.category} onChange={(event) => handleFilterChange("category", event.target.value)}>
-                    <option value="all">All categories</option>
-                    {filterValues("category").map((value) => <option key={value}>{value}</option>)}
-                  </select>
-                </label>
-                <label>
-                  Product Type
-                  <select value={filters.type} onChange={(event) => handleFilterChange("type", event.target.value)}>
-                    <option value="all">All types</option>
-                    {filterValues("product_type").map((value) => <option key={value}>{value}</option>)}
-                  </select>
-                </label>
-              </div>
+                {/* NEW: Search Bar implementation */}
+                <div className="search-bar" style={{ marginBottom: "16px" }}>
+                  <input
+                    type="text"
+                    placeholder="Search products or brands..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      padding: "10px",
+                      width: "100%",
+                      borderRadius: "8px",
+                      backgroundColor: "#fff",
+                      border: "1px solid #ff0000",
+                      fontSize: "15px",
+                      fontcolor: "#333",
+                    }}
+                  />
+                </div>
+
+                <div className="filters" style={{ display: "grid" }}>
+                  <label>
+                    Score Range
+                    <select value={filters.score} onChange={(event) => handleFilterChange("score", event.target.value)}>
+                      <option value="all">All score ranges</option>
+                      <option value="90_100">90-100</option>
+                      <option value="80_89">80-89</option>
+                      <option value="70_79">70-79</option>
+                      <option value="60_69">60-69</option>
+                      <option value="50_59">50-59</option>
+                      <option value="below50">Below 50</option>
+                    </select>
+                  </label>
+                  <label>
+                    Category
+                    <select value={filters.category} onChange={(event) => handleFilterChange("category", event.target.value)}>
+                      <option value="all">All categories</option>
+                      {filterValues("category").map((value) => <option key={value}>{value}</option>)}
+                    </select>
+                  </label>
+                  <label>
+                    Product Type
+                    <select value={filters.type} onChange={(event) => handleFilterChange("type", event.target.value)}>
+                      <option value="all">All types</option>
+                      {filterValues("product_type").map((value) => <option key={value}>{value}</option>)}
+                    </select>
+                  </label>
+                </div>
                 {products.length ? (
                   <div className="product-grid">
                     {products.map((product) => (
@@ -980,7 +1023,7 @@ export default function MatchStudio({ initialData }) {
                     ))}
                   </div>
                 ) : <div className="empty">No matching catalog products found for your criteria.</div>}
-                
+
                 {data?.returned < data?.total_matches && !searchQuery.trim() ? (
                   <div className="actions">
                     <button className="secondary" disabled={loading} onClick={handleLoadMore} type="button">
