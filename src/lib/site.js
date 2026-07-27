@@ -11,3 +11,10 @@ export function absoluteUrl(pathname = "/") {
 export function productPath(productUid) {
   return `/products/${encodeURIComponent(productUid)}`;
 }
+
+export function scoredProductPath(productUid, score) {
+  const pathname = productPath(productUid);
+  const numericScore = Number(score);
+  if (!Number.isFinite(numericScore)) return pathname;
+  return `${pathname}?score=${encodeURIComponent(String(numericScore))}`;
+}

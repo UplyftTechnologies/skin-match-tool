@@ -16,6 +16,7 @@ import { SKIN_GUIDES } from "@/lib/seo-pages";
 import { absoluteUrl, productPath } from "@/lib/site";
 import SaveProductButton from "@/components/save-product-button";
 import Header from "@/components/header";
+import ProductScoreBadge from "@/components/product-score-badge";
 
 export const dynamicParams = false;
 
@@ -191,7 +192,7 @@ export default async function ProductPage({ params }) {
         <div className="mt-5 grid gap-6 sm:mt-6 lg:mt-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)] lg:gap-10 lg:items-start">
           {/* Image column */}
           <div className="lg:sticky lg:top-6 lg:self-start">
-            <div className="aspect-[4/5] w-full overflow-hidden rounded-[18px] border border-slate-100 bg-white shadow-[0_10px_40px_-12px_rgba(15,23,42,0.12)]">
+            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[18px] border border-slate-100 bg-white shadow-[0_10px_40px_-12px_rgba(15,23,42,0.12)]">
               {product.image ? (
                 <img
                   alt={product.product_name}
@@ -203,6 +204,7 @@ export default async function ProductPage({ params }) {
                   R
                 </div>
               )}
+              <ProductScoreBadge />
             </div>
           </div>
 

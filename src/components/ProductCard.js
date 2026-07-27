@@ -5,7 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { BiHeart } from "react-icons/bi";
 import { BsHeartFill } from "react-icons/bs";
-import { productPath } from "@/lib/site";
+import { scoredProductPath } from "@/lib/site";
 import { useWishlist } from "@/context/WishlistContext";
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
@@ -93,7 +93,7 @@ export default function ProductCard({ product, onVisit }) {
             </button>
 
             <Link
-                href={productPath(product.product_uid)}
+                href={scoredProductPath(product.product_uid, product.score)}
                 className="product-card"
                 onClick={() => onVisit(product)}
             >

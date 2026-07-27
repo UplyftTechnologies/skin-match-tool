@@ -7,10 +7,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
-import { productPath } from "@/lib/site";
+import { productPath, scoredProductPath } from "@/lib/site";
 import OtpModal from "@/components/auth/otp-modal";
 import { supabase } from "@/lib/supabase/client";
-import { getSessionId, getVisitorId, setLoggedInUser } from "@/lib/tracking/identity";
 import { BiHeart } from "react-icons/bi";
 import { BsHeartFill } from "react-icons/bs";
 import { useWishlist } from "@/context/WishlistContext";
@@ -381,7 +380,10 @@ function ProductModal({ product, onClose }) {
               ))}
             </ul>
             <div className="actions">
-              <Link className="details-link" href={productPath(product.product_uid)}>
+              <Link
+                className="details-link"
+                href={scoredProductPath(product.product_uid, product.score)}
+              >
                 Open crawlable product page
               </Link>
             </div>
@@ -735,7 +737,7 @@ export default function MatchStudio({ initialData }) {
       if (!quizTimerRef.current) {
         quizTimerRef.current = setTimeout(() => {
           setIsOtpModalOpen(true);
-        }, 5000);
+        }, 8000);
       }
     }
 
