@@ -19,7 +19,7 @@ import { IoExitOutline, IoPersonCircleOutline } from "react-icons/io5";
 import { saveSkinProfile } from "@/lib/profile-storage";
 import Header from "./header";
 
-const LOGIN_POPUP_DELAY_MS = 8000;
+const LOGIN_POPUP_DELAY_MS = 800000000;
 const QUIZ_SUBMITTED_KEY = "quiz_submitted";
 const LOGIN_POPUP_DUE_AT_KEY = "quiz_login_popup_due_at";
 
@@ -31,17 +31,24 @@ const options = {
     "Body Acne",
     "Dryness",
     "Open Pores",
+
     "Dark Spots",
-    "Melasma",
-    "Barrier Repair",
+    "Redness",
+    "Tanning",
+    "Dullness",
+
     "Uneven Skin Tone",
     "Comedones",
     "Wrinkles",
-    "Redness",
+    "Melasma",
+
+    
     "Dehydration",
-    "Dullness",
-    "Tanning",
-    "none"
+    
+    "Barrier Repair",
+    
+
+    "None"
   ],
   specials: ["Excessive Dryness", "Pregnant", "Breastfeeding", "None"],
 
@@ -222,9 +229,9 @@ function rangeLabel(key) {
 }
 
 function scoreBand(score) {
-  if (score >= 80) return { label: "Good", className: "good" };
-  if (score >= 60) return { label: "Present", className: "present" };
-  return { label: "Weak", className: "weak" };
+  if (score >= 80) return { label: "Great", className: "great" };
+  if (score >= 60) return { label: "Caution", className: "caution" };
+  return { label: "Poor", className: "poor" };
 }
 
 function formatPrice(product) {
@@ -882,16 +889,20 @@ export default function MatchStudio({ initialData }) {
 
       <main id="matcher">
         <section className="panel profile-panel quiz-panel">
-          <div className="quiz-header">
+          {/* <div className="quiz-header">
             <span className="quiz-icon">✨</span>
             <div className="quiz-title-group">
-              <h2>SKIN MATCH TOOL</h2>
+              <h2>Free Skin Match Tool</h2>
               <div className="progress-bar-wrap">
                 <div className="progress-bar-fill" style={{ width: "100%" }}></div>
               </div>
             </div>
-          </div>
+          </div> */}
 
+          <div className="quiz-title-group">
+            
+            <h2>✨ Free Skin Match Tool</h2>
+          </div>
           {/* Question 1: Skin Type */}
           <div className="quiz-section">
             <div className="section-title" style={{ marginBottom: "12px" }}>
@@ -928,10 +939,10 @@ export default function MatchStudio({ initialData }) {
               })}
             </div>
             <div className="sensitivity-row">
-              <span className="inline-label" style={{ marginLeft: "58px" }}>
+              <span className="inline-label" style={{ marginLeft: "78px" }}>
                 Sensitive Skin?
               </span>
-              <div className="sensitivity-toggle" style={{ marginRight: "58px" }}>
+              <div className="sensitivity-toggle" style={{ marginRight: "68px" }}>
                 {options.sensitivityOptions.map((item) => {
                   const active = profile.selectedSensitive !== null && profile.selectedSensitive === (item === "Yes");
                   return (
@@ -1032,11 +1043,11 @@ export default function MatchStudio({ initialData }) {
           </div>
 
           {/* Question 4: Age & Gender */}
-          <div className="quiz-section">
-            <div className="section-title">4. DEMOGRAPHICS</div>
+          {/* <div className="quiz-section"> */}
+            {/* <div className="section-title">4. DEMOGRAPHICS</div> */}
             <div className="demographics-grid">
               <div className="select-field">
-                <label htmlFor="quiz-age-select">AGE GROUP</label>
+                {/* <label htmlFor="quiz-age-select">AGE GROUP</label> */}
                 <select
                   id="quiz-age-select"
                   value={profile.age}
@@ -1050,26 +1061,26 @@ export default function MatchStudio({ initialData }) {
                     });
                   }}
                 >
-                  <option value="" disabled>Select Age Group</option>
+                  <option value="" disabled>Age</option>
                   <option value="Teen">Teen</option>
                   <option value="Adult">Adult</option>
                 </select>
                 {/* NEW: Inline error for age group, shown after a submit attempt */}
                 {missingFieldLabel === "Age Group" ? (
                   <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
-                    Please select age group
+                    Please select age 
                   </p>
                 ) : null}
               </div>
 
               <div className="select-field">
-                <label htmlFor="quiz-gender-select">GENDER IDENTITY</label>
+                {/* <label htmlFor="quiz-gender-select">GENDER IDENTITY</label> */}
                 <select
                   id="quiz-gender-select"
                   value={profile.selectedGender}
                   onChange={(event) => selectGender(event.target.value)}
                 >
-                  <option value="" disabled>Select Gender</option>
+                  <option value="" disabled>Gender</option>
                   <option value="female">Female</option>
                   <option value="male">Male</option>
                   <option value="other">Other</option>
@@ -1083,7 +1094,7 @@ export default function MatchStudio({ initialData }) {
                 ) : null}
               </div>
             </div>
-          </div>
+          {/* </div> */}
 
           <div className="quiz-footer">
             <div className="actions">

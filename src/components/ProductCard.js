@@ -11,9 +11,9 @@ import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
 
 function scoreBand(score) {
-    if (score >= 80) return { label: "Good", className: "good" };
-    if (score >= 60) return { label: "Present", className: "present" };
-    return { label: "Weak", className: "weak" };
+  if (score >= 80) return { label: "Great", className: "great" };
+  if (score >= 60) return { label: "Caution", className: "caution" };
+  return { label: "Poor", className: "poor" };
 }
 
 function scoreRange(score) {
