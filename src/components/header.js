@@ -38,7 +38,8 @@ export default function Header() {
   return (
     <header className="px-2 mx-auto sticky top-0 z-[999]">
       <div className="user-greeting-bar">
-        <span>Hi, <strong>{phone}</strong></span>
+        {/* <span>Hi, <strong>{phone}</strong></span> */}
+        <span><strong>{phone}</strong></span>
         <div className="flex items-center gap-2 lg:gap-3">
           {wishlistIds.length > 0 && (
             <Link

@@ -130,7 +130,7 @@ export default function ProductCard({ product, onVisit }) {
                         <span className="tag">{product.size || "Size unavailable"}</span>
                     </div>
 
-                    <span className="details-link">View product details</span>
+                    {/* <span className="details-link">View product details</span> */}
                 </div>
             </Link>
         </div>
