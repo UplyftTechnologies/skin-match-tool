@@ -14,7 +14,7 @@ export const Logo = ({ dark, onClick }) => (
   <div
     onClick={onClick}
         style={{
-      fontSize: 28,
+      fontSize: 26,
       fontWeight: 700,
       color: dark ? "#000000" : "#111",
       cursor: "pointer",
@@ -66,7 +66,7 @@ export default function Header() {
         }
       `}</style>
 
-      <header className="px-2 mx-auto sticky top-0 z-[999]">
+      <header className="lg:px-6 mx-auto sticky top-0 z-[999]">
         <div className="user-greeting-bar">
           <div className="navbar-logo-slot">
             <Logo

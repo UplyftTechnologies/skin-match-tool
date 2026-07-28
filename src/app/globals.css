@@ -947,6 +947,7 @@ details.payload-details summary {
 
   .product-meta {
     font-size: 0.7rem;
+    white-space: nowrap;
   }
 
   .score-badge {
@@ -1306,7 +1307,7 @@ details.payload-details summary {
   justify-content: space-between;
   max-width: 1420px;
   /* margin: 0 auto 16px auto; */
-  padding: 12px 24px;
+  padding: 12px 30px;
   background: #ffffff;
   border-radius: 999px;
   border: 1.5px solid #e2e8f0;

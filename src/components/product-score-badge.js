@@ -2,10 +2,38 @@
 
 import { useEffect, useState } from "react";
 
+function clampScore(score) {
+  if (score < 0) return 0;
+  if (score > 100) return 100;
+  return score;
+}
+
 function scoreBand(score) {
   if (score >= 80) return { label: "Great", className: "great" };
   if (score >= 60) return { label: "Caution", className: "caution" };
   return { label: "Poor", className: "poor" };
+}
+
+function scoreRange(score) {
+  if (score >= 90) return "90_100";
+  if (score >= 80) return "80_89";
+  if (score >= 70) return "70_79";
+  if (score >= 60) return "60_69";
+  if (score >= 50) return "50_59";
+  return "below50";
+}
+
+const SCORE_RANGE_COLORS = {
+  "90_100": "#197A4D",
+  "80_89": "#22c55e",
+  "70_79": "#84cc16",
+  "60_69": "#f97316",
+  "50_59": "#f43f5e",
+  below50: "#dc2626",
+};
+
+function scoreColor(score) {
+  return SCORE_RANGE_COLORS[scoreRange(score)];
 }
 
 export default function ProductScoreBadge() {
@@ -13,9 +41,9 @@ export default function ProductScoreBadge() {
 
   useEffect(() => {
     const updateTimer = window.setTimeout(() => {
-      const value = Number(new URLSearchParams(window.location.search).get("score"));
-      if (Number.isFinite(value) && value >= 0 && value <= 100) {
-        setScore(value);
+      const raw = Number(new URLSearchParams(window.location.search).get("score"));
+      if (Number.isFinite(raw)) {
+        setScore(clampScore(raw));
       }
     }, 0);
 
@@ -26,7 +54,10 @@ export default function ProductScoreBadge() {
 
   const band = scoreBand(score);
   return (
-    <div className={`score-badge score-${band.className}`}>
+    <div
+      className={`score-badge score-${band.className}`}
+      style={{ backgroundColor: scoreColor(score) }}
+    >
       <div>
         {score}
         <small>{band.label}</small>

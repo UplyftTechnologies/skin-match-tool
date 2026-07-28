@@ -176,7 +176,6 @@ export default async function ProductPage({ params }) {
         type="application/ld+json"
       />
 
-      {/* ---------------------------------------------------------------- Header */}
       <div className="block w-full mx-auto max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8 lg:px-6">
         <Link
           className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 transition hover:text-sky-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
