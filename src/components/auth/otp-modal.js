@@ -30,6 +30,39 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
     return () => clearTimeout(timer);
   }, [step, resendTimer]);
 
+  useEffect(() => {
+    if (step !== 2) return;
+    if (typeof window === 'undefined' || !('OTPCredential' in window)) return;
+
+    const ac = new AbortController();
+
+    navigator.credentials
+      .get({
+        otp: { transport: ['sms'] },
+        signal: ac.signal,
+      })
+      .then((otpCredential) => {
+        if (otpCredential?.code) {
+          const digits = otpCredential.code.replace(/\D/g, '').slice(0, 6).split('');
+          if (digits.length === 6) {
+            const newOtp = ['', '', '', '', '', ''];
+            digits.forEach((d, i) => { newOtp[i] = d; });
+            setOtp(newOtp);
+            triggerVerify(digits.join(''));
+          }
+        }
+      })
+      .catch((err) => {
+        // AbortError is expected on cleanup/unmount, safe to ignore
+        if (err?.name !== 'AbortError') {
+          console.log('[WebOTP]:', err);
+        }
+      });
+
+    return () => ac.abort();
+  }, [step]);
+
+
   // Helper to extract clean token from MSG91 responses
   const extractToken = (data) => {
     if (!data) return null;
@@ -384,6 +417,8 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
                 </span>
                 <input
                   type="tel"
+                  name="phone"
+                  autoComplete="tel"
                   maxLength="10"
                   placeholder="Enter 10-digit mobile number"
                   value={phone}
@@ -415,6 +450,8 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
                     type="text"
                     inputMode="numeric"
                     maxLength="1"
+                    autoComplete={idx === 0 ? 'one-time-code' : 'off'}
+                    name={idx === 0 ? 'otp' : undefined}
                     value={digit}
                     onChange={(e) => handleOtpChange(idx, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(idx, e)}

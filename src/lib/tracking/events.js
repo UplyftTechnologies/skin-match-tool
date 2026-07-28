@@ -7,6 +7,7 @@ export const EVENTS = {
   LOGIN_POPUP_SHOWN: 'login_popup_shown',
   CLICKED_SEND_OTP: 'clicked_send_otp',
   CLICKED_RESEND_OTP: 'clicked_resend_otp',
+      CLICKED_LOGO: 'clicked_logo',
   OTP_VERIFIED: 'otp_verified',
   PAGE_VIEWED_SKIN_MATCH_TOOL: 'page_viewed_skin_match_tool',
   ACCOUNT_CREATED: 'login_successful',

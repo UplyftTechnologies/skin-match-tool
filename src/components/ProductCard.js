@@ -76,7 +76,6 @@ export default function ProductCard({ product, onVisit }) {
         );
     }
 
-
     return (
         <div className="product-card-wrap relative">
             <button
@@ -86,7 +85,7 @@ export default function ProductCard({ product, onVisit }) {
                 className="absolute z-10 top-1 left-1 lg:top-2 lg:left-2"
             >
                 {wishlisted ? (
-                    <BsHeartFill color="red" size={21} />
+                    <BsHeartFill color="red" className="mt-1 mx-1" size={21} />
                 ) : (
                     <BiHeart className="text-black" size={28} />
                 )}
