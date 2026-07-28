@@ -938,7 +938,7 @@ export default function MatchStudio({ initialData }) {
                 );
               })}
             </div>
-            <div className="sensitivity-row flex items-center justify-center flex-wrap gap-">
+            <div className="sensitivity-row flex items-center justify-center flex-wrap gap-3">
               <span className="inline-label">
                 Sensitive Skin?
               </span>
