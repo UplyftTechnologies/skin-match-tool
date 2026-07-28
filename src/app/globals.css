@@ -1081,6 +1081,33 @@ details.payload-details summary {
   font-size: 0.72rem;
   color: #64748b;
 }
+.quiz-field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.68rem;
+  color: #ff0000;
+  font-weight: 800;
+  text-align: center;
+  animation: shake 0.7s ease-in-out infinite,
+             pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
 
 /* 1. Skin Type Grid Cards */
 .skin-type-grid {

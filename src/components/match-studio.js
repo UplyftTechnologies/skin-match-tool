@@ -968,12 +968,12 @@ export default function MatchStudio({ initialData }) {
             </div>
             {/* NEW: Inline errors for skin type / sensitivity, shown after a submit attempt */}
             {missingFieldLabel === "Skin Type" ? (
-              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+              <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
                 Please select your skin type
               </p>
             ) : null}
             {missingFieldLabel === "Sensitive Skin" ? (
-              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+              <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
                 Please select whether your skin is sensitive
               </p>
             ) : null}
@@ -1008,7 +1008,7 @@ export default function MatchStudio({ initialData }) {
             </div>
             {/* NEW: Inline error for skin concerns, shown after a submit attempt */}
             {missingFieldLabel === "Skin Concern" ? (
-              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+              <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
                 Please select a skin concern
               </p>
             ) : null}
@@ -1036,7 +1036,7 @@ export default function MatchStudio({ initialData }) {
             </div>
             {/* NEW: Inline error for special conditions, shown after a submit attempt */}
             {missingFieldLabel === "Special Condition" ? (
-              <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+              <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
                 Please select a special condition
               </p>
             ) : null}
@@ -1067,7 +1067,7 @@ export default function MatchStudio({ initialData }) {
                 </select>
                 {/* NEW: Inline error for age group, shown after a submit attempt */}
                 {missingFieldLabel === "Age Group" ? (
-                  <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                  <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
                     Please select age 
                   </p>
                 ) : null}
@@ -1088,7 +1088,7 @@ export default function MatchStudio({ initialData }) {
                 </select>
                 {/* NEW: Inline error for gender, shown after a submit attempt */}
                 {missingFieldLabel === "Gender" ? (
-                  <p className="quiz-field-error" role="alert" style={{ color: "#c0392b", fontSize: "13px", marginTop: "6px" }}>
+                  <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
                     Please select gender
                   </p>
                 ) : null}
