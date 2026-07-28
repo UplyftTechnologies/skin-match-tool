@@ -19,7 +19,7 @@ import { IoExitOutline, IoPersonCircleOutline } from "react-icons/io5";
 import { saveSkinProfile } from "@/lib/profile-storage";
 import Header from "./header";
 
-const LOGIN_POPUP_DELAY_MS = 800000000;
+const LOGIN_POPUP_DELAY_MS = 8000;
 const QUIZ_SUBMITTED_KEY = "quiz_submitted";
 const LOGIN_POPUP_DUE_AT_KEY = "quiz_login_popup_due_at";
 
