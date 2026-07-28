@@ -847,7 +847,7 @@ details.payload-details summary {
 
 @media (max-width: 760px) {
   header {
-    padding-top: 4px;
+    /* padding-top: 4px; */
     margin-top: 0px;
   }
 
@@ -1307,9 +1307,9 @@ details.payload-details summary {
   justify-content: space-between;
   max-width: 1420px;
   /* margin: 0 auto 16px auto; */
-  padding: 12px 30px;
+  padding: 8px 10px;
   background: #ffffff;
-  border-radius: 999px;
+  /* border-radius: 999px; */
   border: 1.5px solid #e2e8f0;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
   font-size: 1.1rem;

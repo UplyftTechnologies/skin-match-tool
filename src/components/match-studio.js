@@ -901,7 +901,7 @@ export default function MatchStudio({ initialData }) {
 
           <div className="quiz-title-group">
 
-            <h2>✨ Free Skin Match Tool</h2>
+            <h2>✨ Free Skin Match Studio</h2>
           </div>
           {/* Question 1: Skin Type */}
           <div className="quiz-section">
