@@ -622,7 +622,7 @@ select {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-weight: 950;
+  font-weight: 700;
 }
 
 .price-row del {
@@ -1207,7 +1207,7 @@ details.payload-details summary {
 .sensitivity-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   margin-top: 8px;
 }
 

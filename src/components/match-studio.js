@@ -42,11 +42,11 @@ const options = {
     "Wrinkles",
     "Melasma",
 
-    
+
     "Dehydration",
-    
+
     "Barrier Repair",
-    
+
 
     "None"
   ],
@@ -532,7 +532,7 @@ export default function MatchStudio({ initialData }) {
       let payload = {};
       try {
         payload = JSON.parse(responseText);
-        } catch {
+      } catch {
         // Handle non-JSON responses
       }
       if (!response.ok) throw new Error(payload.error || "Unable to load recommendations.");
@@ -900,7 +900,7 @@ export default function MatchStudio({ initialData }) {
           </div> */}
 
           <div className="quiz-title-group">
-            
+
             <h2>✨ Free Skin Match Tool</h2>
           </div>
           {/* Question 1: Skin Type */}
@@ -938,13 +938,17 @@ export default function MatchStudio({ initialData }) {
                 );
               })}
             </div>
-            <div className="sensitivity-row">
-              <span className="inline-label" style={{ marginLeft: "68px" }}>
+            <div className="sensitivity-row flex items-center justify-center flex-wrap gap-">
+              <span className="inline-label">
                 Sensitive Skin?
               </span>
-              <div className="sensitivity-toggle" style={{ marginRight: "68px" }}>
+
+              <div className="sensitivity-toggle">
                 {options.sensitivityOptions.map((item) => {
-                  const active = profile.selectedSensitive !== null && profile.selectedSensitive === (item === "Yes");
+                  const active =
+                    profile.selectedSensitive !== null &&
+                    profile.selectedSensitive === (item === "Yes");
+
                   return (
                     <button
                       key={item}
@@ -968,12 +972,12 @@ export default function MatchStudio({ initialData }) {
             </div>
             {/* NEW: Inline errors for skin type / sensitivity, shown after a submit attempt */}
             {missingFieldLabel === "Skin Type" ? (
-              <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
+              <p className="quiz-field-error" role="alert" style={{ fontSize: "13px", marginTop: "6px" }}>
                 Please select your skin type
               </p>
             ) : null}
             {missingFieldLabel === "Sensitive Skin" ? (
-              <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
+              <p className="quiz-field-error" role="alert" style={{ fontSize: "13px", marginTop: "6px" }}>
                 Please select whether your skin is sensitive
               </p>
             ) : null}
@@ -1008,7 +1012,7 @@ export default function MatchStudio({ initialData }) {
             </div>
             {/* NEW: Inline error for skin concerns, shown after a submit attempt */}
             {missingFieldLabel === "Skin Concern" ? (
-              <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
+              <p className="quiz-field-error" role="alert" style={{ fontSize: "13px", marginTop: "6px" }}>
                 Please select a skin concern
               </p>
             ) : null}
@@ -1036,7 +1040,7 @@ export default function MatchStudio({ initialData }) {
             </div>
             {/* NEW: Inline error for special conditions, shown after a submit attempt */}
             {missingFieldLabel === "Special Condition" ? (
-              <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
+              <p className="quiz-field-error" role="alert" style={{ fontSize: "13px", marginTop: "6px" }}>
                 Please select a special condition
               </p>
             ) : null}
@@ -1044,56 +1048,56 @@ export default function MatchStudio({ initialData }) {
 
           {/* Question 4: Age & Gender */}
           {/* <div className="quiz-section"> */}
-            {/* <div className="section-title">4. DEMOGRAPHICS</div> */}
-            <div className="demographics-grid">
-              <div className="select-field">
-                {/* <label htmlFor="quiz-age-select">AGE GROUP</label> */}
-                <select
-                  id="quiz-age-select"
-                  value={profile.age}
-                  onChange={(event) => {
-                    update("age", event.target.value);
-                    trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
-                      field: "age",
-                      question: "Age",
-                      answer: event.target.value,
-                      value: event.target.value,
-                    });
-                  }}
-                >
-                  <option value="" disabled>Age</option>
-                  <option value="Teen">Teen</option>
-                  <option value="Adult">Adult</option>
-                </select>
-                {/* NEW: Inline error for age group, shown after a submit attempt */}
-                {missingFieldLabel === "Age Group" ? (
-                  <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
-                    Please select age 
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="select-field">
-                {/* <label htmlFor="quiz-gender-select">GENDER IDENTITY</label> */}
-                <select
-                  id="quiz-gender-select"
-                  value={profile.selectedGender}
-                  onChange={(event) => selectGender(event.target.value)}
-                >
-                  <option value="" disabled>Gender</option>
-                  <option value="female">Female</option>
-                  <option value="male">Male</option>
-                  <option value="other">Other</option>
-                  <option value="prefer not to say">Prefer not to say</option>
-                </select>
-                {/* NEW: Inline error for gender, shown after a submit attempt */}
-                {missingFieldLabel === "Gender" ? (
-                  <p className="quiz-field-error" role="alert" style={{  fontSize: "13px", marginTop: "6px" }}>
-                    Please select gender
-                  </p>
-                ) : null}
-              </div>
+          {/* <div className="section-title">4. DEMOGRAPHICS</div> */}
+          <div className="demographics-grid">
+            <div className="select-field">
+              {/* <label htmlFor="quiz-age-select">AGE GROUP</label> */}
+              <select
+                id="quiz-age-select"
+                value={profile.age}
+                onChange={(event) => {
+                  update("age", event.target.value);
+                  trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+                    field: "age",
+                    question: "Age",
+                    answer: event.target.value,
+                    value: event.target.value,
+                  });
+                }}
+              >
+                <option value="" disabled>Age</option>
+                <option value="Teen">Teen</option>
+                <option value="Adult">Adult</option>
+              </select>
+              {/* NEW: Inline error for age group, shown after a submit attempt */}
+              {missingFieldLabel === "Age Group" ? (
+                <p className="quiz-field-error" role="alert" style={{ fontSize: "13px", marginTop: "6px" }}>
+                  Please select age
+                </p>
+              ) : null}
             </div>
+
+            <div className="select-field">
+              {/* <label htmlFor="quiz-gender-select">GENDER IDENTITY</label> */}
+              <select
+                id="quiz-gender-select"
+                value={profile.selectedGender}
+                onChange={(event) => selectGender(event.target.value)}
+              >
+                <option value="" disabled>Gender</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="other">Other</option>
+                <option value="prefer not to say">Prefer not to say</option>
+              </select>
+              {/* NEW: Inline error for gender, shown after a submit attempt */}
+              {missingFieldLabel === "Gender" ? (
+                <p className="quiz-field-error" role="alert" style={{ fontSize: "13px", marginTop: "6px" }}>
+                  Please select gender
+                </p>
+              ) : null}
+            </div>
+          </div>
           {/* </div> */}
 
           <div className="quiz-footer">
