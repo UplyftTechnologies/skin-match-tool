@@ -939,7 +939,7 @@ export default function MatchStudio({ initialData }) {
               })}
             </div>
             <div className="sensitivity-row">
-              <span className="inline-label" style={{ marginLeft: "78px" }}>
+              <span className="inline-label" style={{ marginLeft: "68px" }}>
                 Sensitive Skin?
               </span>
               <div className="sensitivity-toggle" style={{ marginRight: "68px" }}>
