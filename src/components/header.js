@@ -13,7 +13,7 @@ import { EVENTS } from "@/lib/tracking/events";
 export const Logo = ({ dark, onClick }) => (
   <div
     onClick={onClick}
-        style={{
+    style={{
       fontSize: 26,
       fontWeight: 700,
       color: dark ? "#000000" : "#111",
@@ -29,29 +29,30 @@ export const Logo = ({ dark, onClick }) => (
 
 export default function Header() {
   const [userSession, setUserSession] = useState(null);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
   const { wishlistIds } = useWishlist();
   const router = useRouter();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUserSession(session);
+      setSessionLoaded(true);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserSession(session);
+      setSessionLoaded(true);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  if (!userSession) return null;
-
   const phone =
-    userSession.user?.phone ||
-    userSession.user?.user_metadata?.phone_no ||
-    userSession.user?.user_metadata?.phone ||
+    userSession?.user?.phone ||
+    userSession?.user?.user_metadata?.phone_no ||
+    userSession?.user?.user_metadata?.phone ||
     "User";
 
   return (
@@ -84,32 +85,50 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-2 lg:gap-3">
-            {wishlistIds.length > 0 && (
-              <Link
-                href="/wishlist"
-                aria-label="View wishlist"
-                className="relative flex items-center"
-                onClick={() =>
-                  trackingService.trackEvent(EVENTS.CLICKED_WISHLIST_ICON, {
-                    wishlist_count: wishlistIds.length,
-                  })
-                }
-              >
-                <BiHeart className="text-gray-800" size={22} />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
-                  {wishlistIds.length}
-                </span>
-              </Link>
-            )}
+            {userSession ? (
+              <>
+                {wishlistIds.length > 0 && (
+                  <Link
+                    href="/wishlist"
+                    aria-label="View wishlist"
+                    className="relative flex items-center"
+                    onClick={() =>
+                      trackingService.trackEvent(EVENTS.CLICKED_WISHLIST_ICON, {
+                        wishlist_count: wishlistIds.length,
+                      })
+                    }
+                  >
+                    <BiHeart className="text-gray-800" size={22} />
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
+                      {wishlistIds.length}
+                    </span>
+                  </Link>
+                )}
 
-            <Link
-              href="/profile"
-              aria-label="View your skin profile"
-              className="flex items-center text-gray-800"
-              onClick={() => trackingService.trackEvent(EVENTS.CLICKED_PROFILE_ICON)}
-            >
-              <IoPersonCircleOutline size={24} />
-            </Link>
+                <Link
+                  href="/profile"
+                  aria-label="View your skin profile"
+                  className="flex items-center text-gray-800"
+                  onClick={() => trackingService.trackEvent(EVENTS.CLICKED_PROFILE_ICON)}
+                >
+                  <IoPersonCircleOutline size={24} />
+                </Link>
+              </>
+            ) : (
+              <>
+              </>
+              // sessionLoaded && (
+              //   <Link
+              //     href="/login"
+              //     aria-label="Login"
+              //     className="flex items-center gap-1 text-gray-800"
+              //     onClick={() => trackingService.trackEvent(EVENTS.CLICKED_LOGIN_ICON)}
+              //   >
+              //     <IoPersonCircleOutline size={24} />
+              //     <span className="text-sm font-medium hidden sm:inline">Login</span>
+              //   </Link>
+              // )
+            )}
           </div>
         </div>
       </header>
