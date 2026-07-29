@@ -4,7 +4,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   FiAlertTriangle,
-  FiArrowLeft,
   FiCompass,
   FiDroplet,
   FiInfo,
@@ -17,6 +16,7 @@ import { absoluteUrl, productPath } from "@/lib/site";
 import SaveProductButton from "@/components/save-product-button";
 import Header from "@/components/header";
 import ProductScoreBadge from "@/components/product-score-badge";
+import BackButton from "@/components/back-button";
 
 export const dynamicParams = false;
 
@@ -105,7 +105,6 @@ export default async function ProductPage({ params }) {
   const hasDiscount = mrpValue && spValue && mrpValue > spValue;
   const percentOff = hasDiscount ? Math.round(((mrpValue - spValue) / mrpValue) * 100) : null;
 
-  // Shape the product to match what ProductCard / WishlistContext expect
   const wishlistProduct = {
     product_uid: product.product_uid,
     product_name: product.product_name,
@@ -117,7 +116,7 @@ export default async function ProductPage({ params }) {
     mrp: product.mrp,
     size: product.sku_size,
     when_to_use: product.when_to_use,
-    score: product.score, // may be undefined here — ProductCard handles that gracefully
+    score: product.score,
   };
 
   const canonical = absoluteUrl(productPath(product.product_uid));
@@ -168,22 +167,14 @@ export default async function ProductPage({ params }) {
 
   return (
     <div className="rps-pdp min-h-screen bg-slate-50 pb-28 text-slate-800 lg:pb-0">
-      <Header
-       
-      />
+      <Header />
       <script
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
         type="application/ld+json"
       />
 
       <div className="block w-full mx-auto max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8 lg:px-6">
-        <Link
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 transition hover:text-sky-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
-          href="/"
-        >
-          <FiArrowLeft aria-hidden="true" className="h-4 w-4" />
-          Back to matches
-        </Link>
+        <BackButton/>
       </div>
 
       {/* ------------------------------------------------------------- Hero split */}
@@ -239,7 +230,6 @@ export default async function ProductPage({ params }) {
             </div>
             <p className="mt-1 text-[12px] text-slate-400">Inclusive of all taxes</p>
 
-            {/* CTA — desktop / tablet button, hidden below lg since the mobile sticky bar covers it there */}
             <div className="mt-5 hidden lg:block">
               <SaveProductButton
                 product={wishlistProduct}
@@ -250,7 +240,6 @@ export default async function ProductPage({ params }) {
               />
             </div>
 
-            {/* Signature: catalog spec "label" card */}
             <div className="mt-6 rounded-[14px] border border-slate-100 bg-slate-50/60 px-4 py-4 sm:px-5">
               <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-400 sm:text-[10.5px]">
                 <FiTag aria-hidden="true" className="h-3.5 w-3.5 text-sky-500" />
@@ -269,7 +258,6 @@ export default async function ProductPage({ params }) {
 
         {/* ---------------------------------------------------------- Detail rows */}
         <div className="mt-6 rounded-[18px] border border-slate-100 bg-white shadow-[0_10px_40px_-12px_rgba(15,23,42,0.12)] sm:mt-8 lg:mt-10">
-          {/* Key ingredients */}
           <div className="grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
             <SectionHeading icon={FiDroplet} title="KEY INGREDIENTS" />
             <div className="max-w-2xl">
@@ -305,7 +293,6 @@ export default async function ProductPage({ params }) {
             </div>
           </div>
 
-          {/* How to use */}
           <div className="grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
             <SectionHeading icon={FiInfo} title="HOW TO USE" />
             <p className="max-w-2xl text-[14px] leading-relaxed text-slate-600 sm:text-[14.5px]">
@@ -313,7 +300,6 @@ export default async function ProductPage({ params }) {
             </p>
           </div>
 
-          {/* Ingredient cautions */}
           {product.ingredient_cautions ? (
             <div className="grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
               <div className="flex items-center gap-2">
@@ -328,7 +314,6 @@ export default async function ProductPage({ params }) {
             </div>
           ) : null}
 
-          {/* Safety note */}
           <div className="grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
             <SectionHeading icon={FiShield} title="SAFETY NOTE" />
             <p className="max-w-2xl text-[13px] leading-relaxed text-slate-400 sm:text-[13.5px]">
@@ -338,7 +323,6 @@ export default async function ProductPage({ params }) {
             </p>
           </div>
 
-          {/* Explore skincare guides */}
           <div className="grid gap-3 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
             <SectionHeading icon={FiCompass} title="EXPLORE GUIDES" />
             <div className="flex flex-wrap gap-2">

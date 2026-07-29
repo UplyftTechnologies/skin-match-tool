@@ -3,6 +3,7 @@ import Script from "next/script";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { WishlistProvider } from "@/context/WishlistContext";
 import SiteExitTracker from "@/components/tracking/site-exit-tracker";
+import ScrollRestoreGuard from "@/components/scroll-restore-guard";
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
@@ -68,6 +69,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+        <ScrollRestoreGuard />
         <SiteExitTracker />
         <WishlistProvider>
           {children}

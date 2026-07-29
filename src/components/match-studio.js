@@ -128,6 +128,7 @@ const EMPTY_PROFILE = {
 };
 
 const MATCHER_HISTORY_KEY = "roopsee_matcher_history";
+const SCROLL_POS_KEY = "roopsee_home_scroll_pos";
 
 function isCompleteStoredProfile(profile) {
   return Boolean(
@@ -548,10 +549,8 @@ export default function MatchStudio({ initialData }) {
     }
   }, []);
 
-  // console.log(payload,"payload")
-
   useEffect(() => {
-    const restoreTimer = window.setTimeout(() => {
+    const restoreTimer = window.setTimeout(async () => {
       const selectedGuide = new URLSearchParams(window.location.search).get("guide");
       if (selectedGuide) {
         setHistoryRestored(true);
@@ -568,8 +567,9 @@ export default function MatchStudio({ initialData }) {
         if (["products", "routine"].includes(savedState?.view)) setView(savedState.view);
         if (Number.isFinite(savedState?.limit)) setLimit(savedState.limit);
 
-        if (savedState?.hasResults && isCompleteStoredProfile(savedState.profile)) {
-          void recommend(savedState.profile, savedState.limit || 500);
+        // UPDATED: restore the actual saved results directly — no API call needed
+        if (savedState?.data) {
+          setData(savedState.data);
         }
       } catch (restoreError) {
         console.warn("[match-studio] Unable to restore matcher history:", restoreError.message);
@@ -592,12 +592,14 @@ export default function MatchStudio({ initialData }) {
         searchQuery,
         view,
         limit,
-        hasResults: Boolean(data),
+        data, // UPDATED: store actual results, not just a "hasResults" flag
       }));
     } catch (saveError) {
       console.warn("[match-studio] Unable to save matcher history:", saveError.message);
     }
   }, [data, filters, historyRestored, limit, profile, searchQuery, view]);
+
+
 
   // UPDATED: Added search functionality to useMemo
   const products = useMemo(() => (data?.products || []).filter((product) => {
