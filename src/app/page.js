@@ -34,6 +34,45 @@ export default function Home() {
       isAccessibleForFree: true,
       publisher: { "@id": `${SITE_URL}/#organization` },
     },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "@id": `${SITE_URL}/#faq`,
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "How is the product match score calculated?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Each product is scored against your skin type, sensitivity, primary concern, and any special conditions you select (like pregnancy or excessive dryness). Products scoring 80 and above are labelled \"Great\" matches, 60-79 are a caution zone, and anything below 60 typically isn't recommended for your profile.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is Match My Skin free to use?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. The skin match quiz and product recommendations are completely free, with no login required to see your results.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Do I need to create an account?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "No account is required to take the quiz or view your matches. You can optionally sign in to save your skin profile and revisit your results later.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What skin concerns does the tool cover?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The matcher covers acne, body acne, dryness, open pores, dark spots, redness, tanning, dullness, uneven skin tone, comedones, wrinkles, melasma, dehydration and barrier repair.",
+          },
+        },
+      ],
+    },
   ];
 
   return (
@@ -45,7 +84,7 @@ export default function Home() {
       <MatchStudio initialData={initialData} />
 
 
-         <section className="seo-content-section hidden" style={{ maxWidth: 960, margin: "0 auto", padding: "48px 20px" }}>
+      <section className="seo-content-section hidden" style={{ maxWidth: 960, margin: "0 auto", padding: "48px 20px" }}>
         <h2>How the Roopsee Skin Match Studio works</h2>
         <p>
           Match My Skin is a free tool that recommends skincare products based on
