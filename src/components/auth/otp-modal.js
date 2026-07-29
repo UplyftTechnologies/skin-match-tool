@@ -113,15 +113,29 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
         return;
       }
 
-      // Set Supabase session on client
+      // Set the Supabase session before tracking the login, so every analytics
+      // destination receives the authenticated user's identity.
       if (backendData.token && backendData.refresh_token) {
-        trackingService.trackEvent(EVENTS.OTP_VERIFIED, {
-          phone_number: backendData.user?.phone || phone,
-        });
-        await supabase.auth.setSession({
+        const { error: sessionError } = await supabase.auth.setSession({
           access_token: backendData.token,
           refresh_token: backendData.refresh_token,
         });
+
+        if (sessionError) {
+          throw sessionError;
+        }
+
+        const loginProperties = {
+          phone_number: backendData.user?.phone || phone,
+          is_new_user: Boolean(backendData.is_new_user),
+        };
+
+       
+        void trackingService.trackEvent(EVENTS.OTP_VERIFIED, loginProperties);
+        void trackingService.trackEvent(
+          backendData.is_new_user ? EVENTS.LOGIN_SUCCESSFUL : EVENTS.EXISTING_USER_LOGIN,
+          loginProperties
+        );
       }
 
       setLoading(false);
@@ -346,7 +360,7 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
     }
   };
 
-  const triggerVerify = (otpCode) => {
+  function triggerVerify(otpCode) {
     const code = otpCode || otp.join('');
     if (code.length !== 6) {
       setError('Please enter complete 6-digit OTP.');
@@ -390,7 +404,7 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
         }
       }
     );
-  };
+  }
 
   if (!isOpen) return null;
 

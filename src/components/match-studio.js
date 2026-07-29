@@ -20,6 +20,7 @@ import Header from "./header";
 
 const LOGIN_POPUP_DELAY_MS = 8000;
 const QUIZ_SUBMITTED_KEY = "quiz_submitted";
+const QUIZ_COMPLETED_KEY = "roopsee_quiz_completed";
 const LOGIN_POPUP_DUE_AT_KEY = "quiz_login_popup_due_at";
 
 const options = {
@@ -464,6 +465,7 @@ export default function MatchStudio({ initialData }) {
   const [userSession, setUserSession] = useState(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const quizTimerRef = useRef(null);
+  const quizCompletedRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -758,7 +760,29 @@ export default function MatchStudio({ initialData }) {
       return;
     }
 
-    trackingService.trackEvent(EVENTS.QUIZ_UPDATED, {
+    // Keep this marker separate from QUIZ_SUBMITTED_KEY, which only controls
+    // the delayed login prompt and is cleared after authentication.
+    if (quizCompletedRef.current === null) {
+      quizCompletedRef.current = typeof window !== "undefined"
+        && localStorage.getItem(QUIZ_COMPLETED_KEY) === "true";
+    }
+
+    const quizEvent = quizCompletedRef.current
+      ? EVENTS.QUIZ_UPDATED
+      : EVENTS.QUIZ_COMPLETED;
+
+    // Set the in-memory marker before sending the event to prevent a rapid
+    // second click from recording another completion event.
+    if (!quizCompletedRef.current) {
+      quizCompletedRef.current = true;
+      try {
+        localStorage.setItem(QUIZ_COMPLETED_KEY, "true");
+      } catch {
+        // The ref still prevents duplicate completion events in this session.
+      }
+    }
+
+    trackingService.trackEvent(quizEvent, {
       ...profile,
       quizAnswerSummary: [
         profile.selectedSkinType,
