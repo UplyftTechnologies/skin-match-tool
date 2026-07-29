@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { BiHeart } from "react-icons/bi";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { supabase } from "@/lib/supabase/client";
@@ -32,6 +32,7 @@ export default function Header() {
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const { wishlistIds } = useWishlist();
   const router = useRouter();
+  const pathname = usePathname(); // NEW
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -55,6 +56,29 @@ export default function Header() {
     userSession?.user?.user_metadata?.phone ||
     "User";
 
+  // NEW: handle logo click — always scroll to top, whether already on "/" or navigating there
+  function handleLogoClick() {
+    trackingService.trackEvent(EVENTS.CLICKED_LOGO, {
+      clickedFrom: "navbar_logo",
+      path: "/",
+      userName: phone,
+    });
+
+    if (pathname === "/") {
+      // Already on home — router.push to the same route is a no-op, so scroll manually.
+      // Also clear the saved scroll position so a later browser-back doesn't
+      // pull the user back down after they explicitly asked to go to top.
+      try {
+        sessionStorage.removeItem("roopsee_home_scroll_pos");
+      } catch {
+        // ignore storage errors
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      router.push("/");
+    }
+  }
+
   return (
     <>
       <style>{`
@@ -70,18 +94,7 @@ export default function Header() {
       <header className="lg:px-6 mx-auto sticky top-0 z-[999]">
         <div className="user-greeting-bar">
           <div className="navbar-logo-slot">
-            <Logo
-              dark={false}
-              onClick={() => {
-                trackingService.trackEvent(EVENTS.CLICKED_LOGO, {
-                  clickedFrom: "navbar_logo",
-                  path: "/",
-                  userName: phone,
-                });
-
-                router.push("/");
-              }}
-            />
+            <Logo dark={false} onClick={handleLogoClick} />
           </div>
 
           <div className="flex items-center gap-2 lg:gap-3">
@@ -114,21 +127,7 @@ export default function Header() {
                   <IoPersonCircleOutline size={24} />
                 </Link>
               </>
-            ) : (
-              <>
-              </>
-              // sessionLoaded && (
-              //   <Link
-              //     href="/login"
-              //     aria-label="Login"
-              //     className="flex items-center gap-1 text-gray-800"
-              //     onClick={() => trackingService.trackEvent(EVENTS.CLICKED_LOGIN_ICON)}
-              //   >
-              //     <IoPersonCircleOutline size={24} />
-              //     <span className="text-sm font-medium hidden sm:inline">Login</span>
-              //   </Link>
-              // )
-            )}
+            ) : null}
           </div>
         </div>
       </header>

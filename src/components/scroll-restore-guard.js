@@ -28,8 +28,7 @@ export default function ScrollRestoreGuard() {
     };
     window.addEventListener("scroll", saveScroll, { passive: true });
 
-    let forceInterval = null;
-    let revealTimeout = null;
+    let pollTimeout = null;
 
     const forceRestore = () => {
       if (window.location.pathname !== "/") return;
@@ -38,35 +37,30 @@ export default function ScrollRestoreGuard() {
       if (!Number.isFinite(saved) || saved <= 0) return;
 
       isRestoringRef.current = true;
-
-      // NEW: hide the page instantly so the user never sees the top-of-page flash.
-      // visibility:hidden (not display:none) keeps layout/height intact so
-      // scrollHeight/scrollTo still work normally underneath.
+      // Hide immediately so no intermediate/empty state is ever visible
       document.documentElement.style.visibility = "hidden";
 
-      let elapsed = 0;
-      const step = 20;
-      const maxDuration = 800; // restoring happens fast since data is already in sessionStorage
+      let attempts = 0;
+      const maxAttempts = 40; // hard cap ~1s so we never hide forever
 
-      if (forceInterval) clearInterval(forceInterval);
-      if (revealTimeout) clearTimeout(revealTimeout);
-
-      forceInterval = setInterval(() => {
+      const tick = () => {
+        attempts += 1;
         window.scrollTo(0, saved);
-        elapsed += step;
-        if (elapsed >= maxDuration) {
-          clearInterval(forceInterval);
-          forceInterval = null;
+
+        // Only reveal once the page is actually tall enough to hold this scroll position
+        const tallEnough = document.documentElement.scrollHeight >= saved + window.innerHeight;
+
+        if (tallEnough || attempts >= maxAttempts) {
+          window.scrollTo(0, saved);
+          document.documentElement.style.visibility = "visible";
+          isRestoringRef.current = false;
+          return;
         }
-      }, step);
 
-      // Reveal shortly after — long enough for the DOM to have the restored
-      // height/content, short enough that it still feels instant.
-      revealTimeout = setTimeout(() => {
-        window.scrollTo(0, saved);
-        document.documentElement.style.visibility = "visible";
-        isRestoringRef.current = false;
-      }, 150);
+        pollTimeout = setTimeout(tick, 25);
+      };
+
+      requestAnimationFrame(tick);
     };
 
     window.addEventListener("popstate", forceRestore);
@@ -74,8 +68,7 @@ export default function ScrollRestoreGuard() {
     return () => {
       window.removeEventListener("scroll", saveScroll);
       window.removeEventListener("popstate", forceRestore);
-      if (forceInterval) clearInterval(forceInterval);
-      if (revealTimeout) clearTimeout(revealTimeout);
+      if (pollTimeout) clearTimeout(pollTimeout);
       document.documentElement.style.visibility = "visible";
     };
   }, []);

@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
@@ -15,7 +15,6 @@ import { BsHeartFill } from "react-icons/bs";
 import { useWishlist } from "@/context/WishlistContext";
 import ProductCard from "./ProductCard";
 import { getSessionId, getVisitorId, setLoggedInUser } from "@/lib/tracking/identity";
-import { IoExitOutline, IoPersonCircleOutline } from "react-icons/io5";
 import { saveSkinProfile } from "@/lib/profile-storage";
 import Header from "./header";
 
@@ -549,39 +548,63 @@ export default function MatchStudio({ initialData }) {
     }
   }, []);
 
-  useEffect(() => {
-    const restoreTimer = window.setTimeout(async () => {
-      const selectedGuide = new URLSearchParams(window.location.search).get("guide");
-      if (selectedGuide) {
-        setHistoryRestored(true);
-        return;
-      }
+  // useEffect(() => {
+  //   const restoreTimer = window.setTimeout(async () => {
+  //     const selectedGuide = new URLSearchParams(window.location.search).get("guide");
+  //     if (selectedGuide) {
+  //       setHistoryRestored(true);
+  //       return;
+  //     }
 
-      try {
-        const savedValue = sessionStorage.getItem(MATCHER_HISTORY_KEY);
-        const savedState = savedValue ? JSON.parse(savedValue) : null;
+  //     try {
+  //       const savedValue = sessionStorage.getItem(MATCHER_HISTORY_KEY);
+  //       const savedState = savedValue ? JSON.parse(savedValue) : null;
 
-        if (savedState?.profile) setProfile(savedState.profile);
-        if (savedState?.filters) setFilters(savedState.filters);
-        if (typeof savedState?.searchQuery === "string") setSearchQuery(savedState.searchQuery);
-        if (["products", "routine"].includes(savedState?.view)) setView(savedState.view);
-        if (Number.isFinite(savedState?.limit)) setLimit(savedState.limit);
+  //       if (savedState?.profile) setProfile(savedState.profile);
+  //       if (savedState?.filters) setFilters(savedState.filters);
+  //       if (typeof savedState?.searchQuery === "string") setSearchQuery(savedState.searchQuery);
+  //       if (["products", "routine"].includes(savedState?.view)) setView(savedState.view);
+  //       if (Number.isFinite(savedState?.limit)) setLimit(savedState.limit);
 
-        // UPDATED: restore the actual saved results directly — no API call needed
-        if (savedState?.data) {
-          setData(savedState.data);
-        }
-      } catch (restoreError) {
-        console.warn("[match-studio] Unable to restore matcher history:", restoreError.message);
-        sessionStorage.removeItem(MATCHER_HISTORY_KEY);
-      } finally {
-        setHistoryRestored(true);
-      }
-    }, 0);
+  //       // UPDATED: restore the actual saved results directly — no API call needed
+  //       if (savedState?.data) {
+  //         setData(savedState.data);
+  //       }
+  //     } catch (restoreError) {
+  //       console.warn("[match-studio] Unable to restore matcher history:", restoreError.message);
+  //       sessionStorage.removeItem(MATCHER_HISTORY_KEY);
+  //     } finally {
+  //       setHistoryRestored(true);
+  //     }
+  //   }, 0);
 
-    return () => window.clearTimeout(restoreTimer);
-  }, [recommend]);
+  //   return () => window.clearTimeout(restoreTimer);
+  // }, [recommend]);
 
+  useLayoutEffect(() => {
+  const selectedGuide = new URLSearchParams(window.location.search).get("guide");
+  if (selectedGuide) {
+    setHistoryRestored(true);
+    return;
+  }
+
+  try {
+    const savedValue = sessionStorage.getItem(MATCHER_HISTORY_KEY);
+    const savedState = savedValue ? JSON.parse(savedValue) : null;
+
+    if (savedState?.profile) setProfile(savedState.profile);
+    if (savedState?.filters) setFilters(savedState.filters);
+    if (typeof savedState?.searchQuery === "string") setSearchQuery(savedState.searchQuery);
+    if (["products", "routine"].includes(savedState?.view)) setView(savedState.view);
+    if (Number.isFinite(savedState?.limit)) setLimit(savedState.limit);
+    if (savedState?.data) setData(savedState.data);
+  } catch (restoreError) {
+    console.warn("[match-studio] Unable to restore matcher history:", restoreError.message);
+    sessionStorage.removeItem(MATCHER_HISTORY_KEY);
+  } finally {
+    setHistoryRestored(true);
+  }
+}, []);
   useEffect(() => {
     if (!historyRestored) return;
 
