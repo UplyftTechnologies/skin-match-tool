@@ -43,6 +43,45 @@ export default function Home() {
         type="application/ld+json"
       />
       <MatchStudio initialData={initialData} />
+
+
+         <section className="seo-content-section" style={{ maxWidth: 960, margin: "0 auto", padding: "48px 20px" }}>
+        <h2>How the Roopsee Skin Match Studio works</h2>
+        <p>
+          Match My Skin is a free tool that recommends skincare products based on
+          your skin type, sensitivity, main concern, age and gender. Answer four
+          quick questions and get a ranked list of products from Roopsee&apos;s
+          catalog, each scored out of 100 for how well it fits your profile,
+          along with a suggested morning and night routine.
+        </p>
+
+        <h3>Frequently asked questions</h3>
+
+        <h4>How is the product match score calculated?</h4>
+        <p>
+          Each product is scored against your skin type, sensitivity, primary
+          concern, and any special conditions you select (like pregnancy or
+          excessive dryness). Products scoring 80 and above are labelled
+          &quot;Great&quot; matches, 60&ndash;79 are a caution zone, and anything
+          below 60 typically isn&apos;t recommended for your profile.
+        </p>
+
+        <h4>Is Match My Skin free to use?</h4>
+        <p>Yes. The skin match quiz and product recommendations are completely free, with no login required to see your results.</p>
+
+        <h4>Do I need to create an account?</h4>
+        <p>
+          No account is required to take the quiz or view your matches. You can
+          optionally sign in to save your skin profile and revisit your results later.
+        </p>
+
+        <h4>What skin concerns does the tool cover?</h4>
+        <p>
+          The matcher covers acne, body acne, dryness, open pores, dark spots,
+          redness, tanning, dullness, uneven skin tone, comedones, wrinkles,
+          melasma, dehydration and barrier repair.
+        </p>
+      </section>
     </>
   );
 }

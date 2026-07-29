@@ -9,7 +9,7 @@ services:
     autoDeploy: true
     envVars:
       - key: NEXT_PUBLIC_SITE_URL
-        value: https://mymatches.roopsee.com
+        value: https://matchmyskin.roopsee.com/
       - key: TELEGRAM_EVENT_BOT_TOKEN
         sync: false
       - key: TELEGRAM_EVENT_CHAT_ID

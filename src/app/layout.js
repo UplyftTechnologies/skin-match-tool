@@ -7,6 +7,9 @@ import ScrollRestoreGuard from "@/components/scroll-restore-guard";
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
+  alternates: {
+    canonical: "https://matchmyskin.roopsee.com",  
+  },
   title: {
     default: "Match My Skin | Roopsee",
     template: "%s | Match My Skin",
