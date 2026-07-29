@@ -45,7 +45,7 @@ export default function Home() {
       <MatchStudio initialData={initialData} />
 
 
-         <section className="seo-content-section" style={{ maxWidth: 960, margin: "0 auto", padding: "48px 20px" }}>
+         <section className="seo-content-section hidden" style={{ maxWidth: 960, margin: "0 auto", padding: "48px 20px" }}>
         <h2>How the Roopsee Skin Match Studio works</h2>
         <p>
           Match My Skin is a free tool that recommends skincare products based on
