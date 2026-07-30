@@ -188,7 +188,7 @@ export default function ProfilePage() {
                 )}
 
                 {/* Wishlist section below the profile card */}
-                <div className="mt-10">
+                <div className="mt-10 ">
                     <div className="flex items-center justify-between mb-1">
                         <h2 className="text-lg font-semibold text-gray-900">Your Wishlist</h2>
                         {hydrated && wishlistItems.length > 0 ? (

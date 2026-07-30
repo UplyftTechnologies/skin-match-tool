@@ -130,7 +130,6 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
           is_new_user: Boolean(backendData.is_new_user),
         };
 
-       
         void trackingService.trackEvent(EVENTS.OTP_VERIFIED, loginProperties);
         void trackingService.trackEvent(
           backendData.is_new_user ? EVENTS.LOGIN_SUCCESSFUL : EVENTS.EXISTING_USER_LOGIN,

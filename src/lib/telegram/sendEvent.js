@@ -204,7 +204,7 @@ const buildExtraData = (body = {}) => {
 
     if (typeof value === 'string') {
       extraData[key] = value.slice(0, 2000);
-      return;
+      return;e
     }
 
     if (value === null || typeof value === 'number' || typeof value === 'boolean') {

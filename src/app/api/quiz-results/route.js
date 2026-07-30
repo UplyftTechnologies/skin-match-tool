@@ -1,4 +1,6 @@
 import { supabaseAdmin, supabaseAuth } from "@/lib/supabase/server";
+import { notifyQuizCompleted } from "@/lib/telegram/telegramReports";
+import { EVENTS } from "@/lib/tracking/events";
 
 export const runtime = "nodejs";
 
@@ -108,6 +110,9 @@ export async function POST(request) {
       ...profile.selectedLipsEyesConcerns,
     ];
 
+    const isFirstQuiz = quizNumber === 1;
+    const telegramEventName = isFirstQuiz ? EVENTS.QUIZ_COMPLETED : EVENTS.QUIZ_UPDATED;
+
     const { data, error } = await supabaseAdmin
       .from("quiz_results")
       .insert({
@@ -127,6 +132,20 @@ export async function POST(request) {
       .single();
 
     if (error) throw error;
+
+    notifyQuizCompleted({
+  eventName: telegramEventName,
+  name: user?.user_metadata?.full_name || user?.user_metadata?.name,
+  email: user?.email,
+  phone: userPhone(user),
+  age: profile.age,
+  gender: profile.selectedGender,
+  sensitive: profile.selectedSensitive,
+  skinType: profile.selectedSkinType,
+  concerns: keySkinConcerns,
+  specialConditions: profile.selectedSpecialConditions,
+  visitorId: guestSessionId,
+});
 
     return Response.json({ ok: true, result: data }, { status: 201 });
   } catch (error) {
