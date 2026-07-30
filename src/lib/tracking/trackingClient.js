@@ -343,6 +343,7 @@ class TrackingService {
           visitor_id: properties.visitorId,
           session_id: properties.sessionId,
           event_source: 'unified_tracking',
+          referrer: document.referrer || '',
         };
 
         if (eventName.startsWith('page_viewed_')) {
