@@ -329,7 +329,7 @@ export default async function ProductPage({ params }) {
               {SKIN_GUIDES.map((guide) => (
                 <Link
                   className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1.5 text-[12px] font-bold text-sky-700 transition-colors hover:bg-sky-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
-                  href={`/?guide=${guide.slug}#matcher`}
+                  href={`/?concern=${guide.slug}`}
                   key={guide.slug}
                 >
                   {guide.eyebrow}

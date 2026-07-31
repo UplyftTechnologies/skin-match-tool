@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Header from "@/components/header";
 import { recommend } from "@/lib/engine";
 import { getSkinGuide, SKIN_GUIDES } from "@/lib/seo-pages";
 import { absoluteUrl, productPath } from "@/lib/site";
@@ -40,6 +41,11 @@ export async function generateMetadata({ params }) {
 function GuideProductCard({ product }) {
   const price = product.selling_price || product.mrp;
   return (
+    <Link
+      aria-label={`View ${product.product_name} details`}
+      className="guide-product-link"
+      href={productPath(product.product_uid)}
+    >
     <article className="product-card">
       <div className="product-image-wrap">
         {product.image
@@ -62,9 +68,9 @@ function GuideProductCard({ product }) {
           <span className="tag">{product.when_to_use || "Routine"}</span>
           <span className="tag">{product.size || "Size unavailable"}</span>
         </div>
-        <Link className="details-link" href={productPath(product.product_uid)}>View product details</Link>
       </div>
     </article>
+    </Link>
   );
 }
 
@@ -117,18 +123,19 @@ export default async function SkinGuidePage({ params }) {
 
   return (
     <>
+      <Header />
       <script
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
         type="application/ld+json"
       />
-      <header>
+      <header className="skin-guide-hero">
         <div className="eyebrow">{guide.eyebrow}</div>
         <h1>{guide.title}</h1>
         <p>{guide.answer}</p>
       </header>
 
-      <main>
-        <aside className="panel profile-panel">
+      <main className="skin-guide-layout">
+        <aside className="panel profile-panel skin-guide-profile">
           <div className="section-title">Profile used for these matches</div>
           <ul className="component-list">
             <li><span>Skin type</span><strong>{guide.profile.selectedSkinType}</strong></li>
@@ -137,7 +144,7 @@ export default async function SkinGuidePage({ params }) {
             <li><span>Age</span><strong>{guide.profile.age}</strong></li>
           </ul>
           <div className="actions">
-            <Link className="primary" href="/">Create your own match profile</Link>
+            <Link className="bg-[#BA50A0] text-center rounded-[25px] py-2 px-2 lg:font-semibold text-white" href="/">Create your own match profile</Link>
           </div>
           <div className="routine-section-title">Related guides</div>
           <div className="tagline">
@@ -149,7 +156,7 @@ export default async function SkinGuidePage({ params }) {
           </div>
         </aside>
 
-        <section className="panel shop-panel">
+        <section className="panel shop-panel skin-guide-products">
           <div className="studio-toolbar">
             <div className="studio-title">
               <h2>Top catalog matches</h2>
@@ -168,7 +175,7 @@ export default async function SkinGuidePage({ params }) {
         </section>
       </main>
 
-      <main>
+      <section className="skin-guide-layout skin-guide-support">
         <aside className="panel profile-panel">
           <div className="studio-title">
             <h2>How matching works</h2>
@@ -200,7 +207,7 @@ export default async function SkinGuidePage({ params }) {
           ))}
           <p><small>Catalog and matching guidance updated July 2026.</small></p>
         </section>
-      </main>
+      </section>
     </>
   );
 }

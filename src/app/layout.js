@@ -7,9 +7,6 @@ import ScrollRestoreGuard from "@/components/scroll-restore-guard";
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
-  alternates: {
-    canonical: "https://matchmyskin.roopsee.com",  
-  },
   title: {
     default: "Match My Skin | Roopsee",
     template: "%s | Match My Skin",
@@ -35,6 +32,9 @@ export const metadata = {
 
   description:
     "Discover your skin type and get personalized skincare recommendations with Match My Skin by Roopsee.",
+  creator: "Roopsee",
+  publisher: "Roopsee",
+  referrer: "origin-when-cross-origin",
   alternates: {
     canonical: "/",
   },
@@ -66,6 +66,13 @@ export const metadata = {
     },
   },
   category: "beauty",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({ children }) {

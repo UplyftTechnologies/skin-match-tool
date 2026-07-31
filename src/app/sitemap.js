@@ -11,6 +11,12 @@ export default function sitemap() {
       changeFrequency: "weekly",
       priority: 1,
     },
+    {
+      url: absoluteUrl("/how-it-works"),
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
     ...SKIN_GUIDES.map((guide) => ({
       url: absoluteUrl(`/skincare-for/${guide.slug}`),
       lastModified,

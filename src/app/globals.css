@@ -120,7 +120,8 @@ main {
 
 .shop-panel {
   min-width: 0;
-  padding: 20px 10px;;
+  padding: 20px 10px;
+  ;
 }
 
 .section-title {
@@ -374,7 +375,7 @@ select {
   letter-spacing: -0.035em;
 }
 
-.routine-column > p {
+.routine-column>p {
   margin: 7px 0 14px;
   color: var(--muted);
   font-size: 0.88rem;
@@ -1082,6 +1083,7 @@ details.payload-details summary {
   font-size: 0.72rem;
   color: #64748b;
 }
+
 .quiz-field-error {
   display: block;
   margin-top: 4px;
@@ -1090,21 +1092,40 @@ details.payload-details summary {
   font-weight: 800;
   text-align: center;
   animation: shake 0.7s ease-in-out infinite,
-             pulse 1.2s ease-in-out infinite;
+    pulse 1.2s ease-in-out infinite;
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-3px); }
-  40% { transform: translateX(3px); }
-  60% { transform: translateX(-3px); }
-  80% { transform: translateX(3px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-3px);
+  }
+
+  40% {
+    transform: translateX(3px);
+  }
+
+  60% {
+    transform: translateX(-3px);
+  }
+
+  80% {
+    transform: translateX(3px);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.65;
   }
@@ -1359,8 +1380,15 @@ details.payload-details summary {
 }
 
 @keyframes fadeInModal {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .otp-modal-container {
@@ -1537,4 +1565,785 @@ details.payload-details summary {
   font-weight: 600;
   cursor: pointer;
   margin-top: 4px;
+}
+
+/* Homepage search and answer-engine content */
+.quiz-title-group h1 {
+  margin: 0;
+  color: #1a202c;
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  font-weight: 900;
+  line-height: 1.25;
+  text-align: center;
+}
+
+/* Fit the complete quiz on short laptop screens without changing desktop width. */
+@media (min-width: 1024px) and (max-height: 820px) {
+  main#matcher {
+    padding-top: 10px;
+  }
+
+  main#matcher .quiz-panel {
+    top: 72px;
+    padding: 9px 12px 10px;
+  }
+
+  main#matcher .quiz-title-group h1 {
+    font-size: 1.18rem;
+  }
+
+  main#matcher .quiz-free-note {
+    margin-top: 1px;
+    font-size: 0.69rem;
+  }
+
+  main#matcher .quiz-intro {
+    max-width: 52ch;
+    margin: 4px auto 8px;
+    font-size: 0.73rem;
+    line-height: 1.35;
+  }
+
+  main#matcher .quiz-section {
+    margin-bottom: 6px;
+    padding: 9px 11px;
+    border-radius: 14px;
+  }
+
+  main#matcher .quiz-section .section-title {
+    font-size: 0.77rem;
+    line-height: 1.15;
+  }
+
+  main#matcher .skin-type-grid {
+    gap: 5px;
+  }
+
+  main#matcher .skin-type-card {
+    min-height: 43px;
+    padding: 7px 10px;
+  }
+
+  main#matcher .chip-icon-box {
+    width: 29px;
+    height: 29px;
+    min-width: 29px;
+  }
+
+  main#matcher .chip-label {
+    font-size: 0.78rem;
+  }
+
+  main#matcher .sensitivity-row {
+    margin-top: 4px;
+    margin-bottom: 0;
+  }
+
+  main#matcher .toggle-btn {
+    padding: 3px 12px;
+  }
+
+  main#matcher .concern-pills-wrap {
+    gap: 3px 4px;
+  }
+
+  main#matcher .concern-pill {
+    padding: 4px 9px;
+    font-size: 0.73rem;
+    line-height: 1.2;
+  }
+
+  main#matcher .demographics-grid {
+    gap: 7px;
+    margin-top: 5px;
+  }
+
+  main#matcher .select-field select {
+    height: 38px;
+    padding-block: 5px;
+    font-size: 0.76rem;
+  }
+
+  main#matcher .quiz-footer {
+    margin-top: 6px;
+    padding: 0;
+    border-top: 0;
+  }
+
+  main#matcher .find-matches-btn {
+    min-height: 42px;
+    padding: 9px 14px;
+    font-size: 0.8rem;
+  }
+
+  main#matcher .quiz-how-it-works-link {
+    margin-top: 5px;
+    font-size: 0.66rem;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 680px) {
+  main#matcher .quiz-intro {
+    margin-bottom: 5px;
+  }
+
+  main#matcher .quiz-section {
+    margin-bottom: 4px;
+    padding-block: 5px;
+  }
+
+  main#matcher .skin-type-card {
+    min-height: 34px;
+  }
+
+  main#matcher .concern-pill {
+    padding-block: 2px;
+  }
+
+  main#matcher .select-field select {
+    height: 31px;
+  }
+
+  main#matcher .find-matches-btn {
+    min-height: 34px;
+  }
+}
+
+.quiz-free-note {
+  margin: 3px 0 0;
+  color: #1f87b3;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+
+main#matcher .skin-type-card {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 26px;
+  align-items: center;
+  column-gap: 6px;
+}
+
+main#matcher .skin-type-card .chip-icon-box {
+  grid-column: 1;
+  justify-self: center;
+}
+
+main#matcher .skin-type-card .chip-label {
+  grid-column: 2;
+  justify-self: stretch;
+  text-align: center;
+}
+
+.quiz-intro {
+  max-width: 46ch;
+  margin: 6px auto 12px;
+  color: #526171;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.how-it-works-link {
+  color: #176f94;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.how-it-works-page {
+  display: block;
+  max-width: none;
+  padding: clamp(24px, 5vw, 56px) 0;
+}
+
+.seo-content-section {
+  width: min(100% - 32px, 960px);
+  margin: 0 auto 64px;
+  padding: clamp(28px, 5vw, 52px);
+  border: 1px solid #e3e8ec;
+  border-radius: 24px;
+  background: #fff;
+  color: #263343;
+  box-shadow: 0 10px 30px rgba(20, 30, 50, 0.05);
+}
+
+.seo-content-section h1 {
+  margin: 0 0 14px;
+  color: #17202c;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  line-height: 1.1;
+}
+
+.seo-content-section h2 {
+  margin: 0 0 12px;
+  color: #17202c;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  line-height: 1.2;
+}
+
+.seo-content-section p {
+  line-height: 1.7;
+}
+
+.seo-eyebrow {
+  margin: 0 0 8px;
+  color: #1f87b3;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.seo-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 28px 0 40px;
+}
+
+.seo-steps article {
+  padding: 18px;
+  border: 1px solid #e3e8ec;
+  border-radius: 16px;
+  background: #f8fbfd;
+}
+
+.seo-steps article>span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  margin-bottom: 12px;
+  place-items: center;
+  border-radius: 50%;
+  background: #d6eefa;
+  color: #1f87b3;
+  font-weight: 900;
+}
+
+.seo-steps h2,
+.seo-steps h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.seo-steps p {
+  margin: 0;
+  color: #526171;
+  font-size: 0.9rem;
+}
+
+.seo-guide-block,
+.seo-faq-block {
+  margin-top: 36px;
+}
+
+.seo-page-cta {
+  margin: 12px 0 40px;
+  padding: clamp(20px, 4vw, 30px);
+  border-radius: 18px;
+  background: #17202c;
+  color: #fff;
+}
+
+.seo-page-cta h2 {
+  color: #fff;
+}
+
+.seo-page-cta p {
+  margin-bottom: 20px;
+  color: #dbe5ed;
+}
+
+.seo-primary-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: #65b1e8;
+  color: #10202c;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.seo-primary-link:hover,
+.seo-primary-link:focus-visible {
+  background: #8bc8ee;
+}
+
+.seo-guide-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.seo-guide-links a {
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: #e6f5fb;
+  color: #176f94;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.seo-guide-links a:hover,
+.seo-guide-links a:focus-visible {
+  text-decoration: underline;
+}
+
+.seo-faq-block details {
+  border-top: 1px solid #e3e8ec;
+  padding: 16px 0;
+}
+
+.seo-faq-block details:last-child {
+  border-bottom: 1px solid #e3e8ec;
+}
+
+.seo-faq-block summary {
+  cursor: pointer;
+  color: #17202c;
+  font-weight: 800;
+}
+
+.seo-faq-block details p {
+  margin: 10px 0 0;
+  color: #526171;
+}
+
+.seo-disclaimer {
+  margin: 30px 0 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff7e8;
+  color: #76511b;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 700px) {
+  .seo-content-section {
+    width: min(100% - 20px, 960px);
+    margin-bottom: 32px;
+    padding: 24px 18px;
+    border-radius: 18px;
+  }
+
+  .seo-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .seo-guide-links {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 420px) {
+  .demographics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .view-tabs {
+    width: 100%;
+  }
+
+  .view-tab {
+    flex: 1;
+    padding-inline: 10px;
+  }
+}
+
+/* Search landing pages: /skincare-for/[slug] */
+.skin-guide-hero {
+  width: min(100% - 32px, 1180px);
+  margin: 0 auto;
+  padding: clamp(32px, 6vw, 72px) 0 clamp(22px, 4vw, 40px);
+}
+
+.skin-guide-hero .eyebrow {
+  width: fit-content;
+  margin-bottom: 12px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: #e6f5fb;
+  color: #176f94;
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.skin-guide-hero h1 {
+  max-width: 800px;
+  margin: 0;
+  color: #17202c;
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.skin-guide-hero>p {
+  max-width: 760px;
+  margin: 18px 0 0;
+  color: #526171;
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.75;
+}
+
+.skin-guide-layout {
+  display: grid;
+  box-sizing: border-box;
+  width: min(100% - 32px, 1180px);
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 0 28px;
+  grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.skin-guide-profile {
+  position: sticky;
+  top: 86px;
+}
+
+.skin-guide-profile .actions {
+  margin: 18px 0 24px;
+}
+
+.skin-guide-profile a.primary {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 16px;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+}
+
+.skin-guide-products {
+  min-width: 0;
+}
+
+.quiz-how-it-works-link {
+  display: block;
+  width: fit-content;
+  margin: 10px auto 0;
+  color: #176f94;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: center;
+  text-underline-offset: 3px;
+}
+
+.guide-product-link {
+  display: block;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.guide-product-link:focus-visible {
+  border-radius: 18px;
+  outline: 3px solid #65b1e8;
+  outline-offset: 3px;
+}
+
+.guide-product-link:hover .product-card {
+  transform: translateY(-3px);
+  border-color: rgba(194, 85, 168, 0.38);
+  box-shadow: 0 24px 42px rgba(77, 57, 72, 0.14);
+}
+
+.skin-guide-products .studio-toolbar {
+  align-items: flex-start;
+}
+
+.skin-guide-products .studio-title h2,
+.skin-guide-support h2 {
+  margin: 0 0 8px;
+  color: #17202c;
+  font-size: clamp(1.2rem, 3vw, 1.65rem);
+  line-height: 1.25;
+}
+
+.skin-guide-products .studio-title p {
+  max-width: 68ch;
+  margin: 0;
+  color: #637181;
+  line-height: 1.6;
+}
+
+.skin-guide-products .product-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.skin-guide-products .product-card,
+.skin-guide-products .product-body {
+  min-width: 0;
+}
+
+.skin-guide-products .product-body h3,
+.skin-guide-products .product-copy,
+.skin-guide-products .product-meta {
+  overflow-wrap: anywhere;
+}
+
+.skin-guide-products .product-meta {
+  white-space: normal;
+  line-height: 1.45;
+}
+
+.skin-guide-products .product-copy {
+  margin: 0;
+  color: #637181;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.skin-guide-support {
+  padding-bottom: 64px;
+}
+
+.skin-guide-support p {
+  color: #526171;
+  line-height: 1.65;
+}
+
+.skin-guide-support .warnings {
+  margin-top: 18px;
+}
+
+@media (max-width: 1020px) {
+  .skin-guide-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .skin-guide-profile {
+    position: static;
+  }
+
+  .skin-guide-profile .tagline {
+    max-width: 760px;
+  }
+
+  .skin-guide-products .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+
+  .skin-guide-hero,
+  .skin-guide-layout {
+    width: min(100% - 20px, 1180px);
+    max-width: calc(100vw - 20px);
+  }
+
+  .skin-guide-hero {
+    padding-top: 24px;
+  }
+
+  .skin-guide-hero h1 {
+    font-size: clamp(1.85rem, 10vw, 2.65rem);
+    overflow-wrap: anywhere;
+  }
+
+  .skin-guide-layout {
+    gap: 14px;
+    padding-bottom: 16px;
+  }
+
+  .skin-guide-layout .panel {
+    padding: 16px;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  .skin-guide-profile .component-list li {
+    align-items: flex-start;
+  }
+
+  .skin-guide-profile .component-list strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+
+  .skin-guide-products .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .skin-guide-products .product-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    min-height: 0;
+    border-radius: 16px;
+  }
+
+  .skin-guide-products .product-image-wrap {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+  }
+
+  .skin-guide-products .product-body {
+    gap: 6px;
+    padding: 9px;
+  }
+
+  .skin-guide-products .product-body h3 {
+    min-height: 2.5em;
+    font-size: 0.76rem;
+  }
+
+  .skin-guide-products .product-copy {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.7rem;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .skin-guide-products .price-row {
+    font-size: 0.78rem;
+  }
+
+  .skin-guide-products .details-link {
+    min-height: 36px;
+    padding: 7px;
+    font-size: 0.7rem;
+  }
+
+  .skin-guide-products .tagline {
+    gap: 5px;
+  }
+
+  .skin-guide-products .tag {
+    padding: 5px 8px;
+    font-size: 0.68rem;
+  }
+
+  .skin-guide-support {
+    padding-bottom: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .skin-guide-products .product-card {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .skin-guide-products .product-image-wrap {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+  }
+
+  .skin-guide-products .product-body {
+    width: 100%;
+  }
+}
+
+/* Keep the complete quiz visible on a typical mobile screen. */
+@media (max-width: 760px) {
+  main#matcher .quiz-panel {
+    padding: 10px 12px 12px;
+  }
+
+  main#matcher .quiz-title-group h1 {
+    font-size: 0.98rem;
+  }
+
+  main#matcher .quiz-intro {
+    margin: 4px auto 8px;
+    font-size: 0.7rem;
+    line-height: 1.35;
+  }
+
+  main#matcher .quiz-section {
+    margin-bottom: 7px;
+    padding: 8px 10px;
+    border-radius: 14px;
+    box-shadow: 0 2px 2px rgb(189 189 189 / 70%);
+  }
+
+  main#matcher .quiz-section .section-title {
+    font-size: 0.68rem;
+    line-height: 1.2;
+  }
+
+  main#matcher .skin-type-grid {
+    gap: 4px;
+  }
+
+  main#matcher .skin-type-card {
+    min-height: 40px;
+    padding: 6px 8px;
+  }
+
+  main#matcher .chip-icon-box {
+    width: 27px;
+    height: 27px;
+    min-width: 27px;
+  }
+
+  main#matcher .chip-label {
+    font-size: 0.72rem;
+  }
+
+  main#matcher .sensitivity-row {
+    margin-top: 4px;
+    margin-bottom: 0;
+  }
+
+  main#matcher .toggle-btn {
+    padding: 4px 13px;
+  }
+
+  main#matcher .concern-pills-wrap {
+    gap: 3px;
+  }
+
+  main#matcher .concern-pill {
+    padding: 4px 8px;
+    font-size: .76rem;
+    line-height: 1.25;
+  }
+
+  main#matcher .demographics-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  main#matcher .select-field select {
+    height: 36px;
+    padding-block: 5px;
+    font-size: 0.72rem;
+  }
+
+  main#matcher .quiz-footer {
+    margin-top: 6px;
+    padding: 0;
+    border-top: 0;
+  }
+
+  main#matcher .find-matches-btn {
+    min-height: 40px;
+    padding: 9px 14px;
+    font-size: 0.76rem;
+  }
 }

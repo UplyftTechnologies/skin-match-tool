@@ -550,39 +550,6 @@ export default function MatchStudio({ initialData }) {
     }
   }, []);
 
-  // useEffect(() => {
-  //   const restoreTimer = window.setTimeout(async () => {
-  //     const selectedGuide = new URLSearchParams(window.location.search).get("guide");
-  //     if (selectedGuide) {
-  //       setHistoryRestored(true);
-  //       return;
-  //     }
-
-  //     try {
-  //       const savedValue = sessionStorage.getItem(MATCHER_HISTORY_KEY);
-  //       const savedState = savedValue ? JSON.parse(savedValue) : null;
-
-  //       if (savedState?.profile) setProfile(savedState.profile);
-  //       if (savedState?.filters) setFilters(savedState.filters);
-  //       if (typeof savedState?.searchQuery === "string") setSearchQuery(savedState.searchQuery);
-  //       if (["products", "routine"].includes(savedState?.view)) setView(savedState.view);
-  //       if (Number.isFinite(savedState?.limit)) setLimit(savedState.limit);
-
-  //       // UPDATED: restore the actual saved results directly — no API call needed
-  //       if (savedState?.data) {
-  //         setData(savedState.data);
-  //       }
-  //     } catch (restoreError) {
-  //       console.warn("[match-studio] Unable to restore matcher history:", restoreError.message);
-  //       sessionStorage.removeItem(MATCHER_HISTORY_KEY);
-  //     } finally {
-  //       setHistoryRestored(true);
-  //     }
-  //   }, 0);
-
-  //   return () => window.clearTimeout(restoreTimer);
-  // }, [recommend]);
-
   useLayoutEffect(() => {
   const selectedGuide = new URLSearchParams(window.location.search).get("guide");
   if (selectedGuide) {
@@ -938,19 +905,16 @@ export default function MatchStudio({ initialData }) {
 
       <main id="matcher">
         <section className="panel profile-panel quiz-panel">
-          {/* <div className="quiz-header">
-            <span className="quiz-icon">✨</span>
-            <div className="quiz-title-group">
-              <h2>Free Skin Match Tool</h2>
-              <div className="progress-bar-wrap">
-                <div className="progress-bar-fill" style={{ width: "100%" }}></div>
-              </div>
-            </div>
-          </div> */}
+
 
           <div className="quiz-title-group">
 
-            <h2>✨ Free Skin Match Studio</h2>
+            <h1>Free Skin Match Studio</h1>
+            <p className="quiz-free-note">100% Free. No ads.</p>
+            <p className="quiz-intro">
+              Answer a few quick questions to compare skincare products for your
+              skin type, sensitivity and main concern.
+            </p>
           </div>
           {/* Question 1: Skin Type */}
           <div className="quiz-section">
@@ -1161,6 +1125,9 @@ export default function MatchStudio({ initialData }) {
                 {loading ? "FINDING MATCHES..." : "FIND MY MATCHES"}
               </button>
             </div>
+            <Link className="quiz-how-it-works-link" href="/how-it-works">
+              How Match My Skin works
+            </Link>
           </div>
         </section>
 
