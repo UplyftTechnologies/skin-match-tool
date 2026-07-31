@@ -17,18 +17,18 @@ export const metadata = {
   icons: {
     icon: [
       {
-        url: "/icons/icon-48.webp",
-        type: "image/webp",
+        url: "/favicon.png",
+        type: "image/png",
         sizes: "48x48",
       },
       {
-        url: "/icons/icon-96.webp",
-        type: "image/webp",
+        url: "/icons/icon-96.png",
+        type: "image/png",
         sizes: "96x96",
       },
     ],
 
-    shortcut: "/icons/icon-48.webp",
+    shortcut: "/favicon.png",
 
     apple: "/apple-icon.png",
   },
