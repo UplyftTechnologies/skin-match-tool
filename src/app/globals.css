@@ -1194,7 +1194,7 @@ details.payload-details summary {
 .concern-pills-wrap {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 7px;
 }
 
 .concern-pill {
@@ -1644,7 +1644,7 @@ details.payload-details summary {
   }
 
   main#matcher .concern-pills-wrap {
-    gap: 3px 4px;
+    gap: 6px;
   }
 
   main#matcher .concern-pill {
