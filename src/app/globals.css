@@ -1955,7 +1955,7 @@ main#matcher .skin-type-card .chip-label {
   }
 }
 
-/* Search landing pages: /skincare-for/[slug] */
+/* Search landing pages: /skincare/[slug] */
 .skin-guide-hero {
   width: min(100% - 32px, 1180px);
   margin: 0 auto;

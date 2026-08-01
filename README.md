@@ -96,12 +96,12 @@ The homepage server-renders the first 24 matches and links to crawlable catalog 
 Public answer-focused skincare guides are available under:
 
 ```text
-/skincare-for/oily-skin-acne
-/skincare-for/dry-sensitive-skin
-/skincare-for/pigmentation
-/skincare-for/teen-acne
-/skincare-for/dull-skin
-/skincare-for/barrier-repair
+/skincare/oily-skin-acne
+/skincare/dry-sensitive-skin
+/skincare/pigmentation
+/skincare/teen-acne
+/skincare/dull-skin
+/skincare/barrier-repair
 ```
 
 The generated sitemap contains the homepage, six guides, and all catalog products. Product, organization, application, item-list and FAQ structured data are included where applicable.

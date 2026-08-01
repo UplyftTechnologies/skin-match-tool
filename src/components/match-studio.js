@@ -3,12 +3,12 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { productPath, scoredProductPath } from "@/lib/site";
-import OtpModal from "@/components/auth/otp-modal";
 import { supabase } from "@/lib/supabase/client";
 import { BiHeart } from "react-icons/bi";
 import { BsHeartFill } from "react-icons/bs";
@@ -463,9 +463,9 @@ export default function MatchStudio({ initialData }) {
 
   // Auth & OTP Modal State
   const [userSession, setUserSession] = useState(null);
-  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const quizTimerRef = useRef(null);
   const quizCompletedRef = useRef(null);
+  const router = useRouter();
 
   useEffect(() => {
     let cancelled = false;
@@ -490,7 +490,7 @@ export default function MatchStudio({ initialData }) {
         sessionStorage.setItem(LOGIN_POPUP_DUE_AT_KEY, String(dueAt));
         quizTimerRef.current = setTimeout(() => {
           quizTimerRef.current = null;
-          setIsOtpModalOpen(true);
+          router.push("/login");
         }, remainingDelay);
       }
     });
@@ -507,7 +507,6 @@ export default function MatchStudio({ initialData }) {
           clearTimeout(quizTimerRef.current);
           quizTimerRef.current = null;
         }
-        setIsOtpModalOpen(false);
       }
     });
 
@@ -792,7 +791,7 @@ export default function MatchStudio({ initialData }) {
       }
       quizTimerRef.current = setTimeout(() => {
         quizTimerRef.current = null;
-        setIsOtpModalOpen(true);
+        router.push("/login");
       }, LOGIN_POPUP_DELAY_MS);
     }
 
@@ -910,7 +909,7 @@ export default function MatchStudio({ initialData }) {
           <div className="quiz-title-group">
 
             <h1>Free Skin Match Studio</h1>
-            <p className="quiz-free-note">100% Free. No ads.</p>
+            {/* <p className="quiz-free-note">100% Free. No ads.</p> */}
             <p className="quiz-intro">
               Answer a few quick questions to compare skincare products for your
               skin type, sensitivity and main concern.
@@ -1227,19 +1226,6 @@ export default function MatchStudio({ initialData }) {
       </main>
 
       <ProductModal onClose={() => setModalProduct(null)} product={modalProduct} />
-      <OtpModal
-        isOpen={isOtpModalOpen}
-        onClose={() => setIsOtpModalOpen(false)}
-        onSuccess={(user) => {
-          setIsOtpModalOpen(false);
-          if (user) {
-            setUserSession({ user });
-          }
-          supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) setUserSession(session);
-          });
-        }}
-      />
     </>
   );
 }

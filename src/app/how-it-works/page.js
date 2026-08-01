@@ -105,7 +105,7 @@ export default function HowItWorksPage() {
             <h2>Explore skincare guides by concern</h2>
             <div className="seo-guide-links">
               {SKIN_GUIDES.map((guide) => (
-                <Link href={`/skincare-for/${guide.slug}`} key={guide.slug}>
+                <Link href={`/skincare/${guide.slug}`} key={guide.slug}>
                   {guide.title}
                 </Link>
               ))}

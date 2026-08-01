@@ -18,7 +18,7 @@ export default function sitemap() {
       priority: 0.8,
     },
     ...SKIN_GUIDES.map((guide) => ({
-      url: absoluteUrl(`/skincare-for/${guide.slug}`),
+      url: absoluteUrl(`/skincare/${guide.slug}`),
       lastModified,
       changeFrequency: "monthly",
       priority: 0.8,
