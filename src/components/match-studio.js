@@ -551,7 +551,8 @@ export default function MatchStudio({ initialData }) {
 
   useLayoutEffect(() => {
   const selectedGuide = new URLSearchParams(window.location.search).get("guide");
-  if (selectedGuide) {
+  const selectedConcern = new URLSearchParams(window.location.search).get("concern");
+  if (selectedGuide || selectedConcern) {
     setHistoryRestored(true);
     return;
   }
@@ -854,12 +855,25 @@ export default function MatchStudio({ initialData }) {
       page_type: "match_studio",
     });
 
-    const selectedGuide = new URLSearchParams(window.location.search).get("guide");
-    const guide = guideLinks.find((item) => item.slug === selectedGuide);
-    if (!guide) return undefined;
+    const params = new URLSearchParams(window.location.search);
+    const selectedGuide = params.get("guide");
+    const selectedConcern = params.get("concern");
 
-    const applyTimer = window.setTimeout(() => applyGuide(guide, false), 0);
-    return () => window.clearTimeout(applyTimer);
+    const guide = guideLinks.find((item) => item.slug === selectedGuide);
+    if (guide) {
+      const applyTimer = window.setTimeout(() => applyGuide(guide, false), 0);
+      return () => window.clearTimeout(applyTimer);
+    }
+
+    if (selectedConcern) {
+      const concernGuide = guideLinks.find((item) => item.slug === selectedConcern);
+      if (concernGuide) {
+        const applyTimer = window.setTimeout(() => applyGuide(concernGuide, false), 0);
+        return () => window.clearTimeout(applyTimer);
+      }
+    }
+
+    return undefined;
   }, [applyGuide]);
 
   useEffect(() => {

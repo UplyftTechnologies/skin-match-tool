@@ -85,7 +85,7 @@ export default async function SkinGuidePage({ params }) {
             </p>
             <Link
               className="mt-6 inline-flex items-center justify-center rounded-full bg-rose-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-600"
-              href="/"
+              href={`/?concern=${guide.slug}`}
             >
               Start the quiz
             </Link>
