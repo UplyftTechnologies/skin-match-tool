@@ -3,6 +3,8 @@ import Script from "next/script";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { WishlistProvider } from "@/context/WishlistContext";
 import SiteExitTracker from "@/components/tracking/site-exit-tracker";
+import { Cormorant_Garamond, Lato } from 'next/font/google'
+
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
@@ -64,9 +66,23 @@ export const metadata = {
   category: "beauty",
 };
 
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  style: ['normal', 'italic'],
+  variable: '--font-cormorant',
+})
+
+const lato = Lato({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-lato',
+})
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${cormorant.variable} ${lato.variable}`}>
       <body>
         <SiteExitTracker />
         <WishlistProvider>

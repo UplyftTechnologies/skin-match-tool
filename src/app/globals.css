@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-cormorant: var(--font-cormorant);
+  --font-lato: var(--font-lato);
+}
+
 :root {
   --ink: #3d3341;
   --muted: #766b7d;

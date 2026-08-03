@@ -1,4 +1,6 @@
-import MatchStudio from "@/components/match-studio";
+import MatchStudio from "@/app/MatchStudio/page.js";
+import AllProduct from "@/app/AllProducts/page.js";
+import Header from "@/components/header";
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { recommend } from "@/lib/engine";
 import { absoluteUrl, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -42,6 +44,7 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
         type="application/ld+json"
       />
+      <Header/>
       <MatchStudio initialData={initialData} />
     </>
   );
