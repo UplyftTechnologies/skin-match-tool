@@ -112,11 +112,12 @@ export default function MatchMySkin() {
     }
 
     const handleSkinTypeSelect = (type) => {
-        setSkinType(type)
-        trackOption('skin_type', type)
         if (type === 'I dont know') {
             setShowGuideModal(true)
+            return
         }
+        setSkinType(type)
+        trackOption('skin_type', type)
     }
 
     const handleSensitiveSelect = (opt) => {

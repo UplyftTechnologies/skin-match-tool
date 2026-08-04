@@ -16,11 +16,11 @@ import { EVENTS } from "@/lib/tracking/events";
 
 function ProfileRow({ label, value, isLast }) {
     return (
-        <div className={`flex items-center justify-between py-4 ${!isLast ? "border-b border-gray-100" : ""}`}>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+        <div className={`flex items-start justify-between gap-4 py-4 ${!isLast ? "border-b border-gray-100" : ""}`}>
+            <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
                 {label}
             </span>
-            <span className="text-[15px] font-semibold text-gray-900">
+            <span className="min-w-0 break-words text-right text-[15px] font-semibold text-gray-900">
                 {value}
             </span>
         </div>
@@ -89,7 +89,7 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-[#FAFAF8]">
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 py-5 sm:py-10">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-10">
                 <div className="flex items-start justify-between">
                     <button
                         type="button"
@@ -115,7 +115,7 @@ export default function ProfilePage() {
 
                 {/* Skin profile card */}
                 {profileLoaded && profile ? (
-                    <div className="rounded-2xl mt-4 bg-white shadow-sm border border-gray-100 px-6 py-6 sm:px-7 sm:py-7">
+                    <div className="max-w-3xl mx-auto rounded-2xl mt-4 bg-white shadow-sm border border-gray-100 px-5 py-6 sm:px-7 sm:py-7">
                         <div className="flex items-center justify-between mb-5">
                             <h2 className="text-xl sm:text-[22px] font-bold text-gray-900" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
                                 Your Skin Profile
@@ -165,7 +165,7 @@ export default function ProfilePage() {
                         </div>
                     </div>
                 ) : profileLoaded ? (
-                    <div className="rounded-2xl bg-white shadow-sm border border-gray-100 px-6 py-10 text-center">
+                    <div className="max-w-3xl mx-auto rounded-2xl bg-white shadow-sm border border-gray-100 px-6 py-10 text-center">
                         <p className="text-sm text-gray-500 mb-4">
                             You haven&apos;t taken the skin match quiz yet.
                         </p>
@@ -177,7 +177,7 @@ export default function ProfilePage() {
                         </Link>
                     </div>
                 ) : (
-                    <div className="rounded-2xl bg-white shadow-sm border border-gray-100 px-6 py-8">
+                    <div className="max-w-3xl mx-auto rounded-2xl bg-white shadow-sm border border-gray-100 px-6 py-8">
                         <div className="h-6 w-40 bg-gray-100 rounded animate-pulse mb-6" />
                         <div className="space-y-4">
                             {Array.from({ length: 5 }).map((_, i) => (
@@ -188,8 +188,8 @@ export default function ProfilePage() {
                 )}
 
                 {/* Wishlist section below the profile card */}
-                <div className="mt-10">
-                    <div className="flex items-center justify-between mb-1">
+                <div className="profile-wishlist mt-8 sm:mt-10">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                         <h2 className="text-lg font-semibold text-gray-900">Your Wishlist</h2>
                         {hydrated && wishlistItems.length > 0 ? (
                             <span className="text-sm text-gray-500 bg-white border border-gray-200 rounded-full px-3 py-1">
@@ -199,7 +199,7 @@ export default function ProfilePage() {
                     </div>
 
                     {!hydrated ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-5">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 mt-5 min-w-0">
                             {Array.from({ length: 4 }).map((_, i) => (
                                 <div key={i} className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
                                     <div className="aspect-square bg-gray-100 animate-pulse" />
@@ -220,7 +220,7 @@ export default function ProfilePage() {
                             </Link>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-5 mt-5">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 mt-5">
                             {wishlistItems.map((product) => (
                                 <ProductCard
                                     key={product.product_uid}

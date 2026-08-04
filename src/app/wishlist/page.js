@@ -109,7 +109,7 @@ export default function WishlistPage() {
           Products you&apos;ve saved for later.
         </p>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="wishlist-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
           {wishlistItems.map((product) => (
             <ProductCard
               key={product.product_uid}
