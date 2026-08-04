@@ -104,20 +104,44 @@ export default function Header() {
             )}
           </Link>
 
-          <IconButton
+          {/* Desktop: direct profile/login icon, no drawer needed */}
+          {sessionLoaded && (
+            <Link
+              href={userSession ? "/profile" : "/login"}
+              aria-label={userSession ? "My profile" : "Login"}
+              className="hidden lg:flex items-center gap-2 pl-1 pr-3 h-9 rounded-full border border-gray-300 text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+              onClick={() =>
+                trackingService.trackEvent(
+                  userSession ? EVENTS.CLICKED_PROFILE_ICON : EVENTS.CLICKED_LOGIN_ICON
+                )
+              }
+            >
+              <IoPersonCircleOutline size={20} />
+              <span className="text-sm font-medium">
+                {userSession ? "My Profile" : "Login"}
+              </span>
+            </Link>
+          )}
+
+          {/* Mobile/tablet: hamburger opens drawer */}
+          <button
             aria-label="Open menu"
+            className="block lg:hidden"
             onClick={() => {
               trackingService.trackEvent(EVENTS.CLICKED_MENU_ICON);
               setMenuOpen(true);
             }}
           >
             <HiOutlineMenu size={18} />
-          </IconButton>
+          </button>
         </div>
       </div>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-[1000] bg-black/40" onClick={() => setMenuOpen(false)}>
+        <div
+          className="fixed inset-0 z-[1000] bg-black/40 lg:hidden"
+          onClick={() => setMenuOpen(false)}
+        >
           <div
             className="absolute top-0 right-0 h-full w-72 bg-white shadow-lg p-6"
             onClick={(e) => e.stopPropagation()}

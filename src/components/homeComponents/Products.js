@@ -109,8 +109,8 @@ export default function Products() {
             <button
                 type="button"
                 onClick={() => router.push('/AllProducts')}
-                className="w-full font-lato mt-5 text-sm tracking-widest capitalize 
-                     text-[#ff7e67] border-1 border-[#e08a7d] rounded-[20px] py-2 hover:bg-[#d17a6d]
+                className="block w-full lg:w-[70%] font-lato mt-5 mx-auto text-sm tracking-widest capitalize 
+                     text-[#ff7e67] border-1 border-[#e08a7d] rounded-[20px] py-2 hover:bg-[#d17a6d] hover:text-white
                       transition-colors duration-300"
             >
                 Login to view all

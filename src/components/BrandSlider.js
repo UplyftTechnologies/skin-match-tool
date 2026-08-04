@@ -43,7 +43,7 @@ export default function BrandSlider() {
         breakpoints={{
           640: { slidesPerView: 3 },
           768: { slidesPerView: 4 },
-          1024: { slidesPerView: 5 },
+          1024: { slidesPerView: 8 },
         }}
       >
         {brands.map((brand, i) => (

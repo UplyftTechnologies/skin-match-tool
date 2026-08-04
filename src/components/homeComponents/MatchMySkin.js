@@ -1,6 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import DontKnowSkinTypeModal from '../DontKnowSkinTypeModal'
+import { trackingService } from '@/lib/tracking/trackingClient.js'
+import { EVENTS } from '@/lib/tracking/events.js'
 
 const skinTypes = ['Oily', 'Dry', 'Normal', 'Combination', 'I dont know']
 const sensitiveOptions = ['Yes', 'No']
@@ -12,6 +15,8 @@ const concerns = [
     'Dullness', 'Tanning', 'None',
 ]
 const specialConditions = ['Excessive dryness', 'Pregnancy', 'Breast feeding', 'None']
+const ageOptions = ['Teen', 'Adult']
+const genderOptions = ['Female', 'Male', 'Other', 'Prefer not to say']
 
 function Pill({ label, selected, onClick }) {
     return (
@@ -31,25 +36,79 @@ function Pill({ label, selected, onClick }) {
 }
 
 export default function MatchMySkin() {
+    const router = useRouter()
     const [skinType, setSkinType] = useState(null)
     const [sensitive, setSensitive] = useState(null)
     const [concern, setConcern] = useState(null)
     const [conditions, setConditions] = useState([])
-    const [age, setAge] = useState(null)
-    const [gender, setGender] = useState(null)
+    const [age, setAge] = useState('')
+    const [gender, setGender] = useState('')
     const [showGuideModal, setShowGuideModal] = useState(false)
+    const [quizCompleted, setQuizCompleted] = useState(false)
+
+    useEffect(() => {
+        if (!quizCompleted) return
+        const timer = setTimeout(() => {
+            router.push('/login')
+        }, 30000)
+        return () => clearTimeout(timer)
+    }, [quizCompleted, router])
+
+    const trackOption = (question, value) => {
+        trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
+            question,
+            option: value,
+        })
+    }
 
     const toggleCondition = (item) => {
-        setConditions((prev) =>
-            prev.includes(item) ? prev.filter((c) => c !== item) : [...prev, item]
-        )
+        setConditions((prev) => {
+            const isSelected = prev.includes(item)
+            trackOption('special_conditions', item)
+            return isSelected ? prev.filter((c) => c !== item) : [...prev, item]
+        })
     }
 
     const handleSkinTypeSelect = (type) => {
         setSkinType(type)
+        trackOption('skin_type', type)
         if (type === 'I dont know') {
             setShowGuideModal(true)
         }
+    }
+
+    const handleSensitiveSelect = (opt) => {
+        setSensitive(opt)
+        trackOption('sensitive', opt)
+    }
+
+    const handleAgeSelect = (e) => {
+        const value = e.target.value
+        setAge(value)
+        if (value) trackOption('age', value)
+    }
+
+    const handleGenderSelect = (e) => {
+        const value = e.target.value
+        setGender(value)
+        if (value) trackOption('gender', value)
+    }
+
+    const handleConcernSelect = (item) => {
+        setConcern(item)
+        trackOption('concern', item)
+    }
+
+    const handleSubmit = () => {
+        trackingService.trackEvent(EVENTS.QUIZ_COMPLETED, {
+            skin_type: skinType,
+            sensitive,
+            concern,
+            conditions,
+            age,
+            gender,
+        })
+        setQuizCompleted(true)
     }
 
     return (
@@ -87,7 +146,7 @@ export default function MatchMySkin() {
                                     key={opt}
                                     label={opt}
                                     selected={sensitive === opt}
-                                    onClick={() => setSensitive(opt)}
+                                    onClick={() => handleSensitiveSelect(opt)}
                                 />
                             ))}
                         </div>
@@ -96,13 +155,38 @@ export default function MatchMySkin() {
                     {/* Age / Gender */}
                     <section>
                         <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Tell us more about you</h2>
+
                         <div className="grid grid-cols-2 gap-2">
-                            <Pill label="Age" selected={age === 'Age'} onClick={() => setAge('Age')} />
-                            <Pill label="Gender" selected={gender === 'Gender'} onClick={() => setGender('Gender')} />
+                            {/* Age dropdown */}
+                            <select
+                                value={age}
+                                onChange={handleAgeSelect}
+                                style={{ fontSize: '13px' }}
+                                className="w-full md:text-base py-[9px] px-2 rounded-[3px] border border-gray-200 text-gray-700 bg-white focus:outline-none focus:border-gray-400"
+                            >
+                                <option style={{ fontSize: '13px' }} className="md:text-base" value="" disabled>Age</option>
+                                {ageOptions.map((opt) => (
+                                    <option key={opt} style={{ fontSize: '13px' }} className="md:text-base" value={opt}>{opt}</option>
+                                ))}
+                            </select>
+
+                            {/* Gender dropdown */}
+                            <select
+                                value={gender}
+                                onChange={handleGenderSelect}
+                                style={{ fontSize: '13px' }}
+                                className="w-full md:text-base py-[9px] px-2 rounded-[3px] border
+                                 border-gray-200 text-gray-700 bg-white focus:outline-none focus:border-gray-400"
+                            >
+                                <option style={{ fontSize: '13px' }} className="md:text-base" value="" disabled>Gender</option>
+                                {genderOptions.map((opt) => (
+                                    <option key={opt} style={{ fontSize: '13px' }} className="md:text-base text-black" value={opt}>{opt}</option>
+                                ))}
+                            </select>
                         </div>
                     </section>
 
-                    {/* Concerns - wider section, spans full row on desktop */}
+                    {/* Concerns */}
                     <section className="md:col-span-2 lg:col-span-3">
                         <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">
                             Choose your skin concern <span className="text-gray-400 text-sm">(Choose 1)</span>
@@ -113,13 +197,13 @@ export default function MatchMySkin() {
                                     key={item}
                                     label={item}
                                     selected={concern === item}
-                                    onClick={() => setConcern(item)}
+                                    onClick={() => handleConcernSelect(item)}
                                 />
                             ))}
                         </div>
                     </section>
 
-                    {/* Special conditions - spans full row on desktop */}
+                    {/* Special conditions */}
                     <section className="md:col-span-2 lg:col-span-3">
                         <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Special conditions</h2>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -139,6 +223,7 @@ export default function MatchMySkin() {
                 <div className="flex justify-center">
                     <button
                         type="button"
+                        onClick={handleSubmit}
                         className="w-full md:w-64 font-lato mt-8 text-sm tracking-widest capitalize 
                      text-[#ff7e67] border border-[#e08a7d] rounded-[20px] py-2 hover:bg-[#d17a6d] hover:text-white
                       transition-colors duration-300"
