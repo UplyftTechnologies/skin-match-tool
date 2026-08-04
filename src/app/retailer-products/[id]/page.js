@@ -1,9 +1,9 @@
 import { cache } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FiArrowLeft, FiChevronDown, FiExternalLink } from "react-icons/fi";
 import Header from "@/components/header";
+import RetailerProductGallery from "@/components/retailer-product-gallery";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -60,14 +60,142 @@ function canonicalSize(value) {
   return `${amount}${unit}`;
 }
 
-function isSameProduct(current, candidate) {
-  if (normalizedProductName(current.product_name) !== normalizedProductName(candidate.product_name)) {
-    return false;
+function modelCodes(name) {
+  const codes = new Set();
+  const pattern = /\b([a-z]{1,4})[-\s]?(\d{2,5})\b/gi;
+  let match;
+
+  while ((match = pattern.exec(String(name || ""))) !== null) {
+    const prefix = match[1].toLowerCase();
+    if (!["spf", "pa"].includes(prefix)) {
+      codes.add(`${prefix}${match[2]}`);
+    }
   }
 
+  return codes;
+}
+
+function coreNameTokens(name, brand) {
+  const ignored = new Set([
+    "&", "a", "all", "and", "for", "in", "of", "skin", "the", "type", "vivo", "with",
+    "tested", "test", "dermatologically", "clinically", "new", "original",
+  ]);
+  const brandTokens = new Set(normalizedProductName(brand).split(/\s+/).filter(Boolean));
+
+  return new Set(
+    normalizedProductName(name)
+      .split(/\s+/)
+      .filter((token) => token && !ignored.has(token) && !brandTokens.has(token)),
+  );
+}
+
+function nameSimilarity(current, candidate) {
+  const currentTokens = coreNameTokens(current.product_name, current.brand);
+  const candidateTokens = coreNameTokens(candidate.product_name, current.brand);
+  const sharedCount = [...currentTokens]
+    .filter((token) => candidateTokens.has(token)).length;
+  const smallerSetSize = Math.min(currentTokens.size, candidateTokens.size);
+  const combinedSetSize = new Set([...currentTokens, ...candidateTokens]).size;
+
+  return {
+    sharedCount,
+    coverage: smallerSetSize ? sharedCount / smallerSetSize : 0,
+    jaccard: combinedSetSize ? sharedCount / combinedSetSize : 0,
+  };
+}
+
+function numericSignature(name) {
+  return (normalizedProductName(name).match(/\b\d+(?:\.\d+)?/g) || []).join(":");
+}
+
+function categoryOverlap(current, candidate) {
+  const currentCategories = new Set(
+    (current.categories || []).map((category) => category.toLowerCase()),
+  );
+  return (candidate.categories || [])
+    .some((category) => currentCategories.has(category.toLowerCase()));
+}
+
+function hasSimilarMrp(current, candidate) {
+  const currentMrp = Number(current.mrp);
+  const candidateMrp = Number(candidate.mrp);
+  if (!Number.isFinite(currentMrp) || !Number.isFinite(candidateMrp)) return false;
+  if (currentMrp <= 0 || candidateMrp <= 0) return false;
+
+  return Math.abs(currentMrp - candidateMrp) / Math.max(currentMrp, candidateMrp) <= 0.1;
+}
+
+function textTokenSimilarity(left, right) {
+  const leftTokens = new Set(
+    String(left || "").toLowerCase().match(/[a-z0-9]+/g) || [],
+  );
+  const rightTokens = new Set(
+    String(right || "").toLowerCase().match(/[a-z0-9]+/g) || [],
+  );
+  if (!leftTokens.size || !rightTokens.size) return 0;
+
+  const sharedCount = [...leftTokens]
+    .filter((token) => rightTokens.has(token)).length;
+  return sharedCount / new Set([...leftTokens, ...rightTokens]).size;
+}
+
+function supportingConfidence(current, candidate) {
+  let confidence = 0;
+  if (categoryOverlap(current, candidate)) confidence += 0.08;
+  if (hasSimilarMrp(current, candidate)) confidence += 0.08;
+  if (textTokenSimilarity(current.ingredients, candidate.ingredients) >= 0.5) {
+    confidence += 0.09;
+  }
+  return confidence;
+}
+
+function isSameProduct(current, candidate) {
   const currentSize = canonicalSize(current.variant) || canonicalSize(current.product_name);
   const candidateSize = canonicalSize(candidate.variant) || canonicalSize(candidate.product_name);
-  return currentSize === candidateSize;
+  if (currentSize !== candidateSize) return false;
+
+  if (normalizedProductName(current.product_name) === normalizedProductName(candidate.product_name)) {
+    return true;
+  }
+
+  const currentCodes = modelCodes(current.product_name);
+  const candidateCodes = modelCodes(candidate.product_name);
+  const hasSharedModelCode = [...currentCodes]
+    .some((code) => candidateCodes.has(code));
+  const hasAnyModelCode = currentCodes.size > 0 || candidateCodes.size > 0;
+  const similarity = nameSimilarity(current, candidate);
+  const nameConfidence = (similarity.coverage * 0.6) + (similarity.jaccard * 0.4);
+  const confidence = nameConfidence + supportingConfidence(current, candidate);
+
+  if (hasAnyModelCode) {
+    return hasSharedModelCode
+      && similarity.sharedCount >= 3
+      && similarity.coverage >= 0.65
+      && similarity.jaccard >= 0.45
+      && confidence >= 0.72;
+  }
+
+  const currentNumbers = numericSignature(current.product_name);
+  const candidateNumbers = numericSignature(candidate.product_name);
+  if (currentNumbers !== candidateNumbers) return false;
+
+  const strictNameMatch = similarity.sharedCount >= 4
+    && similarity.coverage >= 0.8
+    && similarity.jaccard >= 0.65;
+  const ingredientBackedMatch = textTokenSimilarity(
+    current.ingredients,
+    candidate.ingredients,
+  ) >= 0.75
+    && similarity.sharedCount >= 4
+    && similarity.coverage >= 0.7
+    && similarity.jaccard >= 0.5;
+  const metadataBackedMatch = categoryOverlap(current, candidate)
+    && hasSimilarMrp(current, candidate)
+    && similarity.sharedCount >= 5
+    && similarity.coverage >= 0.75
+    && similarity.jaccard >= 0.6;
+
+  return strictNameMatch || ingredientBackedMatch || metadataBackedMatch;
 }
 
 async function findComparableProducts(product) {
@@ -75,7 +203,7 @@ async function findComparableProducts(product) {
 
   const { data, error } = await supabaseAdmin
     .from("retailer_products")
-    .select("id,site,product_name,variant,mrp,selling_price,discount_pct,in_stock,product_url,image_url")
+    .select("id,site,product_name,variant,mrp,selling_price,discount_pct,in_stock,product_url,image_url,categories,ingredients")
     .ilike("brand", product.brand)
     .neq("site", product.site)
     .limit(1000);
@@ -85,8 +213,20 @@ async function findComparableProducts(product) {
     return [product];
   }
 
-  return [product, ...(data || []).filter((candidate) => isSameProduct(product, candidate))]
-    .sort((left, right) => {
+  const matches = [product, ...(data || []).filter((candidate) => isSameProduct(product, candidate))];
+  const bestByRetailer = new Map();
+
+  matches.forEach((item) => {
+    const existing = bestByRetailer.get(item.site);
+    const itemPrice = Number(item.selling_price ?? item.mrp ?? Number.POSITIVE_INFINITY);
+    const existingPrice = Number(existing?.selling_price ?? existing?.mrp ?? Number.POSITIVE_INFINITY);
+
+    if (!existing || itemPrice < existingPrice) {
+      bestByRetailer.set(item.site, item);
+    }
+  });
+
+  return [...bestByRetailer.values()].sort((left, right) => {
       const leftPrice = Number(left.selling_price ?? left.mrp ?? Number.POSITIVE_INFINITY);
       const rightPrice = Number(right.selling_price ?? right.mrp ?? Number.POSITIVE_INFINITY);
       return leftPrice - rightPrice;
@@ -159,7 +299,7 @@ export default async function RetailerProductPage({ params }) {
   const lowestPrice = availablePrices.length ? Math.min(...availablePrices) : null;
 
   return (
-    <div className="min-h-screen bg-[#FAF9F6] text-slate-800">
+    <div className="min-h-screen overflow-x-hidden bg-[#FAF9F6] text-slate-800">
       <Header />
 
       <div
@@ -176,26 +316,15 @@ export default async function RetailerProductPage({ params }) {
         </Link>
 
         <div className="mt-6 grid gap-7 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-12">
-          <div className="lg:sticky lg:top-6 lg:self-start">
-            <div className="relative aspect-square overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
-              {product.image_url ? (
-                <Image
-                  src={product.image_url}
-                  alt={product.product_name}
-                  fill
-                  priority
-                  sizes="(max-width: 1023px) 100vw, 42vw"
-                  className="object-contain p-6"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-7xl font-semibold text-rose-200">
-                  R
-                </div>
-              )}
-            </div>
+          <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
+            <RetailerProductGallery
+              primaryImage={product.image_url}
+              imageUrls={product.image_urls}
+              productName={product.product_name}
+            />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider">
               <span className="text-[#e08a7d]">{product.brand || product.site}</span>
               <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-500">
@@ -206,7 +335,7 @@ export default async function RetailerProductPage({ params }) {
               </span>
             </div>
 
-            <h1 className="mt-3 font-cormorant text-3xl font-semibold leading-tight text-slate-950 sm:text-4xl">
+            <h1 className="mt-3 break-words font-cormorant text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
               {product.product_name}
             </h1>
             {product.variant ? (
@@ -349,6 +478,9 @@ export default async function RetailerProductPage({ params }) {
 
                     <p className="mt-3 text-xs text-slate-500">
                       {item.variant || canonicalSize(item.product_name) || "Standard size"}
+                    </p>
+                    <p className="mt-2 line-clamp-2 text-sm font-semibold leading-5 text-slate-700">
+                      {item.product_name}
                     </p>
                     <div className="mt-2 flex flex-wrap items-end gap-2">
                       <span className="text-2xl font-bold text-slate-950">
