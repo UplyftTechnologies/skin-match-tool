@@ -87,14 +87,46 @@ function applyFilters(query, searchParams) {
   return query;
 }
 
-function productQuery(limit, searchParams) {
-  const query = supabaseAdmin
+function applySort(query, sort) {
+  if (sort === "price_asc") {
+    return query.order("selling_price", { ascending: true, nullsFirst: false });
+  }
+  if (sort === "price_desc") {
+    return query.order("selling_price", { ascending: false, nullsFirst: false });
+  }
+  if (sort === "rating") {
+    return query.order("rating", { ascending: false, nullsFirst: false });
+  }
+
+  return query.order("updated_at", { ascending: false });
+}
+
+function productQuery(limit, offset, searchParams, { count = false, paginate = true } = {}) {
+  let query = supabaseAdmin
     .from("retailer_products")
-    .select(PRODUCT_FIELDS)
-    .order("updated_at", { ascending: false })
-    .limit(limit);
+    .select(PRODUCT_FIELDS, count ? { count: "exact" } : undefined);
+
+  query = applySort(query, searchParams.get("sort") || "score_desc");
+  query = paginate ? query.range(offset, offset + limit - 1) : query.limit(1000);
 
   return applyFilters(query, searchParams);
+}
+
+function sortProducts(products, sort) {
+  return products.sort((left, right) => {
+    if (sort === "price_asc") {
+      return Number(left.selling_price ?? left.mrp ?? Infinity)
+        - Number(right.selling_price ?? right.mrp ?? Infinity);
+    }
+    if (sort === "price_desc") {
+      return Number(right.selling_price ?? right.mrp ?? -Infinity)
+        - Number(left.selling_price ?? left.mrp ?? -Infinity);
+    }
+    if (sort === "rating") {
+      return Number(right.rating || 0) - Number(left.rating || 0);
+    }
+    return new Date(right.updated_at) - new Date(left.updated_at);
+  });
 }
 
 export async function GET(request) {
@@ -103,6 +135,11 @@ export async function GET(request) {
   const limit = Number.isFinite(requestedLimit)
     ? Math.min(Math.max(Math.trunc(requestedLimit), 1), 200)
     : 100;
+  const requestedPage = Number(searchParams.get("page") || 1);
+  const page = Number.isFinite(requestedPage)
+    ? Math.max(Math.trunc(requestedPage), 1)
+    : 1;
+  const offset = (page - 1) * limit;
   const search = (searchParams.get("search") || "")
     .replace(/[^\p{L}\p{N}\s&'-]/gu, " ")
     .replace(/\s+/g, " ")
@@ -110,7 +147,9 @@ export async function GET(request) {
     .slice(0, 80);
 
   if (!search) {
-    const { data, error } = await productQuery(limit, searchParams);
+    const { data, error, count } = await productQuery(limit, offset, searchParams, {
+      count: true,
+    });
 
     if (error) {
       console.error("Failed to fetch retailer products:", error.message);
@@ -120,13 +159,20 @@ export async function GET(request) {
       );
     }
 
-    return NextResponse.json({ products: data || [] });
+    const total = count || 0;
+    return NextResponse.json({
+      products: data || [],
+      page,
+      limit,
+      total,
+      totalPages: Math.max(Math.ceil(total / limit), 1),
+    });
   }
 
   const [nameResult, brandResult, categoryResult] = await Promise.all([
-    productQuery(limit, searchParams).ilike("product_name", `%${search}%`),
-    productQuery(limit, searchParams).ilike("brand", `%${search}%`),
-    productQuery(limit, searchParams).overlaps("categories", categoryCandidates(search)),
+    productQuery(limit, offset, searchParams, { paginate: false }).ilike("product_name", `%${search}%`),
+    productQuery(limit, offset, searchParams, { paginate: false }).ilike("brand", `%${search}%`),
+    productQuery(limit, offset, searchParams, { paginate: false }).overlaps("categories", categoryCandidates(search)),
   ]);
   const failedResult = [nameResult, brandResult, categoryResult].find(
     (result) => result.error,
@@ -144,9 +190,18 @@ export async function GET(request) {
   [...nameResult.data, ...brandResult.data, ...categoryResult.data].forEach(
     (product) => productsById.set(product.id, product),
   );
-  const products = [...productsById.values()]
-    .sort((left, right) => new Date(right.updated_at) - new Date(left.updated_at))
-    .slice(0, limit);
+  const matchingProducts = sortProducts(
+    [...productsById.values()],
+    searchParams.get("sort") || "score_desc",
+  );
+  const total = matchingProducts.length;
+  const products = matchingProducts.slice(offset, offset + limit);
 
-  return NextResponse.json({ products });
+  return NextResponse.json({
+    products,
+    page,
+    limit,
+    total,
+    totalPages: Math.max(Math.ceil(total / limit), 1),
+  });
 }

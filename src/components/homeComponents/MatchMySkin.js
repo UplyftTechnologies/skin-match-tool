@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import DontKnowSkinTypeModal from '../DontKnowSkinTypeModal'
 import { trackingService } from '@/lib/tracking/trackingClient.js'
 import { EVENTS } from '@/lib/tracking/events.js'
@@ -18,16 +17,19 @@ const specialConditions = ['Excessive dryness', 'Pregnancy', 'Breast feeding', '
 const ageOptions = ['Teen', 'Adult']
 const genderOptions = ['Female', 'Male', 'Other', 'Prefer not to say']
 
-function Pill({ label, selected, onClick }) {
+function Pill({ disabled = false, label, selected, onClick }) {
     return (
         <button
             type="button"
             onClick={onClick}
+            disabled={disabled}
             style={{ fontSize: '13px' }}
             className={`w-full md:text-base py-[8px] px-1 rounded-[3px] border transition-colors duration-200
         ${selected
                     ? 'bg-[#D8E7E6] border-[#D8E7E6] text-gray-900'
-                    : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                    : disabled
+                        ? 'bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed'
+                        : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
                 }`}
         >
             {label}
@@ -36,23 +38,37 @@ function Pill({ label, selected, onClick }) {
 }
 
 export default function MatchMySkin() {
-    const router = useRouter()
     const [skinType, setSkinType] = useState(null)
     const [sensitive, setSensitive] = useState(null)
-    const [concern, setConcern] = useState(null)
+    const [selectedConcerns, setSelectedConcerns] = useState([])
     const [conditions, setConditions] = useState([])
     const [age, setAge] = useState('')
     const [gender, setGender] = useState('')
     const [showGuideModal, setShowGuideModal] = useState(false)
-    const [quizCompleted, setQuizCompleted] = useState(false)
 
     useEffect(() => {
-        if (!quizCompleted) return
         const timer = setTimeout(() => {
-            router.push('/login')
-        }, 30000)
+            try {
+                const savedAnswers = JSON.parse(sessionStorage.getItem('roopsee-quiz-answers') || 'null')
+                if (!savedAnswers) return
+
+                setSkinType(savedAnswers.skinType || null)
+                setSensitive(savedAnswers.sensitive || null)
+                const savedConcerns = Array.isArray(savedAnswers.concerns)
+                    ? savedAnswers.concerns
+                    : savedAnswers.concern
+                        ? [savedAnswers.concern]
+                        : []
+                setSelectedConcerns(savedConcerns.slice(0, 2))
+                setConditions(Array.isArray(savedAnswers.conditions) ? savedAnswers.conditions : [])
+                setAge(savedAnswers.age || '')
+                setGender(savedAnswers.gender || '')
+            } catch {
+                sessionStorage.removeItem('roopsee-quiz-answers')
+            }
+        }, 0)
         return () => clearTimeout(timer)
-    }, [quizCompleted, router])
+    }, [])
 
     const trackOption = (question, value) => {
         trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
@@ -95,20 +111,52 @@ export default function MatchMySkin() {
     }
 
     const handleConcernSelect = (item) => {
-        setConcern(item)
-        trackOption('concern', item)
+        setSelectedConcerns((current) => {
+            if (current.includes(item)) {
+                trackOption('concern', item)
+                return current.filter((concern) => concern !== item)
+            }
+
+            if (item === 'None') {
+                trackOption('concern', item)
+                return ['None']
+            }
+
+            const withoutNone = current.filter((concern) => concern !== 'None')
+            if (withoutNone.length >= 2) return current
+
+            trackOption('concern', item)
+            return [...withoutNone, item]
+        })
     }
 
     const handleSubmit = () => {
+        const answers = {
+            skinType,
+            sensitive,
+            concerns: selectedConcerns,
+            conditions,
+            age,
+            gender,
+        }
+
         trackingService.trackEvent(EVENTS.QUIZ_COMPLETED, {
             skin_type: skinType,
             sensitive,
-            concern,
+            concerns: selectedConcerns,
             conditions,
             age,
             gender,
         })
-        setQuizCompleted(true)
+
+        sessionStorage.setItem('roopsee-quiz-answers', JSON.stringify(answers))
+        window.dispatchEvent(new CustomEvent('roopsee-quiz-answers-updated', {
+            detail: answers,
+        }))
+        document.getElementById('products')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+        })
     }
 
     return (
@@ -203,14 +251,15 @@ export default function MatchMySkin() {
                         {/* Concerns */}
                         <section className="md:col-span-2 lg:col-span-3">
                             <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">
-                                Choose your skin concern <span className="text-gray-400 text-sm">(Choose 1)</span>
+                                Choose your skin concerns <span className="text-gray-400 text-sm">(Choose up to 2)</span>
                             </h2>
                             <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 lg:gap-3">
                                 {concerns.map((item) => (
                                     <Pill
                                         key={item}
                                         label={item}
-                                        selected={concern === item}
+                                        selected={selectedConcerns.includes(item)}
+                                        disabled={selectedConcerns.length >= 2 && item !== 'None' && !selectedConcerns.includes(item)}
                                         onClick={() => handleConcernSelect(item)}
                                     />
                                 ))}

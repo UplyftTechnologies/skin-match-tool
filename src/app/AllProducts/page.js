@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -41,6 +41,16 @@ const sortOptions = [
     { label: 'Newest First', value: 'newest' },
     { label: 'Customer Rating', value: 'rating' },
 ]
+
+const PRODUCTS_PER_PAGE = 20
+
+let rememberedProductListState = null
+
+function copyFilters(filters) {
+    return Object.fromEntries(
+        Object.entries(filters).map(([key, values]) => [key, [...values]]),
+    )
+}
 
 function ProductCard({ product }) {
     return (
@@ -259,6 +269,7 @@ function SortFilterBar({ filterCount, onFilterClick, onSortClick, sortLabel }) {
 
 function ProductsPageContent() {
     const searchParams = useSearchParams()
+    const routeStateKey = searchParams.toString()
     const initialCategories = searchParams.getAll('category')
         .map((category) => category.trim())
         .filter(Boolean)
@@ -266,17 +277,24 @@ function ProductsPageContent() {
         ...emptyFilters,
         category: [...new Set(initialCategories)],
     }
-    const [search, setSearch] = useState('')
+    const restoredState = rememberedProductListState?.routeStateKey === routeStateKey
+        ? rememberedProductListState
+        : null
+    const restoredFilters = restoredState?.appliedFilters || initialFilters
+    const [search, setSearch] = useState(() => restoredState?.search || '')
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [filterOpen, setFilterOpen] = useState(false)
     const [facetOptions, setFacetOptions] = useState(emptyFilterOptions)
     const [facetOptionsLoading, setFacetOptionsLoading] = useState(true)
-    const [draftFilters, setDraftFilters] = useState(initialFilters)
-    const [appliedFilters, setAppliedFilters] = useState(initialFilters)
+    const [draftFilters, setDraftFilters] = useState(() => copyFilters(restoredFilters))
+    const [appliedFilters, setAppliedFilters] = useState(() => copyFilters(restoredFilters))
     const [sortOpen, setSortOpen] = useState(false)
-    const [selectedSort, setSelectedSort] = useState('score_desc')
+    const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'score_desc')
+    const [currentPage, setCurrentPage] = useState(() => restoredState?.currentPage || 1)
+    const [totalProducts, setTotalProducts] = useState(0)
+    const [totalPages, setTotalPages] = useState(1)
 
     const currentSortLabel = sortOptions.find((s) => s.value === selectedSort)?.label
     const appliedFilterCount = Object.values(appliedFilters)
@@ -317,7 +335,12 @@ function ProductsPageContent() {
 
         async function loadProducts() {
             try {
-                const params = new URLSearchParams({ limit: '200' })
+                setLoading(true)
+                const params = new URLSearchParams({
+                    limit: String(PRODUCTS_PER_PAGE),
+                    page: String(currentPage),
+                    sort: selectedSort,
+                })
                 const query = search.trim()
                 if (query) params.set('search', query)
                 Object.entries(appliedFilters).forEach(([key, values]) => {
@@ -340,6 +363,8 @@ function ProductsPageContent() {
                     originalPrice: product.mrp ?? product.selling_price ?? 0,
                     price: product.selling_price ?? product.mrp ?? 0,
                 })))
+                setTotalProducts(payload.total || 0)
+                setTotalPages(payload.totalPages || 1)
                 setError('')
             } catch (fetchError) {
                 if (fetchError.name !== 'AbortError') {
@@ -357,7 +382,17 @@ function ProductsPageContent() {
             clearTimeout(timeoutId)
             controller.abort()
         }
-    }, [appliedFilters, search])
+    }, [appliedFilters, currentPage, search, selectedSort])
+
+    useEffect(() => {
+        rememberedProductListState = {
+            routeStateKey,
+            search,
+            appliedFilters: copyFilters(appliedFilters),
+            selectedSort,
+            currentPage,
+        }
+    }, [appliedFilters, currentPage, routeStateKey, search, selectedSort])
 
     const openFilters = () => {
         setDraftFilters(Object.fromEntries(
@@ -389,25 +424,17 @@ function ProductsPageContent() {
         setAppliedFilters(Object.fromEntries(
             Object.entries(draftFilters).map(([key, values]) => [key, [...values]]),
         ))
+        setCurrentPage(1)
         setFilterOpen(false)
     }
 
-    const visibleProducts = useMemo(() => {
-        const query = search.trim().toLowerCase()
-        const filtered = query
-            ? products.filter((product) =>
-                [product.name, product.brand, ...(product.categories || [])]
-                    .some((value) => value?.toLowerCase().includes(query)),
-            )
-            : [...products]
-
-        return filtered.sort((left, right) => {
-            if (selectedSort === 'price_asc') return Number(left.price) - Number(right.price)
-            if (selectedSort === 'price_desc') return Number(right.price) - Number(left.price)
-            if (selectedSort === 'newest') return new Date(right.updated_at) - new Date(left.updated_at)
-            return Number(right.rating || 0) - Number(left.rating || 0)
-        })
-    }, [products, search, selectedSort])
+    const firstProductNumber = totalProducts ? (currentPage - 1) * PRODUCTS_PER_PAGE + 1 : 0
+    const lastProductNumber = Math.min(currentPage * PRODUCTS_PER_PAGE, totalProducts)
+    const firstPageButton = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
+    const pageNumbers = Array.from(
+        { length: Math.min(5, totalPages) },
+        (_, index) => Math.max(1, firstPageButton) + index,
+    )
 
     return (
         <div>
@@ -432,7 +459,10 @@ function ProductsPageContent() {
                 open={sortOpen}
                 onClose={() => setSortOpen(false)}
                 selectedSort={selectedSort}
-                onSelectSort={setSelectedSort}
+                onSelectSort={(sort) => {
+                    setSelectedSort(sort)
+                    setCurrentPage(1)
+                }}
             />
 
             <div className="max-w-6xl mx-auto px-3 bg-[#FAF9F6] py-6">
@@ -445,7 +475,10 @@ function ProductsPageContent() {
                     <input
                         type="search"
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => {
+                            setSearch(e.target.value)
+                            setCurrentPage(1)
+                        }}
                         placeholder="Search products or brands"
                         className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-[#e08a7d] shadow-sm"
                     />
@@ -457,15 +490,56 @@ function ProductsPageContent() {
                 {error ? (
                     <p className="py-8 text-center text-sm text-red-600">{error}</p>
                 ) : null}
-                {!loading && !error && visibleProducts.length === 0 ? (
+                {!loading && !error && products.length === 0 ? (
                     <p className="py-8 text-center text-sm text-gray-500">No products found.</p>
                 ) : null}
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mt-3 md:gap-6">
-                    {visibleProducts.map((product) => (
+                    {products.map((product) => (
                         <ProductCard key={product.id} product={product} />
                     ))}
                 </div>
+
+                {!loading && !error && totalProducts > 0 ? (
+                    <nav className="mt-8 flex flex-col items-center gap-3" aria-label="Product pages">
+                        <p className="text-xs text-gray-500">
+                            Showing {firstProductNumber}–{lastProductNumber} of {totalProducts} products
+                        </p>
+                        <div className="flex items-center justify-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+                                disabled={currentPage === 1}
+                                className="rounded-full border border-[#e08a7d] px-3 py-2 text-xs text-[#d17a6d] disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                Previous
+                            </button>
+                            {pageNumbers.map((pageNumber) => (
+                                <button
+                                    type="button"
+                                    key={pageNumber}
+                                    onClick={() => setCurrentPage(pageNumber)}
+                                    aria-current={currentPage === pageNumber ? 'page' : undefined}
+                                    className={`h-9 w-9 rounded-full text-xs font-semibold transition-colors ${
+                                        currentPage === pageNumber
+                                            ? 'bg-[#e08a7d] text-white'
+                                            : 'border border-gray-200 bg-white text-gray-700 hover:border-[#e08a7d]'
+                                    }`}
+                                >
+                                    {pageNumber}
+                                </button>
+                            ))}
+                            <button
+                                type="button"
+                                onClick={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                                className="rounded-full border border-[#e08a7d] px-3 py-2 text-xs text-[#d17a6d] disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </nav>
+                ) : null}
             </div>
         </div>
     )
