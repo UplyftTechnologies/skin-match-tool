@@ -9,6 +9,8 @@ import Serum from '@/assets/images/serum.png'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
+import OtpModal from '@/components/auth/otp-modal'
+import { supabase } from '@/lib/supabase/client'
 
 function formatPrice(value) {
     const amount = Number(value)
@@ -134,7 +136,21 @@ export default function Products() {
     const [products, setProducts] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
+    const [quizAnswers, setQuizAnswers] = useState(null)
+    const [isLoginOpen, setIsLoginOpen] = useState(false)
+    const [isAuthenticated, setIsAuthenticated] = useState(false)
     const router = useRouter()
+
+    const handleViewAll = async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+
+        if (session) {
+            router.push('/AllProducts')
+            return
+        }
+
+        setIsLoginOpen(true)
+    }
 
     useEffect(() => {
         const controller = new AbortController()
@@ -174,6 +190,40 @@ export default function Products() {
         }
     }, [search])
 
+    useEffect(() => {
+        let isMounted = true
+
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (isMounted) setIsAuthenticated(Boolean(session))
+        })
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setIsAuthenticated(Boolean(session))
+        })
+
+        return () => {
+            isMounted = false
+            subscription.unsubscribe()
+        }
+    }, [])
+
+    useEffect(() => {
+        const restoreTimer = setTimeout(() => {
+            try {
+                setQuizAnswers(JSON.parse(sessionStorage.getItem('roopsee-quiz-answers') || 'null'))
+            } catch {
+                sessionStorage.removeItem('roopsee-quiz-answers')
+            }
+        }, 0)
+        const updateAnswers = (event) => setQuizAnswers(event.detail)
+        window.addEventListener('roopsee-quiz-answers-updated', updateAnswers)
+
+        return () => {
+            clearTimeout(restoreTimer)
+            window.removeEventListener('roopsee-quiz-answers-updated', updateAnswers)
+        }
+    }, [])
+
     const visibleProducts = useMemo(() => {
         const query = search.trim().toLowerCase()
         const matches = query
@@ -187,12 +237,43 @@ export default function Products() {
     }, [products, search])
 
     return (
-        <div className="bg-[#FAF9F6]">
+        <div id="products" className="scroll-mt-20 bg-[#FAF9F6]">
             <div className="max-w-6xl lg:max-w-[80%] mx-auto px-3 py-6">
                           <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
 
                     Products
                 </h2>
+
+                {quizAnswers ? (
+                    <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
+                        <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">
+                            Your selections
+                        </p>
+                        <div className="mt-2 flex flex-wrap justify-center gap-2">
+                            {[
+                                ['Skin', quizAnswers.skinType],
+                                ['Sensitive', quizAnswers.sensitive],
+                                ...(
+                                    Array.isArray(quizAnswers.concerns)
+                                        ? quizAnswers.concerns
+                                        : quizAnswers.concern
+                                            ? [quizAnswers.concern]
+                                            : []
+                                ).map((concern) => ['Concern', concern]),
+                                ['Age', quizAnswers.age],
+                                ['Gender', quizAnswers.gender],
+                                ...(quizAnswers.conditions || []).map((condition) => ['Condition', condition]),
+                            ].filter(([, value]) => value).map(([label, value], index) => (
+                                <span
+                                    key={`${label}-${value}-${index}`}
+                                    className="rounded-full bg-[#f8eeeb] px-3 py-1 text-xs font-medium text-slate-700"
+                                >
+                                    <strong>{label}:</strong> {value}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
 
                 <div className="relative max-w-xl mx-auto mb-2 mt-3 lg:mt-4">
                     <FiSearch
@@ -226,12 +307,21 @@ export default function Products() {
 
                 <button
                     type="button"
-                    onClick={() => router.push('/AllProducts')}
+                    onClick={handleViewAll}
                     className="block w-full lg:w-[70%] font-lato mt-5 mx-auto text-sm tracking-widest capitalize text-[#ff7e67] border border-[#e08a7d] rounded-[20px] py-2 hover:bg-[#d17a6d] hover:text-white transition-colors duration-300"
                 >
-                  Login to View all
+                  {isAuthenticated ? 'View all' : 'Login to View all'}
                 </button>
             </div>
+
+            <OtpModal
+                isOpen={isLoginOpen}
+                onClose={() => setIsLoginOpen(false)}
+                onSuccess={() => {
+                    setIsLoginOpen(false)
+                    router.push('/AllProducts')
+                }}
+            />
         </div>
     )
 }

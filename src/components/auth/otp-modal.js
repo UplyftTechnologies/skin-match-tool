@@ -400,6 +400,14 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
   return (
     <div className="otp-modal-overlay">
       <div className="otp-modal-container">
+        <button
+          type="button"
+          className="otp-modal-close"
+          onClick={onClose}
+          aria-label="Close login popup"
+        >
+          &times;
+        </button>
         <div className="otp-modal-content">
           <div className="otp-modal-header">
             <h3>{step === 1 ? 'Verify Your Mobile' : 'Enter Verification Code'}</h3>
