@@ -84,7 +84,7 @@ export default function Products() {
 
     return (
         <div className="bg-[#FAF9F6]">
-        <div className="max-w-6xl lg:max-w-[80%] mx-auto px-3  py-6">
+        <div className="max-w-6xl lg:max-w-7xl xl:max-w-[1440px] mx-auto px-3 lg:px-8 py-6 lg:py-10">
             <h1 style={{ letterSpacing: '0.1em' }} className="font-lato uppercase text-2xl md:text-3xl text-center tracking- mb-1">
                 Products
             </h1>
@@ -100,7 +100,7 @@ export default function Products() {
                 />
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 mt-3 lg:mt-5 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 mt-3 lg:mt-5 md:gap-6">
                 {products.map((product) => (
                     <ProductCard key={product.id} product={product} />
                 ))}
@@ -109,7 +109,7 @@ export default function Products() {
             <button
                 type="button"
                 onClick={() => router.push('/AllProducts')}
-                className="block w-full lg:w-[70%] font-lato mt-5 mx-auto text-sm tracking-widest capitalize 
+                className="block w-full lg:w-[60%] xl:w-1/2 font-lato mt-5 mx-auto text-sm tracking-widest capitalize
                      text-[#ff7e67] border-1 border-[#e08a7d] rounded-[20px] py-2 hover:bg-[#d17a6d] hover:text-white
                       transition-colors duration-300"
             >

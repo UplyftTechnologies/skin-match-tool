@@ -4,8 +4,8 @@ import BrandSlider from '../BrandSlider'
 
 export default function KnowBefore() {
   return (
-    <div className="bg-[#FAF9F6] py-6 px-5">
-      <div className="max-w-6xl mx-auto text-center">
+    <div className="bg-[#FAF9F6] py-6 px-5 lg:py-12">
+      <div className="max-w-6xl lg:max-w-7xl mx-auto text-center">
         <h2 className="font-cormorant text-[34px] md:text-5xl text-black leading-tight">
           Know <span className="italic">Before</span>
           <br />

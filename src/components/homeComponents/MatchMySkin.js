@@ -113,12 +113,12 @@ export default function MatchMySkin() {
 
     return (
         <div className='bg-[#FFFFFF]'>
-            <div className="max-w-md  mx-auto px-4 py-6 lg:max-w-[80%] md:py-12">
-                <h1 style={{ letterSpacing: '0.1em' }} className="font-lato text-2xl md:text-3xl text-center mb-6 md:mb-10">
+            <div className="max-w-md mx-auto px-4 py-6 md:py-12 lg:max-w-6xl xl:max-w-7xl lg:px-8">
+                <h1 style={{ letterSpacing: '0.1em' }} className="font-lato text-2xl md:text-xl lg:text-3xl text-center mb-6 md:mb-10">
                     MATCH MY SKIN
                 </h1>
 
-                <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 lg:gap-y-4">
+                <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 lg:gap-x-8 lg:gap-y-5">
 
                     <DontKnowSkinTypeModal open={showGuideModal} onClose={() => setShowGuideModal(false)} />
 
@@ -202,7 +202,7 @@ export default function MatchMySkin() {
                         <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">
                             Choose your skin concern <span className="text-gray-400 text-sm">(Choose 1)</span>
                         </h2>
-                        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 lg:gap-3">
                             {concerns.map((item) => (
                                 <Pill
                                     key={item}

@@ -25,7 +25,7 @@ export default function SearchByCategory() {
                 Search by Category
             </h1>
 
-            <div className="max-w-2xl mx-auto mt-5">
+            <div className="max-w-2xl lg:max-w-5xl mx-auto mt-5 lg:mt-8">
                 <Swiper
                     modules={[FreeMode]}
                     slidesPerView={3}
@@ -34,7 +34,7 @@ export default function SearchByCategory() {
                     breakpoints={{
                         480: { slidesPerView: 3, spaceBetween: 24 },
                         768: { slidesPerView: 4, spaceBetween: 32 },
-                        1024: { slidesPerView: 5, spaceBetween: 40 },
+                        1024: { slidesPerView: 4, spaceBetween: 56 },
                     }}
                 >
                     {categories.map((cat) => (
