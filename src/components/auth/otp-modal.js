@@ -126,8 +126,11 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
 
       setLoading(false);
       verifyingRef.current = false;
-      if (onSuccess) onSuccess(backendData.user);
-      onClose();
+      if (onSuccess) {
+        onSuccess(backendData.user);
+      } else {
+        onClose?.();
+      }
     } catch (err) {
       console.error('[OTP Catch Error]:', err);
       setLoading(false);

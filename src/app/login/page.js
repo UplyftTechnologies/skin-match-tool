@@ -1,12 +1,16 @@
-import OtpModal from '@/components/auth/otp-modal'
-import React from 'react'
+'use client'
 
-function login() {
+import OtpModal from '@/components/auth/otp-modal'
+import { useRouter } from 'next/navigation'
+
+export default function LoginPage() {
+  const router = useRouter()
+
   return (
-    <div>
-        <OtpModal/>
-    </div>
+    <OtpModal
+      isOpen={true}
+      onClose={() => router.push('/')}
+      onSuccess={() => router.push('/profile')}
+    />
   )
 }
-
-export default login
