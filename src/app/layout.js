@@ -83,7 +83,7 @@ const lato = Lato({
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${cormorant.variable} ${lato.variable}`}>
-      <body>
+      <body suppressHydrationWarning>
         <SiteExitTracker />
         <WishlistProvider>
           {children}

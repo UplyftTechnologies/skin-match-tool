@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { FreeMode } from 'swiper/modules'
 import 'swiper/css'
@@ -12,11 +13,22 @@ import eyes from '@/assets/images/eyes.webp'
 
 
 const categories = [
-    { id: 1, name: 'Face', image: Face },
-    { id: 2, name: 'Body', image: Body },
-    { id: 3, name: 'Lips', image: lips },
-    { id: 4, name: 'Eyes', image: eyes }
+    {
+        id: 1,
+        name: 'Face',
+        image: Face,
+        filters: ['Cleansers', 'Masks', 'Moisturizers', 'Serums', 'Shop Toners & Mists', 'Sun Care', 'Specialised Skincare'],
+    },
+    { id: 2, name: 'Body', image: Body, filters: ['Body Care'] },
+    { id: 3, name: 'Lips', image: lips, filters: ['Lip Care'] },
+    { id: 4, name: 'Eyes', image: eyes, filters: ['Eye Care'] }
 ]
+
+function categoryHref(filters) {
+    const params = new URLSearchParams()
+    filters.forEach((category) => params.append('category', category))
+    return `/AllProducts?${params}`
+}
 
 export default function SearchByCategory() {
     return (
@@ -39,7 +51,11 @@ export default function SearchByCategory() {
                 >
                     {categories.map((cat) => (
                         <SwiperSlide key={cat.id} className="!w-auto">
-                            <button className="flex flex-col items-center gap-3">
+                            <Link
+                                href={categoryHref(cat.filters)}
+                                className="flex flex-col items-center gap-3"
+                                aria-label={`View ${cat.name} products`}
+                            >
                                 <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-3 border-white shadow-sm">
                                     <Image
                                         src={cat.image}
@@ -51,7 +67,7 @@ export default function SearchByCategory() {
                                 <span className="text-sm md:text-base tracking-wide text-gray-800">
                                     {cat.name}
                                 </span>
-                            </button>
+                            </Link>
                         </SwiperSlide>
                     ))}
                 </Swiper>
