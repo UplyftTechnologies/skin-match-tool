@@ -42,8 +42,12 @@ export default function ProfilePage() {
     const [profileLoaded, setProfileLoaded] = useState(false);
 
     useEffect(() => {
-        setSavedProfile(getSavedSkinProfile());
-        setProfileLoaded(true);
+        const loadTimer = window.setTimeout(() => {
+            setSavedProfile(getSavedSkinProfile());
+            setProfileLoaded(true);
+        }, 0);
+
+        return () => window.clearTimeout(loadTimer);
     }, []);
 
     useEffect(() => {
@@ -80,6 +84,7 @@ export default function ProfilePage() {
             sessionStorage.removeItem("quiz_submitted");
             sessionStorage.removeItem("quiz_login_popup_due_at");
             sessionStorage.removeItem("app_landing_tracked");
+            sessionStorage.removeItem("roopsee-quiz-answers");
         } catch {
             // ignore
         }
@@ -157,6 +162,7 @@ export default function ProfilePage() {
                                 value={(profile.selectedSpecialConditions || []).join(", ") || "—"}
                             />
                             <ProfileRow label="Life Stage" value={profile.age || "—"} />
+                            <ProfileRow label="Gender" value={profile.selectedGender || "—"} />
                             <ProfileRow
                                 label="Sensitivity"
                                 value={profile.selectedSensitive ? "Yes" : "No"}

@@ -20,11 +20,11 @@ const categories = [
         id: 1,
         name: 'Face',
         image: Face,
-        filters: ['Cleansers', 'Masks', 'Moisturizers', 'Serums', 'Shop Toners & Mists', 'Sun Care', 'Specialised Skincare'],
+        filters: ['Face'],
     },
-    { id: 2, name: 'Body', image: Body, filters: ['Body Care'] },
-    { id: 3, name: 'Lips', image: lips, filters: ['Lip Care'] },
-    { id: 4, name: 'Eyes', image: eyes, filters: ['Eye Care'] }
+    { id: 2, name: 'Body', image: Body, filters: ['Body'] },
+    { id: 3, name: 'Lips', image: lips, filters: ['Lips'] },
+    { id: 4, name: 'Eyes', image: eyes, filters: ['Eyes'] }
 ]
 
 function categoryHref(filters) {

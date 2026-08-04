@@ -71,12 +71,12 @@ export async function generateMetadata({ params }) {
 
 function SpecRow({ label, value }) {
   return (
-    <li className="flex items-baseline gap-2 py-2 sm:gap-3">
+    <li className="flex min-w-0 items-baseline gap-2 py-2 sm:gap-3">
       <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-slate-400 sm:text-[10.5px]">
         {label}
       </span>
       <span aria-hidden="true" className="mb-[3px] flex-1 border-b border-dotted border-slate-200" />
-      <span className="shrink-0 text-[12.5px] font-semibold text-slate-800 sm:text-[13px]">{value}</span>
+      <span className="min-w-0 break-words text-right text-[12.5px] font-semibold text-slate-800 sm:text-[13px]">{value}</span>
     </li>
   );
 }
@@ -85,9 +85,9 @@ function SectionHeading({ index, icon: Icon, title }) {
   return (
     <div className="flex items-center gap-2">
       {index ? (
-        <span className="text-[13px] font-extrabold text-sky-500">{index}.</span>
+        <span className="text-[13px] font-extrabold text-[#e08a7d]">{index}.</span>
       ) : (
-        <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-sky-500" />
+        <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-[#e08a7d]" />
       )}
       <span className="text-[13px] font-bold tracking-wide text-slate-800">{title}</span>
     </div>
@@ -167,39 +167,37 @@ export default async function ProductPage({ params }) {
     .filter(Boolean);
 
   return (
-    <div className="rps-pdp min-h-screen bg-slate-50 pb-28 text-slate-800 lg:pb-0">
-      <Header
-       
-      />
+    <div className="rps-pdp min-h-screen overflow-x-hidden bg-[#FAF9F6] pb-10 text-slate-800">
+      <Header />
       <script
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
         type="application/ld+json"
       />
 
-      <div className="block w-full mx-auto max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8 lg:px-6">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8 lg:px-10">
         <Link
-          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 transition hover:text-sky-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
-          href="/"
+          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 transition hover:text-[#e08a7d] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e08a7d]"
+          href="/AllProducts"
         >
           <FiArrowLeft aria-hidden="true" className="h-4 w-4" />
-          Back to matches
+          Back to products
         </Link>
       </div>
 
       {/* ------------------------------------------------------------- Hero split */}
-      <div className="block w-full mx-auto max-w-6xl px-4 sm:px-6 lg:px-6">
-        <div className="mt-5 grid gap-6 sm:mt-6 lg:mt-8 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)] lg:gap-10 lg:items-start">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-10">
+        <div className="mt-5 grid gap-7 sm:mt-6 lg:mt-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-12 lg:items-start">
           {/* Image column */}
-          <div className="lg:sticky lg:top-6 lg:self-start">
-            <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[18px] border border-slate-100 bg-white shadow-[0_10px_40px_-12px_rgba(15,23,42,0.12)]">
+          <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
+            <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-slate-100 bg-white p-3 shadow-sm sm:p-6">
               {product.image ? (
                 <img
                   alt={product.product_name}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                   src={product.image}
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-6xl font-extrabold text-sky-200 sm:text-8xl">
+                <div className="flex h-full w-full items-center justify-center text-6xl font-extrabold text-[#f3a99a] sm:text-8xl">
                   R
                 </div>
               )}
@@ -208,16 +206,16 @@ export default async function ProductPage({ params }) {
           </div>
 
           {/* Content column */}
-          <div className="rounded-[18px] border border-slate-100 bg-white p-4 shadow-[0_10px_40px_-12px_rgba(15,23,42,0.12)] sm:p-6 lg:p-7">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-sky-500 sm:text-[12px]">
+          <div className="min-w-0 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-7">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#e08a7d] sm:text-[12px]">
               {product.brand_name || "Roopsee catalog product"}
             </span>
 
-            <h1 className="mt-2 text-[clamp(1.5rem,5vw,2.4rem)] font-extrabold leading-[1.15] tracking-tight text-slate-900">
+            <h1 className="mt-2 break-words font-cormorant text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
               {product.product_name}
             </h1>
 
-            <p className="mt-3 max-w-xl text-[14px] leading-relaxed text-slate-500 sm:text-[14.5px]">
+            <p className="mt-3 max-w-xl break-words text-[14px] leading-relaxed text-slate-500 sm:text-[14.5px]">
               {product.product_description || descriptionFor(product)}
             </p>
 
@@ -231,7 +229,7 @@ export default async function ProductPage({ params }) {
                   <span className="text-[14px] text-slate-400 line-through">
                     Rs. {product.mrp}
                   </span>
-                  <span className="rounded-full bg-sky-50 px-2.5 py-0.5 text-[12px] font-bold text-sky-700">
+                  <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-[#d77465]">
                     {percentOff}% off
                   </span>
                 </>
@@ -240,20 +238,20 @@ export default async function ProductPage({ params }) {
             <p className="mt-1 text-[12px] text-slate-400">Inclusive of all taxes</p>
 
             {/* CTA — desktop / tablet button, hidden below lg since the mobile sticky bar covers it there */}
-            <div className="mt-5 hidden lg:block">
+            <div className="mt-6">
               <SaveProductButton
                 product={wishlistProduct}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r
-                 from-sky-400 to-cyan-500 px-7 py-3.5 text-[13.5px] font-semibold tracking-wide text-white
-                 shadow-lg shadow-sky-300/40 transition-all hover:-translate-y-0.5 hover:shadow-xl
-                 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#f3a99a]
+                 px-7 py-3.5 text-[13.5px] font-semibold tracking-wide text-white shadow-sm transition-all
+                 hover:-translate-y-0.5 hover:bg-[#e08a7d] focus-visible:outline-2 focus-visible:outline-offset-4
+                 focus-visible:outline-[#e08a7d] sm:w-auto"
               />
             </div>
 
             {/* Signature: catalog spec "label" card */}
             <div className="mt-6 rounded-[14px] border border-slate-100 bg-slate-50/60 px-4 py-4 sm:px-5">
               <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-400 sm:text-[10.5px]">
-                <FiTag aria-hidden="true" className="h-3.5 w-3.5 text-sky-500" />
+                <FiTag aria-hidden="true" className="h-3.5 w-3.5 text-[#e08a7d]" />
                 Catalog information
               </div>
               <ul className="mt-1 divide-y divide-slate-200/70">
@@ -268,14 +266,14 @@ export default async function ProductPage({ params }) {
         </div>
 
         {/* ---------------------------------------------------------- Detail rows */}
-        <div className="mt-6 rounded-[18px] border border-slate-100 bg-white shadow-[0_10px_40px_-12px_rgba(15,23,42,0.12)] sm:mt-8 lg:mt-10">
+        <div className="mt-6 min-w-0 rounded-3xl border border-slate-100 bg-white shadow-sm sm:mt-8 lg:mt-10">
           {/* Key ingredients */}
           <div className="grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
             <SectionHeading icon={FiDroplet} title="KEY INGREDIENTS" />
             <div className="max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
                 {product.single_hero_ingredient ? (
-                  <span className="rounded-full border border-sky-300 bg-sky-50 px-3.5 py-1.5 text-[12.5px] font-semibold text-sky-700">
+                  <span className="rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-[12.5px] font-semibold text-[#d77465]">
                     {product.single_hero_ingredient}
                   </span>
                 ) : null}
@@ -297,7 +295,7 @@ export default async function ProductPage({ params }) {
                   <div className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">
                     Full ingredient list (INCI)
                   </div>
-                  <p className="mt-2 text-[12.5px] leading-relaxed text-slate-500">
+                  <p className="mt-2 break-words text-[12.5px] leading-relaxed text-slate-500">
                     {product.ingredients}
                   </p>
                 </div>
@@ -308,7 +306,7 @@ export default async function ProductPage({ params }) {
           {/* How to use */}
           <div className="grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
             <SectionHeading icon={FiInfo} title="HOW TO USE" />
-            <p className="max-w-2xl text-[14px] leading-relaxed text-slate-600 sm:text-[14.5px]">
+            <p className="max-w-2xl break-words text-[14px] leading-relaxed text-slate-600 sm:text-[14.5px]">
               {product.usage_instructions || "Follow the directions printed on the product packaging."}
             </p>
           </div>
@@ -321,7 +319,7 @@ export default async function ProductPage({ params }) {
                 <span className="text-[13px] font-bold tracking-wide text-slate-800">CAUTIONS</span>
               </div>
               <div className="max-w-2xl rounded-xl border-l-4 border-amber-400 bg-amber-50 px-5 py-4">
-                <p className="text-[14px] leading-relaxed text-amber-900">
+                <p className="break-words text-[14px] leading-relaxed text-amber-900">
                   {product.ingredient_cautions}
                 </p>
               </div>
@@ -344,7 +342,7 @@ export default async function ProductPage({ params }) {
             <div className="flex flex-wrap gap-2">
               {SKIN_GUIDES.map((guide) => (
                 <Link
-                  className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1.5 text-[12px] font-bold text-sky-700 transition-colors hover:bg-sky-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
+                  className="inline-flex items-center rounded-full bg-rose-50 px-3 py-1.5 text-[12px] font-bold text-[#d77465] transition-colors hover:bg-rose-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e08a7d]"
                   href={`/?guide=${guide.slug}#matcher`}
                   key={guide.slug}
                 >
@@ -357,24 +355,6 @@ export default async function ProductPage({ params }) {
       </div>
 
       {/* --------------------------------------------------- Mobile sticky bar */}
-      <div
-        className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-3 border-t border-slate-100 bg-white/95 px-4 pt-3 backdrop-blur lg:hidden"
-        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
-      >
-        <div className="min-w-0 shrink">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Price</div>
-          <div className="truncate text-[17px] font-extrabold text-slate-900">
-            {product.sp || product.mrp ? `Rs. ${product.sp || product.mrp}` : "\u2014"}
-          </div>
-        </div>
-        <SaveProductButton
-          product={wishlistProduct}
-          mobile
-          className="inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full
-           bg-gradient-to-r from-sky-400 to-cyan-500 px-5 py-3 text-[13px] font-extrabold tracking-wide
-           text-white shadow-md shadow-sky-300/40 transition hover:-translate-y-0.5 sm:px-6 sm:text-[13.5px]"
-        />
-      </div>
     </div>
   );
 }

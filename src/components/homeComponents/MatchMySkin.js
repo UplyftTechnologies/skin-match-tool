@@ -3,6 +3,10 @@ import { useState, useEffect } from 'react'
 import DontKnowSkinTypeModal from '../DontKnowSkinTypeModal'
 import { trackingService } from '@/lib/tracking/trackingClient.js'
 import { EVENTS } from '@/lib/tracking/events.js'
+import { getSessionId } from '@/lib/tracking/identity'
+import { quizAnswersToResultProfile } from '@/lib/quiz-profile'
+import { supabase } from '@/lib/supabase/client'
+import { saveSkinProfile } from '@/lib/profile-storage'
 
 const skinTypes = ['Oily', 'Dry', 'Normal', 'Combination', 'I dont know']
 const sensitiveOptions = ['Yes', 'No']
@@ -47,6 +51,8 @@ export default function MatchMySkin() {
     const [gender, setGender] = useState('')
     const [showGuideModal, setShowGuideModal] = useState(false)
     const [validationAttempted, setValidationAttempted] = useState(false)
+    const [savingQuiz, setSavingQuiz] = useState(false)
+    const [saveError, setSaveError] = useState('')
 
     const missingFields = [
         !skinType && { key: 'skin-type', label: 'Skin type' },
@@ -162,7 +168,7 @@ export default function MatchMySkin() {
         })
     }
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         setValidationAttempted(true)
 
         if (missingFields.length > 0) {
@@ -181,6 +187,10 @@ export default function MatchMySkin() {
             age,
             gender,
         }
+        const resultProfile = quizAnswersToResultProfile(answers)
+
+        setSavingQuiz(true)
+        setSaveError('')
 
         trackingService.trackEvent(EVENTS.QUIZ_COMPLETED, {
             skin_type: skinType,
@@ -192,6 +202,7 @@ export default function MatchMySkin() {
         })
 
         sessionStorage.setItem('roopsee-quiz-answers', JSON.stringify(answers))
+        saveSkinProfile(resultProfile)
         window.dispatchEvent(new CustomEvent('roopsee-quiz-answers-updated', {
             detail: answers,
         }))
@@ -199,6 +210,37 @@ export default function MatchMySkin() {
             behavior: 'smooth',
             block: 'start',
         })
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession()
+            const headers = { 'Content-Type': 'application/json' }
+            if (session?.access_token) {
+                headers.Authorization = `Bearer ${session.access_token}`
+            }
+
+            const response = await fetch('/api/quiz-results', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    profile: resultProfile,
+                    guestSessionId: getSessionId(),
+                }),
+            })
+            const payload = await response.json().catch(() => ({}))
+
+            if (!response.ok) {
+                throw new Error(payload.error || 'Unable to save your quiz results.')
+            }
+        } catch (error) {
+            console.error('[match-my-skin] Quiz result save failed:', error)
+            setSaveError('Your matches are ready, but we could not save your quiz. Please try again.')
+            trackingService.trackError('quiz_result_save_failed', {
+                message: error.message,
+                source: 'home_quiz',
+            })
+        } finally {
+            setSavingQuiz(false)
+        }
     }
 
     return (
@@ -357,13 +399,19 @@ export default function MatchMySkin() {
                         <button
                             type="button"
                             onClick={handleSubmit}
+                            disabled={savingQuiz}
                             className="w-full md:w-64 font-lato mt-8 text-sm tracking-widest capitalize 
                      text-[#ff7e67] border border-[#e08a7d] rounded-[10px] py-2 hover:bg-[#d17a6d] hover:text-white
-                      transition-colors duration-300"
+                      transition-colors duration-300 disabled:cursor-wait disabled:opacity-60"
                         >
-                            Find my match
+                            {savingQuiz ? 'Saving your quiz…' : 'Find my match'}
                         </button>
                     </div>
+                    {saveError ? (
+                        <p className="mx-auto mt-3 max-w-md text-center text-xs font-medium text-red-600" role="alert">
+                            {saveError}
+                        </p>
+                    ) : null}
                 </div>
             </div>
         </div>

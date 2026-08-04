@@ -11,6 +11,9 @@ import { supabase } from '@/lib/supabase/client'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
+import { scoredProductPath } from '@/lib/site'
+import { useScoredProducts } from '@/hooks/use-scored-products'
+import ScoreBadge from '@/components/score-badge'
 
 function formatPrice(value) {
     const amount = Number(value)
@@ -27,12 +30,11 @@ function formatPrice(value) {
 function wishlistProduct(product) {
     return {
         ...product,
-        product_uid: `retailer-${product.id}`,
-        image: product.image_url,
-        brand_name: product.brand || product.site || 'Roopsee',
-        category: product.categories?.join(', ') || 'Skincare',
-        product_type: product.variant || 'Product',
-        size: product.variant || 'Size unavailable',
+        image: product.image || '',
+        brand_name: product.brand_name || 'Roopsee',
+        category: product.category || 'Skincare',
+        product_type: product.product_type || 'Product',
+        size: product.size || 'Size unavailable',
     }
 }
 
@@ -42,6 +44,7 @@ function ProductCard({ product }) {
     const [nameExpanded, setNameExpanded] = useState(false)
     const savedProduct = wishlistProduct(product)
     const wishlisted = isWishlisted(savedProduct.product_uid)
+    const productHref = scoredProductPath(product.product_uid, product.score)
     const sellingPrice = formatPrice(product.selling_price)
     const mrp = formatPrice(product.mrp)
     const showMrp = mrp && Number(product.mrp) > Number(product.selling_price)
@@ -65,18 +68,19 @@ function ProductCard({ product }) {
         <div
             role="link"
             tabIndex={0}
-            onClick={() => router.push(`/retailer-products/${product.id}`)}
+            onClick={() => router.push(productHref)}
             onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
-                    router.push(`/retailer-products/${product.id}`)
+                    router.push(productHref)
                 }
             }}
             className="bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
         >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/2] mb-3">
+                <ScoreBadge score={product.score} />
                 <Image
-                    src={product.image_url || Serum}
+                    src={product.image || Serum}
                     alt={product.product_name || 'Skincare product'}
                     fill
                     sizes="(max-width: 639px) 50vw, 33vw"
@@ -85,10 +89,10 @@ function ProductCard({ product }) {
             </div>
 
             <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">
-                {product.brand || product.site}
+                {product.brand_name}
             </p>
             <Link
-                href={`/retailer-products/${product.id}`}
+                href={productHref}
                 onClick={(event) => {
                     event.stopPropagation()
                     if (!nameExpanded) {
@@ -133,12 +137,9 @@ function ProductCard({ product }) {
 
 export default function Products() {
     const [search, setSearch] = useState('')
-    const [products, setProducts] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
-    const [quizAnswers, setQuizAnswers] = useState(null)
     const [isLoginOpen, setIsLoginOpen] = useState(false)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
+    const { products, loading, error, quizAnswers } = useScoredProducts()
     const router = useRouter()
 
     const handleViewAll = async () => {
@@ -151,44 +152,6 @@ export default function Products() {
 
         setIsLoginOpen(true)
     }
-
-    useEffect(() => {
-        const controller = new AbortController()
-
-        async function loadProducts() {
-            try {
-                const params = new URLSearchParams({ limit: '24' })
-                const query = search.trim()
-                if (query) params.set('search', query)
-
-                const response = await fetch(`/api/retailer-products?${params}`, {
-                    signal: controller.signal,
-                })
-                const payload = await response.json()
-
-                if (!response.ok) {
-                    throw new Error(payload.error || 'Unable to load products.')
-                }
-
-                setProducts(payload.products)
-                setError('')
-            } catch (fetchError) {
-                if (fetchError.name !== 'AbortError') {
-                    setError(fetchError.message)
-                }
-            } finally {
-                if (!controller.signal.aborted) {
-                    setLoading(false)
-                }
-            }
-        }
-
-        const timeoutId = setTimeout(loadProducts, 300)
-        return () => {
-            clearTimeout(timeoutId)
-            controller.abort()
-        }
-    }, [search])
 
     useEffect(() => {
         let isMounted = true
@@ -207,28 +170,11 @@ export default function Products() {
         }
     }, [])
 
-    useEffect(() => {
-        const restoreTimer = setTimeout(() => {
-            try {
-                setQuizAnswers(JSON.parse(sessionStorage.getItem('roopsee-quiz-answers') || 'null'))
-            } catch {
-                sessionStorage.removeItem('roopsee-quiz-answers')
-            }
-        }, 0)
-        const updateAnswers = (event) => setQuizAnswers(event.detail)
-        window.addEventListener('roopsee-quiz-answers-updated', updateAnswers)
-
-        return () => {
-            clearTimeout(restoreTimer)
-            window.removeEventListener('roopsee-quiz-answers-updated', updateAnswers)
-        }
-    }, [])
-
     const visibleProducts = useMemo(() => {
         const query = search.trim().toLowerCase()
         const matches = query
             ? products.filter((product) =>
-                [product.product_name, product.brand, ...(product.categories || [])]
+                [product.product_name, product.brand_name, product.category, product.product_type]
                     .some((value) => value?.toLowerCase().includes(query)),
             )
             : products
@@ -301,7 +247,7 @@ export default function Products() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 mt-3 lg:mt-5 md:gap-6">
                     {visibleProducts.map((product) => (
-                        <ProductCard key={product.id} product={product} />
+                        <ProductCard key={product.product_uid} product={product} />
                     ))}
                 </div>
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -12,37 +12,32 @@ import Header from '@/components/header'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
+import { scoredProductPath } from '@/lib/site'
+import { useScoredProducts } from '@/hooks/use-scored-products'
+import ScoreBadge from '@/components/score-badge'
 
 const filterTabs = [
     { key: 'brand', label: 'Brand' },
     { key: 'price', label: 'Price' },
     { key: 'category', label: 'Category' },
-    { key: 'rating', label: 'Avg Customer Rating' },
-    { key: 'country', label: 'Country Of Origin' },
+    { key: 'score', label: 'Match Score' },
+    { key: 'type', label: 'Product Type' },
 ]
 
 const emptyFilters = {
     brand: [],
     price: [],
     category: [],
-    rating: [],
-    country: [],
-}
-
-const emptyFilterOptions = {
-    brand: [],
-    price: [],
-    category: [],
-    rating: [],
-    country: [],
+    score: [],
+    type: [],
 }
 
 const sortOptions = [
     { label: 'Score high to low', value: 'score_desc' },
     { label: 'Price: Low to High', value: 'price_asc' },
     { label: 'Price: High to Low', value: 'price_desc' },
-    { label: 'Newest First', value: 'newest' },
-    { label: 'Customer Rating', value: 'rating' },
+    { label: 'Score low to high', value: 'score_asc' },
+    { label: 'Name: A to Z', value: 'name_asc' },
 ]
 
 const PRODUCTS_PER_PAGE = 20
@@ -55,22 +50,41 @@ function copyFilters(filters) {
     )
 }
 
+function productPrice(product) {
+    return Number(product.selling_price || product.mrp || 0)
+}
+
+function countOptions(values) {
+    const counts = new Map()
+    values.filter(Boolean).forEach((value) => counts.set(value, (counts.get(value) || 0) + 1))
+    return [...counts.entries()]
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([value, count]) => ({ value, label: value, count }))
+}
+
+function scoreRange(score) {
+    if (score >= 90) return '90_100'
+    if (score >= 80) return '80_89'
+    if (score >= 70) return '70_79'
+    if (score >= 50) return '50_69'
+    return 'under_50'
+}
+
+function matchesCategory(product, category) {
+    const wanted = category.toLowerCase()
+    const text = `${product.product_name} ${product.product_type}`.toLowerCase()
+    if (wanted === 'lips' || wanted === 'lip') return text.includes('lip')
+    if (wanted === 'eyes' || wanted === 'eye') return /\beye|eyelash|eyebrow/.test(text)
+    return product.category?.toLowerCase() === wanted
+}
+
 function ProductCard({ product }) {
     const router = useRouter()
     const { isWishlisted, toggleWishlist } = useWishlist()
     const [nameExpanded, setNameExpanded] = useState(false)
-    const savedProduct = {
-        ...product,
-        product_uid: `retailer-${product.id}`,
-        image: product.image_url || '',
-        brand_name: product.brand || product.site || 'Roopsee',
-        product_name: product.name,
-        category: product.categories?.join(', ') || 'Skincare',
-        product_type: product.variant || 'Product',
-        size: product.variant || 'Size unavailable',
-        selling_price: product.selling_price ?? product.price,
-    }
+    const savedProduct = product
     const wishlisted = isWishlisted(savedProduct.product_uid)
+    const productHref = scoredProductPath(product.product_uid, product.score)
 
     function handleSaveMatch(event) {
         event.stopPropagation()
@@ -91,29 +105,30 @@ function ProductCard({ product }) {
         <div
             role="link"
             tabIndex={0}
-            onClick={() => router.push(`/retailer-products/${product.id}`)}
+            onClick={() => router.push(productHref)}
             onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
-                    router.push(`/retailer-products/${product.id}`)
+                    router.push(productHref)
                 }
             }}
             className="bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
         >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/3] mb-3">
+                <ScoreBadge score={product.score} />
                 <Image
-                    src={product.image}
-                    alt={product.name}
+                    src={product.image || Serum}
+                    alt={product.product_name}
                     fill
                     sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, 25vw"
                     className="object-contain"
                 />
             </div>
             <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">
-                {product.brand || product.site}
+                {product.brand_name}
             </p>
             <Link
-                href={`/retailer-products/${product.id}`}
+                href={productHref}
                 onClick={(event) => {
                     event.stopPropagation()
                     if (!nameExpanded) {
@@ -127,11 +142,15 @@ function ProductCard({ product }) {
                     nameExpanded ? '' : 'line-clamp-2'
                 }`}
             >
-                {product.name}
+                {product.product_name}
             </Link>
             <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm text-gray-400 line-through">₹{product.originalPrice}</span>
-                <span className="text-sm font-semibold text-gray-900">₹{product.price}</span>
+                {Number(product.mrp) > Number(product.selling_price) ? (
+                    <span className="text-sm text-gray-400 line-through">₹{product.mrp}</span>
+                ) : null}
+                <span className="text-sm font-semibold text-gray-900">
+                    {product.selling_price || product.mrp ? `₹${product.selling_price || product.mrp}` : 'Price unavailable'}
+                </span>
             </div>
             <button
                 type="button"
@@ -348,107 +367,77 @@ function ProductsPageContent() {
         : null
     const restoredFilters = restoredState?.appliedFilters || initialFilters
     const [search, setSearch] = useState(() => restoredState?.search || '')
-    const [products, setProducts] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
+    const { products: scoredProducts, loading, error } = useScoredProducts()
     const [filterOpen, setFilterOpen] = useState(false)
-    const [facetOptions, setFacetOptions] = useState(emptyFilterOptions)
-    const [facetOptionsLoading, setFacetOptionsLoading] = useState(true)
     const [draftFilters, setDraftFilters] = useState(() => copyFilters(restoredFilters))
     const [appliedFilters, setAppliedFilters] = useState(() => copyFilters(restoredFilters))
     const [sortOpen, setSortOpen] = useState(false)
     const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'score_desc')
     const [currentPage, setCurrentPage] = useState(() => restoredState?.currentPage || 1)
-    const [totalProducts, setTotalProducts] = useState(0)
-    const [totalPages, setTotalPages] = useState(1)
 
     const currentSortLabel = sortOptions.find((s) => s.value === selectedSort)?.label
     const appliedFilterCount = Object.values(appliedFilters)
         .reduce((total, values) => total + values.length, 0)
 
-    useEffect(() => {
-        const controller = new AbortController()
+    // Supabase retailer-product loading is intentionally paused. The new design
+    // currently uses the same scored CSV catalog as Match Studio.
+    const facetOptions = useMemo(() => ({
+        brand: countOptions(scoredProducts.map((product) => product.brand_name)),
+        price: [
+            { value: 'under_500', label: 'Under ₹500', count: scoredProducts.filter((product) => productPrice(product) < 500).length },
+            { value: '500_1000', label: '₹500–₹1,000', count: scoredProducts.filter((product) => productPrice(product) >= 500 && productPrice(product) <= 1000).length },
+            { value: 'over_1000', label: 'Over ₹1,000', count: scoredProducts.filter((product) => productPrice(product) > 1000).length },
+        ],
+        category: countOptions(scoredProducts.map((product) => product.category)),
+        score: [
+            { value: '90_100', label: 'Excellent (90–100)', count: scoredProducts.filter((product) => scoreRange(product.score) === '90_100').length },
+            { value: '80_89', label: 'Great (80–89)', count: scoredProducts.filter((product) => scoreRange(product.score) === '80_89').length },
+            { value: '70_79', label: 'Good (70–79)', count: scoredProducts.filter((product) => scoreRange(product.score) === '70_79').length },
+            { value: '50_69', label: 'Caution (50–69)', count: scoredProducts.filter((product) => scoreRange(product.score) === '50_69').length },
+            { value: 'under_50', label: 'Not recommended', count: scoredProducts.filter((product) => scoreRange(product.score) === 'under_50').length },
+        ],
+        type: countOptions(scoredProducts.map((product) => product.product_type)),
+    }), [scoredProducts])
 
-        async function loadFilterOptions() {
-            try {
-                const response = await fetch('/api/retailer-products/facets', {
-                    signal: controller.signal,
-                })
-                const payload = await response.json()
+    const filteredProducts = useMemo(() => {
+        const query = search.trim().toLowerCase()
+        const matches = scoredProducts.filter((product) => {
+            if (query && ![
+                product.product_name,
+                product.brand_name,
+                product.category,
+                product.product_type,
+            ].some((value) => value?.toLowerCase().includes(query))) return false
+            if (appliedFilters.brand.length && !appliedFilters.brand.includes(product.brand_name)) return false
+            if (appliedFilters.category.length
+                && !appliedFilters.category.some((category) => matchesCategory(product, category))) return false
+            if (appliedFilters.type.length && !appliedFilters.type.includes(product.product_type)) return false
+            if (appliedFilters.score.length && !appliedFilters.score.includes(scoreRange(product.score))) return false
 
-                if (!response.ok) {
-                    throw new Error(payload.error || 'Unable to load filters.')
-                }
+            const price = productPrice(product)
+            if (appliedFilters.price.length && !appliedFilters.price.some((range) => (
+                (range === 'under_500' && price < 500)
+                || (range === '500_1000' && price >= 500 && price <= 1000)
+                || (range === 'over_1000' && price > 1000)
+            ))) return false
+            return true
+        })
 
-                setFacetOptions(payload.options)
-            } catch (fetchError) {
-                if (fetchError.name !== 'AbortError') {
-                    console.error(fetchError.message)
-                }
-            } finally {
-                if (!controller.signal.aborted) {
-                    setFacetOptionsLoading(false)
-                }
-            }
-        }
+        return matches.sort((left, right) => {
+            if (selectedSort === 'score_asc') return left.score - right.score
+            if (selectedSort === 'price_asc') return productPrice(left) - productPrice(right)
+            if (selectedSort === 'price_desc') return productPrice(right) - productPrice(left)
+            if (selectedSort === 'name_asc') return left.product_name.localeCompare(right.product_name)
+            return right.score - left.score
+        })
+    }, [appliedFilters, scoredProducts, search, selectedSort])
 
-        loadFilterOptions()
-        return () => controller.abort()
-    }, [])
-
-    useEffect(() => {
-        const controller = new AbortController()
-
-        async function loadProducts() {
-            try {
-                setLoading(true)
-                const params = new URLSearchParams({
-                    limit: String(PRODUCTS_PER_PAGE),
-                    page: String(currentPage),
-                    sort: selectedSort,
-                })
-                const query = search.trim()
-                if (query) params.set('search', query)
-                Object.entries(appliedFilters).forEach(([key, values]) => {
-                    values.forEach((value) => params.append(key, value))
-                })
-
-                const response = await fetch(`/api/retailer-products?${params}`, {
-                    signal: controller.signal,
-                })
-                const payload = await response.json()
-
-                if (!response.ok) {
-                    throw new Error(payload.error || 'Unable to load products.')
-                }
-
-                setProducts(payload.products.map((product) => ({
-                    ...product,
-                    name: product.product_name,
-                    image: product.image_url || Serum,
-                    originalPrice: product.mrp ?? product.selling_price ?? 0,
-                    price: product.selling_price ?? product.mrp ?? 0,
-                })))
-                setTotalProducts(payload.total || 0)
-                setTotalPages(payload.totalPages || 1)
-                setError('')
-            } catch (fetchError) {
-                if (fetchError.name !== 'AbortError') {
-                    setError(fetchError.message)
-                }
-            } finally {
-                if (!controller.signal.aborted) {
-                    setLoading(false)
-                }
-            }
-        }
-
-        const timeoutId = setTimeout(loadProducts, 300)
-        return () => {
-            clearTimeout(timeoutId)
-            controller.abort()
-        }
-    }, [appliedFilters, currentPage, search, selectedSort])
+    const totalProducts = filteredProducts.length
+    const totalPages = Math.max(Math.ceil(totalProducts / PRODUCTS_PER_PAGE), 1)
+    const products = filteredProducts.slice(
+        (currentPage - 1) * PRODUCTS_PER_PAGE,
+        currentPage * PRODUCTS_PER_PAGE,
+    )
 
     useEffect(() => {
         rememberedProductListState = {
@@ -518,7 +507,7 @@ function ProductsPageContent() {
                 onReset={resetFilters}
                 onToggle={toggleFilter}
                 options={facetOptions}
-                optionsLoading={facetOptionsLoading}
+                optionsLoading={loading}
                 selected={draftFilters}
             />
             <SortPanel
@@ -562,7 +551,7 @@ function ProductsPageContent() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mt-3 md:gap-6">
                     {products.map((product) => (
-                        <ProductCard key={product.id} product={product} />
+                        <ProductCard key={product.product_uid} product={product} />
                     ))}
                 </div>
 
