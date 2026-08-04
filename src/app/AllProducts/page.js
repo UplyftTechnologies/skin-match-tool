@@ -1,7 +1,7 @@
 "use client"
 
 import { Suspense, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiSearch } from 'react-icons/fi'
@@ -9,6 +9,9 @@ import { HiArrowsUpDown } from 'react-icons/hi2'
 import { BsFunnel } from 'react-icons/bs'
 import Serum from '@/assets/images/serum.png'
 import Header from '@/components/header'
+import { useWishlist } from '@/context/WishlistContext'
+import { trackingService } from '@/lib/tracking/trackingClient'
+import { EVENTS } from '@/lib/tracking/events'
 
 const filterTabs = [
     { key: 'brand', label: 'Brand' },
@@ -53,8 +56,50 @@ function copyFilters(filters) {
 }
 
 function ProductCard({ product }) {
+    const router = useRouter()
+    const { isWishlisted, toggleWishlist } = useWishlist()
+    const [nameExpanded, setNameExpanded] = useState(false)
+    const savedProduct = {
+        ...product,
+        product_uid: `retailer-${product.id}`,
+        image: product.image_url || '',
+        brand_name: product.brand || product.site || 'Roopsee',
+        product_name: product.name,
+        category: product.categories?.join(', ') || 'Skincare',
+        product_type: product.variant || 'Product',
+        size: product.variant || 'Size unavailable',
+        selling_price: product.selling_price ?? product.price,
+    }
+    const wishlisted = isWishlisted(savedProduct.product_uid)
+
+    function handleSaveMatch(event) {
+        event.stopPropagation()
+        toggleWishlist(savedProduct)
+        trackingService.trackEvent(
+            wishlisted ? EVENTS.CLICKED_REMOVE_FROM_WISHLIST : EVENTS.CLICKED_ADD_TO_WISHLIST,
+            {
+                productId: savedProduct.product_uid,
+                productName: savedProduct.product_name,
+                brand: savedProduct.brand_name,
+                price: savedProduct.selling_price || savedProduct.mrp,
+                source: 'all_products',
+            },
+        )
+    }
+
     return (
-        <div className="bg-white rounded-lg p-3 flex flex-col">
+        <div
+            role="link"
+            tabIndex={0}
+            onClick={() => router.push(`/retailer-products/${product.id}`)}
+            onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    router.push(`/retailer-products/${product.id}`)
+                }
+            }}
+            className="bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
+        >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/3] mb-3">
                 <Image
                     src={product.image}
@@ -69,7 +114,18 @@ function ProductCard({ product }) {
             </p>
             <Link
                 href={`/retailer-products/${product.id}`}
-                className="mb-2 text-sm font-lato text-gray-800 leading-snug transition hover:text-[#e08a7d] hover:underline"
+                onClick={(event) => {
+                    event.stopPropagation()
+                    if (!nameExpanded) {
+                        event.preventDefault()
+                        setNameExpanded(true)
+                    }
+                }}
+                aria-expanded={nameExpanded}
+                title={nameExpanded ? undefined : 'Click to show full product name'}
+                className={`mb-2 text-[12px] lg:text-sm font-lato text-gray-800 leading-snug transition hover:text-[#e08a7d] hover:underline ${
+                    nameExpanded ? '' : 'line-clamp-2'
+                }`}
             >
                 {product.name}
             </Link>
@@ -77,8 +133,18 @@ function ProductCard({ product }) {
                 <span className="text-sm text-gray-400 line-through">₹{product.originalPrice}</span>
                 <span className="text-sm font-semibold text-gray-900">₹{product.price}</span>
             </div>
-            <button style={{ fontSize: '11px' }} className="mt-auto w-[90%] mx-auto font-semibold text-[#e08a7d] border border-[#e08a7d] rounded-full py-[8px] hover:bg-[#e08a7d] hover:text-white transition-colors duration-200">
-                Save my match
+            <button
+                type="button"
+                onClick={handleSaveMatch}
+                style={{ fontSize: '11px' }}
+                aria-pressed={wishlisted}
+                className={`mt-auto w-[90%] mx-auto font-semibold border rounded-full py-[8px] transition-colors duration-200 ${
+                    wishlisted
+                        ? 'bg-[#e08a7d] border-[#e08a7d] text-white'
+                        : 'text-[#e08a7d] border-[#e08a7d] hover:bg-[#e08a7d] hover:text-white'
+                }`}
+            >
+                {wishlisted ? 'Saved to wishlist' : 'Save my match'}
             </button>
         </div>
     )

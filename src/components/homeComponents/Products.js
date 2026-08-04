@@ -8,6 +8,9 @@ import { FiSearch } from 'react-icons/fi'
 import Serum from '@/assets/images/serum.png'
 import OtpModal from '@/components/auth/otp-modal'
 import { supabase } from '@/lib/supabase/client'
+import { useWishlist } from '@/context/WishlistContext'
+import { trackingService } from '@/lib/tracking/trackingClient'
+import { EVENTS } from '@/lib/tracking/events'
 
 function formatPrice(value) {
     const amount = Number(value)
@@ -21,13 +24,56 @@ function formatPrice(value) {
         : null
 }
 
+function wishlistProduct(product) {
+    return {
+        ...product,
+        product_uid: `retailer-${product.id}`,
+        image: product.image_url,
+        brand_name: product.brand || product.site || 'Roopsee',
+        category: product.categories?.join(', ') || 'Skincare',
+        product_type: product.variant || 'Product',
+        size: product.variant || 'Size unavailable',
+    }
+}
+
 function ProductCard({ product }) {
+    const { isWishlisted, toggleWishlist } = useWishlist()
+    const router = useRouter()
+    const [nameExpanded, setNameExpanded] = useState(false)
+    const savedProduct = wishlistProduct(product)
+    const wishlisted = isWishlisted(savedProduct.product_uid)
     const sellingPrice = formatPrice(product.selling_price)
     const mrp = formatPrice(product.mrp)
     const showMrp = mrp && Number(product.mrp) > Number(product.selling_price)
 
+    function handleSaveMatch(event) {
+        event.stopPropagation()
+        toggleWishlist(savedProduct)
+        trackingService.trackEvent(
+            wishlisted ? EVENTS.CLICKED_REMOVE_FROM_WISHLIST : EVENTS.CLICKED_ADD_TO_WISHLIST,
+            {
+                productId: savedProduct.product_uid,
+                productName: savedProduct.product_name,
+                brand: savedProduct.brand_name,
+                price: savedProduct.selling_price || savedProduct.mrp,
+                source: 'home_products',
+            },
+        )
+    }
+
     return (
-        <div className="bg-white rounded-lg p-3 flex flex-col">
+        <div
+            role="link"
+            tabIndex={0}
+            onClick={() => router.push(`/retailer-products/${product.id}`)}
+            onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    router.push(`/retailer-products/${product.id}`)
+                }
+            }}
+            className="bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
+        >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/2] mb-3">
                 <Image
                     src={product.image_url || Serum}
@@ -43,7 +89,18 @@ function ProductCard({ product }) {
             </p>
             <Link
                 href={`/retailer-products/${product.id}`}
-                className="mb-2 text-sm font-lato text-gray-800 leading-snug transition hover:text-[#e08a7d] hover:underline"
+                onClick={(event) => {
+                    event.stopPropagation()
+                    if (!nameExpanded) {
+                        event.preventDefault()
+                        setNameExpanded(true)
+                    }
+                }}
+                aria-expanded={nameExpanded}
+                title={nameExpanded ? undefined : 'Click to show full product name'}
+                className={`mb-2 text-[12px] lg:text-sm font-lato text-gray-800 leading-snug transition hover:text-[#e08a7d] hover:underline ${
+                    nameExpanded ? '' : 'line-clamp-2'
+                }`}
             >
                 {product.product_name}
             </Link>
@@ -58,10 +115,17 @@ function ProductCard({ product }) {
             </div>
 
             <button
+                type="button"
+                onClick={handleSaveMatch}
                 style={{ fontSize: '11px' }}
-                className="mt-auto w-[90%] mx-auto font-semibold text-[#e08a7d] border border-[#e08a7d] rounded-full py-[8px] hover:bg-[#e08a7d] hover:text-white transition-colors duration-200"
+                aria-pressed={wishlisted}
+                className={`mt-auto w-[90%] mx-auto font-semibold border rounded-full py-[8px] transition-colors duration-200 ${
+                    wishlisted
+                        ? 'bg-[#e08a7d] border-[#e08a7d] text-white'
+                        : 'text-[#e08a7d] border-[#e08a7d] hover:bg-[#e08a7d] hover:text-white'
+                }`}
             >
-                Save my match
+                {wishlisted ? 'Saved to wishlist' : 'Save my match'}
             </button>
         </div>
     )
