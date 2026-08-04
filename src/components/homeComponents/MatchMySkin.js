@@ -158,32 +158,43 @@ export default function MatchMySkin() {
 
                         <div className="grid grid-cols-2 gap-2">
                             {/* Age dropdown */}
-                            <select
-                                value={age}
-                                onChange={handleAgeSelect}
-                                style={{ fontSize: '13px' }}
-                                className="w-full md:text-base py-[9px] px-2 rounded-[3px] border border-gray-200 text-gray-700 bg-white focus:outline-none focus:border-gray-400"
-                            >
-                                <option style={{ fontSize: '13px' }} className="md:text-base" value="" disabled>Age</option>
-                                {ageOptions.map((opt) => (
-                                    <option key={opt} style={{ fontSize: '13px' }} className="md:text-base" value={opt}>{opt}</option>
-                                ))}
-                            </select>
+                            <div className="relative w-full">
+                                <select
+                                    value={age}
+                                    onChange={handleAgeSelect}
+                                    style={{ fontSize: '13px', border: '1px solid #D1D5DC', borderRadius: '5px', fontWeight: 400, color: age ? '#374151' : '#6b7280', height: '37px' }}
+                                    className="appearance-none w-full md:text-base py-[9px] px-2 pr-7
+                                     rounded-[3px] border border-gray-200 bg-white focus:outline-none focus:border-gray-400"
+                                >
+                                    <option value="" disabled>Age</option>
+                                    {ageOptions.map((opt) => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                                <svg className="pointer-events-none absolute right-2 top-[20px] -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
+                                    <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
 
                             {/* Gender dropdown */}
-                            <select
-                                value={gender}
-                                onChange={handleGenderSelect}
-                                style={{ fontSize: '13px' }}
-                                className="w-full md:text-base py-[9px] px-2 rounded-[3px] border
-                                 border-gray-200 text-gray-700 bg-white focus:outline-none focus:border-gray-400"
-                            >
-                                <option style={{ fontSize: '13px' }} className="md:text-base" value="" disabled>Gender</option>
-                                {genderOptions.map((opt) => (
-                                    <option key={opt} style={{ fontSize: '13px' }} className="md:text-base text-black" value={opt}>{opt}</option>
-                                ))}
-                            </select>
+                            <div className="relative w-full">
+                                <select
+                                    value={gender}
+                                    onChange={handleGenderSelect}
+                                    style={{ fontSize: '13px', border: '1px solid #D1D5DC', borderRadius: '5px', fontWeight: 400, color: age ? '#374151' : '#6b7280', height: '37px' }}
+                                    className="appearance-none w-full md:text-base py-[9px] px-2 pr-7 rounded-[3px] border border-gray-200 bg-white focus:outline-none focus:border-gray-400"
+                                >
+                                    <option value="" disabled>Gender</option>
+                                    {genderOptions.map((opt) => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
+                                <svg className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
+                                    <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </div>
                         </div>
+
                     </section>
 
                     {/* Concerns */}
