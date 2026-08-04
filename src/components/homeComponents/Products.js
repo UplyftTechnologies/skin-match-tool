@@ -6,11 +6,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { FiSearch } from 'react-icons/fi'
 import Serum from '@/assets/images/serum.png'
+import OtpModal from '@/components/auth/otp-modal'
+import { supabase } from '@/lib/supabase/client'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
-import OtpModal from '@/components/auth/otp-modal'
-import { supabase } from '@/lib/supabase/client'
 
 function formatPrice(value) {
     const amount = Number(value)

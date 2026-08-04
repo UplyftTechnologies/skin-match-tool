@@ -14,6 +14,7 @@ const concerns = [
     'Dullness', 'Tanning', 'None',
 ]
 const specialConditions = ['Excessive dryness', 'Pregnancy', 'Breast feeding', 'None']
+const maleRestrictedConditions = ['Pregnancy', 'Breast feeding']
 const ageOptions = ['Teen', 'Adult']
 const genderOptions = ['Female', 'Male', 'Other', 'Prefer not to say']
 
@@ -45,6 +46,19 @@ export default function MatchMySkin() {
     const [age, setAge] = useState('')
     const [gender, setGender] = useState('')
     const [showGuideModal, setShowGuideModal] = useState(false)
+    const [validationAttempted, setValidationAttempted] = useState(false)
+
+    const missingFields = [
+        !skinType && { key: 'skin-type', label: 'Skin type' },
+        !sensitive && { key: 'sensitive', label: 'Skin sensitivity' },
+        !age && { key: 'age', label: 'Age' },
+        !gender && { key: 'gender', label: 'Gender' },
+        selectedConcerns.length === 0 && { key: 'concerns', label: 'Skin concern' },
+        conditions.length === 0 && { key: 'conditions', label: 'Special condition' },
+    ].filter(Boolean)
+
+    const hasFieldError = (key) => validationAttempted
+        && missingFields.some((field) => field.key === key)
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -60,9 +74,17 @@ export default function MatchMySkin() {
                         ? [savedAnswers.concern]
                         : []
                 setSelectedConcerns(savedConcerns.slice(0, 2))
-                setConditions(Array.isArray(savedAnswers.conditions) ? savedAnswers.conditions : [])
+                const savedGender = savedAnswers.gender || ''
+                const savedConditions = Array.isArray(savedAnswers.conditions)
+                    ? savedAnswers.conditions
+                    : []
+                setConditions(
+                    savedGender === 'Male'
+                        ? savedConditions.filter((item) => !maleRestrictedConditions.includes(item))
+                        : savedConditions,
+                )
                 setAge(savedAnswers.age || '')
-                setGender(savedAnswers.gender || '')
+                setGender(savedGender)
             } catch {
                 sessionStorage.removeItem('roopsee-quiz-answers')
             }
@@ -78,10 +100,14 @@ export default function MatchMySkin() {
     }
 
     const toggleCondition = (item) => {
+        if (gender === 'Male' && maleRestrictedConditions.includes(item)) return
+
         setConditions((prev) => {
             const isSelected = prev.includes(item)
             trackOption('special_conditions', item)
-            return isSelected ? prev.filter((c) => c !== item) : [...prev, item]
+            if (isSelected) return prev.filter((condition) => condition !== item)
+            if (item === 'None') return ['None']
+            return [...prev.filter((condition) => condition !== 'None'), item]
         })
     }
 
@@ -107,6 +133,11 @@ export default function MatchMySkin() {
     const handleGenderSelect = (e) => {
         const value = e.target.value
         setGender(value)
+        if (value === 'Male') {
+            setConditions((current) =>
+                current.filter((item) => !maleRestrictedConditions.includes(item)),
+            )
+        }
         if (value) trackOption('gender', value)
     }
 
@@ -131,6 +162,16 @@ export default function MatchMySkin() {
     }
 
     const handleSubmit = () => {
+        setValidationAttempted(true)
+
+        if (missingFields.length > 0) {
+            document.getElementById(`quiz-${missingFields[0].key}`)?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+            })
+            return
+        }
+
         const answers = {
             skinType,
             sensitive,
@@ -174,7 +215,7 @@ export default function MatchMySkin() {
                         <DontKnowSkinTypeModal open={showGuideModal} onClose={() => setShowGuideModal(false)} />
 
                         {/* Skin type */}
-                        <section>
+                        <section id="quiz-skin-type">
                             <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">What&apos;s your skin type?</h2>
                             <div className="grid grid-cols-2 gap-2">
                                 {skinTypes.map((type) => (
@@ -186,10 +227,13 @@ export default function MatchMySkin() {
                                     />
                                 ))}
                             </div>
+                            {hasFieldError('skin-type') ? (
+                                <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select your skin type.</p>
+                            ) : null}
                         </section>
 
                         {/* Sensitive */}
-                        <section>
+                        <section id="quiz-sensitive">
                             <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Is your skin sensitive?</h2>
                             <div className="grid grid-cols-2 gap-2">
                                 {sensitiveOptions.map((opt) => (
@@ -201,6 +245,9 @@ export default function MatchMySkin() {
                                     />
                                 ))}
                             </div>
+                            {hasFieldError('sensitive') ? (
+                                <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select whether your skin is sensitive.</p>
+                            ) : null}
                         </section>
 
                         {/* Age / Gender */}
@@ -209,7 +256,7 @@ export default function MatchMySkin() {
 
                             <div className="grid grid-cols-2 gap-2">
                                 {/* Age dropdown */}
-                                <div className="relative w-full">
+                                <div id="quiz-age" className="relative w-full">
                                     <select
                                         value={age}
                                         onChange={handleAgeSelect}
@@ -225,10 +272,13 @@ export default function MatchMySkin() {
                                     <svg className="pointer-events-none absolute right-2 top-[20px] -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
                                         <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
+                                    {hasFieldError('age') ? (
+                                        <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select your age.</p>
+                                    ) : null}
                                 </div>
 
                                 {/* Gender dropdown */}
-                                <div className="relative w-full">
+                                <div id="quiz-gender" className="relative w-full">
                                     <select
                                         value={gender}
                                         onChange={handleGenderSelect}
@@ -243,13 +293,16 @@ export default function MatchMySkin() {
                                     <svg className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
                                         <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
+                                    {hasFieldError('gender') ? (
+                                        <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select your gender.</p>
+                                    ) : null}
                                 </div>
                             </div>
 
                         </section>
 
                         {/* Concerns */}
-                        <section className="md:col-span-2 lg:col-span-3">
+                        <section id="quiz-concerns" className="md:col-span-2 lg:col-span-3">
                             <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">
                                 Choose your skin concerns <span className="text-gray-400 text-sm">(Choose up to 2)</span>
                             </h2>
@@ -264,10 +317,13 @@ export default function MatchMySkin() {
                                     />
                                 ))}
                             </div>
+                            {hasFieldError('concerns') ? (
+                                <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select at least one skin concern.</p>
+                            ) : null}
                         </section>
 
                         {/* Special conditions */}
-                        <section className="md:col-span-2 lg:col-span-3">
+                        <section id="quiz-conditions" className="md:col-span-2 lg:col-span-3">
                             <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Special conditions</h2>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                 {specialConditions.map((item) => (
@@ -275,14 +331,27 @@ export default function MatchMySkin() {
                                         key={item}
                                         label={item}
                                         selected={conditions.includes(item)}
+                                        disabled={gender === 'Male' && maleRestrictedConditions.includes(item)}
                                         onClick={() => toggleCondition(item)}
                                     />
                                 ))}
                             </div>
+                            {/* {gender === 'Male' ? (
+                                <p className="mt-1 text-xs text-gray-500">Pregnancy and Breast feeding are unavailable when Male is selected.</p>
+                            ) : null} */}
+                            {hasFieldError('conditions') ? (
+                                <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select a special condition, or choose None.</p>
+                            ) : null}
                         </section>
                     </div>
 
                     {/* Submit */}
+                    {/* {validationAttempted && missingFields.length > 0 ? (
+                        <div className="mx-auto mt-6 max-w-xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+                            <p className="font-semibold">Please complete the following:</p>
+                            <p className="mt-1">{missingFields.map((field) => field.label).join(', ')}</p>
+                        </div>
+                    ) : null} */}
                     <div className="flex justify-center">
                         <button
                             type="button"

@@ -108,7 +108,7 @@ export default function Header() {
             <Link
               href={userSession ? "/profile" : "/login"}
               aria-label={userSession ? "My profile" : "Login"}
-              className="flex items-center justify-center h-9 w-9 lg:w-auto lg:gap-2 lg:pl-1 lg:pr-3 
+              className="flex items-center justify-center h-9 w-9 lg:w-auto lg:gap-2 lg:pl-1 lg:pr-3
               rounded-  border-gray- text-gray-600 hover:bg-gray-100 transition-colors duration-200"
               onClick={() =>
                 trackingService.trackEvent(
