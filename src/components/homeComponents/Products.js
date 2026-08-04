@@ -308,7 +308,9 @@ export default function Products() {
                 <button
                     type="button"
                     onClick={handleViewAll}
-                    className="block w-full lg:w-[70%] font-lato mt-5 mx-auto text-sm tracking-widest capitalize text-[#ff7e67] border border-[#e08a7d] rounded-[20px] py-2 hover:bg-[#d17a6d] hover:text-white transition-colors duration-300"
+                    className="block w-full lg:w-[70%] font-lato mt-5 mx-auto text-sm tracking-widest
+                     capitalize text-[#ff7e67] border border-[#e08a7d] rounded-[10px] py-2
+                      hover:bg-[#d17a6d] hover:text-white transition-colors duration-300"
                 >
                   {isAuthenticated ? 'View all' : 'Login to View all'}
                 </button>

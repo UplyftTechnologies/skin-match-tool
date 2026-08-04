@@ -288,7 +288,7 @@ export default function MatchMySkin() {
                             type="button"
                             onClick={handleSubmit}
                             className="w-full md:w-64 font-lato mt-8 text-sm tracking-widest capitalize 
-                     text-[#ff7e67] border border-[#e08a7d] rounded-[20px] py-2 hover:bg-[#d17a6d] hover:text-white
+                     text-[#ff7e67] border border-[#e08a7d] rounded-[10px] py-2 hover:bg-[#d17a6d] hover:text-white
                       transition-colors duration-300"
                         >
                             Find my match
