@@ -112,135 +112,139 @@ export default function MatchMySkin() {
     }
 
     return (
-        <div className='bg-[#FFFFFF]'>
-            <div className="max-w-md  mx-auto px-4 py-6 lg:max-w-[80%] md:py-12">
-                <h1 style={{ letterSpacing: '0.1em' }} className="font-lato text-2xl md:text-3xl text-center mb-6 md:mb-10">
-                    MATCH MY SKIN
-                </h1>
+        <div>
+            <div id="match-my-skin">
+            </div>
+            <div className='bg-[#FFFFFF]'>
+                <div className="max-w-md mx-auto px-4 py-6 md:py-12 lg:max-w-6xl xl:max-w-7xl lg:px-8">
+                    <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
+                        MATCH MY SKIN
+                    </h2>
 
-                <div className="mt-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 lg:gap-y-4">
+                    <div className="mt-2 lg:mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 lg:gap-x-8 lg:gap-y-5">
 
-                    <DontKnowSkinTypeModal open={showGuideModal} onClose={() => setShowGuideModal(false)} />
+                        <DontKnowSkinTypeModal open={showGuideModal} onClose={() => setShowGuideModal(false)} />
 
-                    {/* Skin type */}
-                    <section>
-                        <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">What&apos;s your skin type?</h2>
-                        <div className="grid grid-cols-2 gap-2">
-                            {skinTypes.map((type) => (
-                                <Pill
-                                    key={type}
-                                    label={type}
-                                    selected={skinType === type}
-                                    onClick={() => handleSkinTypeSelect(type)}
-                                />
-                            ))}
-                        </div>
-                    </section>
+                        {/* Skin type */}
+                        <section>
+                            <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">What&apos;s your skin type?</h2>
+                            <div className="grid grid-cols-2 gap-2">
+                                {skinTypes.map((type) => (
+                                    <Pill
+                                        key={type}
+                                        label={type}
+                                        selected={skinType === type}
+                                        onClick={() => handleSkinTypeSelect(type)}
+                                    />
+                                ))}
+                            </div>
+                        </section>
 
-                    {/* Sensitive */}
-                    <section>
-                        <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Is your skin sensitive?</h2>
-                        <div className="grid grid-cols-2 gap-2">
-                            {sensitiveOptions.map((opt) => (
-                                <Pill
-                                    key={opt}
-                                    label={opt}
-                                    selected={sensitive === opt}
-                                    onClick={() => handleSensitiveSelect(opt)}
-                                />
-                            ))}
-                        </div>
-                    </section>
+                        {/* Sensitive */}
+                        <section>
+                            <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Is your skin sensitive?</h2>
+                            <div className="grid grid-cols-2 gap-2">
+                                {sensitiveOptions.map((opt) => (
+                                    <Pill
+                                        key={opt}
+                                        label={opt}
+                                        selected={sensitive === opt}
+                                        onClick={() => handleSensitiveSelect(opt)}
+                                    />
+                                ))}
+                            </div>
+                        </section>
 
-                    {/* Age / Gender */}
-                    <section>
-                        <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Tell us more about you</h2>
+                        {/* Age / Gender */}
+                        <section>
+                            <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Tell us more about you</h2>
 
-                        <div className="grid grid-cols-2 gap-2">
-                            {/* Age dropdown */}
-                            <div className="relative w-full">
-                                <select
-                                    value={age}
-                                    onChange={handleAgeSelect}
-                                    style={{ fontSize: '13px', border: '1px solid #D1D5DC', borderRadius: '5px', fontWeight: 400, color: age ? '#374151' : '#6b7280', height: '37px' }}
-                                    className="appearance-none w-full md:text-base py-[9px] px-2 pr-7
+                            <div className="grid grid-cols-2 gap-2">
+                                {/* Age dropdown */}
+                                <div className="relative w-full">
+                                    <select
+                                        value={age}
+                                        onChange={handleAgeSelect}
+                                        style={{ fontSize: '13px', border: '1px solid #D1D5DC', borderRadius: '5px', fontWeight: 400, color: age ? '#374151' : '#6b7280', height: '37px' }}
+                                        className="appearance-none w-full md:text-base py-[9px] px-2 pr-7
                                      rounded-[3px] border border-gray-200 bg-white focus:outline-none focus:border-gray-400"
-                                >
-                                    <option value="" disabled>Age</option>
-                                    {ageOptions.map((opt) => (
-                                        <option key={opt} value={opt}>{opt}</option>
-                                    ))}
-                                </select>
-                                <svg className="pointer-events-none absolute right-2 top-[20px] -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
-                                    <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                    >
+                                        <option value="" disabled>Age</option>
+                                        {ageOptions.map((opt) => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                    <svg className="pointer-events-none absolute right-2 top-[20px] -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
+                                        <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+
+                                {/* Gender dropdown */}
+                                <div className="relative w-full">
+                                    <select
+                                        value={gender}
+                                        onChange={handleGenderSelect}
+                                        style={{ fontSize: '13px', border: '1px solid #D1D5DC', borderRadius: '5px', fontWeight: 400, color: age ? '#374151' : '#6b7280', height: '37px' }}
+                                        className="appearance-none w-full md:text-base py-[9px] px-2 pr-7 rounded-[3px] border border-gray-200 bg-white focus:outline-none focus:border-gray-400"
+                                    >
+                                        <option value="" disabled>Gender</option>
+                                        {genderOptions.map((opt) => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                    <svg className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
+                                        <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
                             </div>
 
-                            {/* Gender dropdown */}
-                            <div className="relative w-full">
-                                <select
-                                    value={gender}
-                                    onChange={handleGenderSelect}
-                                    style={{ fontSize: '13px', border: '1px solid #D1D5DC', borderRadius: '5px', fontWeight: 400, color: age ? '#374151' : '#6b7280', height: '37px' }}
-                                    className="appearance-none w-full md:text-base py-[9px] px-2 pr-7 rounded-[3px] border border-gray-200 bg-white focus:outline-none focus:border-gray-400"
-                                >
-                                    <option value="" disabled>Gender</option>
-                                    {genderOptions.map((opt) => (
-                                        <option key={opt} value={opt}>{opt}</option>
-                                    ))}
-                                </select>
-                                <svg className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
-                                    <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                        </section>
+
+                        {/* Concerns */}
+                        <section className="md:col-span-2 lg:col-span-3">
+                            <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">
+                                Choose your skin concern <span className="text-gray-400 text-sm">(Choose 1)</span>
+                            </h2>
+                            <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 lg:gap-3">
+                                {concerns.map((item) => (
+                                    <Pill
+                                        key={item}
+                                        label={item}
+                                        selected={concern === item}
+                                        onClick={() => handleConcernSelect(item)}
+                                    />
+                                ))}
                             </div>
-                        </div>
+                        </section>
 
-                    </section>
+                        {/* Special conditions */}
+                        <section className="md:col-span-2 lg:col-span-3">
+                            <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Special conditions</h2>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {specialConditions.map((item) => (
+                                    <Pill
+                                        key={item}
+                                        label={item}
+                                        selected={conditions.includes(item)}
+                                        onClick={() => toggleCondition(item)}
+                                    />
+                                ))}
+                            </div>
+                        </section>
+                    </div>
 
-                    {/* Concerns */}
-                    <section className="md:col-span-2 lg:col-span-3">
-                        <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">
-                            Choose your skin concern <span className="text-gray-400 text-sm">(Choose 1)</span>
-                        </h2>
-                        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-                            {concerns.map((item) => (
-                                <Pill
-                                    key={item}
-                                    label={item}
-                                    selected={concern === item}
-                                    onClick={() => handleConcernSelect(item)}
-                                />
-                            ))}
-                        </div>
-                    </section>
-
-                    {/* Special conditions */}
-                    <section className="md:col-span-2 lg:col-span-3">
-                        <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Special conditions</h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            {specialConditions.map((item) => (
-                                <Pill
-                                    key={item}
-                                    label={item}
-                                    selected={conditions.includes(item)}
-                                    onClick={() => toggleCondition(item)}
-                                />
-                            ))}
-                        </div>
-                    </section>
-                </div>
-
-                {/* Submit */}
-                <div className="flex justify-center">
-                    <button
-                        type="button"
-                        onClick={handleSubmit}
-                        className="w-full md:w-64 font-lato mt-8 text-sm tracking-widest capitalize 
+                    {/* Submit */}
+                    <div className="flex justify-center">
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            className="w-full md:w-64 font-lato mt-8 text-sm tracking-widest capitalize 
                      text-[#ff7e67] border border-[#e08a7d] rounded-[20px] py-2 hover:bg-[#d17a6d] hover:text-white
                       transition-colors duration-300"
-                    >
-                        Find my match
-                    </button>
+                        >
+                            Find my match
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
