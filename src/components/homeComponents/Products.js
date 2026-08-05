@@ -216,6 +216,12 @@ export default function Products() {
     const router = useRouter()
 
     const handleViewAll = async () => {
+        trackingService.trackEvent('clicked_view_all_products', {
+            source: 'home_products',
+            view: activeView,
+            authenticated: isAuthenticated,
+        })
+
         const { data: { session } } = await supabase.auth.getSession()
 
         if (session) {

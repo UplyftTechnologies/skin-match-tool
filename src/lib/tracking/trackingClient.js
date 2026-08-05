@@ -384,6 +384,16 @@ class TrackingService {
 
         const { phone, ...safeProperties } = properties;
 
+        if (properties.visitorId) {
+          window.clarity(
+            'identify',
+            properties.visitorId,
+            properties.sessionId || undefined,
+            window.location.pathname,
+            properties.userName || undefined
+          );
+        }
+
         if (properties.userId) {
           window.clarity('set', 'user_id', properties.userId);
         }
