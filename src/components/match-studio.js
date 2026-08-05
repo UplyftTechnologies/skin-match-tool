@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
@@ -18,10 +18,6 @@ import { getSessionId, getVisitorId, setLoggedInUser } from "@/lib/tracking/iden
 import { IoExitOutline, IoPersonCircleOutline } from "react-icons/io5";
 import { saveSkinProfile } from "@/lib/profile-storage";
 import Header from "./header";
-
-const LOGIN_POPUP_DELAY_MS = 8000;
-const QUIZ_SUBMITTED_KEY = "quiz_submitted";
-const LOGIN_POPUP_DUE_AT_KEY = "quiz_login_popup_due_at";
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -463,7 +459,6 @@ export default function MatchStudio({ initialData }) {
   // Auth & OTP Modal State
   const [userSession, setUserSession] = useState(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
-  const quizTimerRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -474,22 +469,8 @@ export default function MatchStudio({ initialData }) {
       setUserSession(session);
       syncTrackingIdentity(session);
       if (session) {
-        sessionStorage.removeItem(QUIZ_SUBMITTED_KEY);
-        sessionStorage.removeItem(LOGIN_POPUP_DUE_AT_KEY);
         void claimGuestQuizResults(session);
         void claimGuestEventLogs(session);
-      } else if (sessionStorage.getItem(QUIZ_SUBMITTED_KEY) === "true") {
-        const storedDueAt = Number(sessionStorage.getItem(LOGIN_POPUP_DUE_AT_KEY));
-        const dueAt = Number.isFinite(storedDueAt) && storedDueAt > 0
-          ? storedDueAt
-          : Date.now() + LOGIN_POPUP_DELAY_MS;
-        const remainingDelay = Math.max(0, dueAt - Date.now());
-
-        sessionStorage.setItem(LOGIN_POPUP_DUE_AT_KEY, String(dueAt));
-        quizTimerRef.current = setTimeout(() => {
-          quizTimerRef.current = null;
-          setIsOtpModalOpen(true);
-        }, remainingDelay);
       }
     });
 
@@ -497,14 +478,8 @@ export default function MatchStudio({ initialData }) {
       setUserSession(session);
       syncTrackingIdentity(session);
       if (session) {
-        sessionStorage.removeItem(QUIZ_SUBMITTED_KEY);
-        sessionStorage.removeItem(LOGIN_POPUP_DUE_AT_KEY);
         void claimGuestQuizResults(session);
         void claimGuestEventLogs(session);
-        if (quizTimerRef.current) {
-          clearTimeout(quizTimerRef.current);
-          quizTimerRef.current = null;
-        }
         setIsOtpModalOpen(false);
       }
     });
@@ -512,10 +487,6 @@ export default function MatchStudio({ initialData }) {
     return () => {
       cancelled = true;
       subscription.unsubscribe();
-      if (quizTimerRef.current) {
-        clearTimeout(quizTimerRef.current);
-        quizTimerRef.current = null;
-      }
     };
   }, []);
 
@@ -762,23 +733,6 @@ export default function MatchStudio({ initialData }) {
         }),
     ]);
     saveSkinProfile(profile);
-
-    if (!userSession) {
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem(QUIZ_SUBMITTED_KEY, "true");
-        sessionStorage.setItem(
-          LOGIN_POPUP_DUE_AT_KEY,
-          String(Date.now() + LOGIN_POPUP_DELAY_MS),
-        );
-      }
-      if (quizTimerRef.current) {
-        clearTimeout(quizTimerRef.current);
-      }
-      quizTimerRef.current = setTimeout(() => {
-        quizTimerRef.current = null;
-        setIsOtpModalOpen(true);
-      }, LOGIN_POPUP_DELAY_MS);
-    }
 
     // UPDATED: Added a short timeout to ensure the data loads and #results section renders before scroll.
     setTimeout(() => {
