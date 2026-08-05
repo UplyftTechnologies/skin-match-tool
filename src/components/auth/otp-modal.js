@@ -118,6 +118,13 @@ export default function OtpModal({ isOpen, onClose, onSuccess }) {
         trackingService.trackEvent(EVENTS.OTP_VERIFIED, {
           phone_number: backendData.user?.phone || phone,
         });
+        trackingService.trackEvent(
+          backendData.is_new_user ? EVENTS.ACCOUNT_CREATED : EVENTS.EXISTING_USER_LOGIN,
+          {
+            phone_number: backendData.user?.phone || phone,
+            userId: backendData.user?.id,
+          }
+        );
         await supabase.auth.setSession({
           access_token: backendData.token,
           refresh_token: backendData.refresh_token,

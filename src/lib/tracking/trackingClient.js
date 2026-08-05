@@ -11,6 +11,7 @@ import {
   setLoggedInUser,
 } from './identity.js';
 import { supabase } from '../supabase/client.js';
+import { EVENTS } from './events.js';
 
 // Hard ceiling on how long location lookup may delay an event.
 const LOCATION_BUDGET_MS = 4000;
@@ -629,7 +630,7 @@ class TrackingService {
     if (this._exitFired) return;
     this._exitFired = true;
 
-    const eventName = `left_site_${pageName.toLowerCase().replace(/\//g, '_').replace(/\s+/g, '_')}`;
+    const eventName = `${EVENTS.LEFT_SITE}_${pageName.toLowerCase().replace(/\//g, '_').replace(/\s+/g, '_')}`;
 
     const location = this.locationData || {};
 

@@ -15,13 +15,7 @@ import { scoredProductPath } from '@/lib/site'
 import { useScoredProducts } from '@/hooks/use-scored-products'
 import ScoreBadge from '@/components/score-badge'
 
-// ---------------------------------------------------------------------------
-// Which scores show up in which row. One entry per row, top row first.
-// `min` is inclusive, `max` is exclusive, so bands never overlap.
-// `fallback` is optional: if the row can't be filled from its own range, the
-// leftover slots are topped up from the fallback range instead.
-// Change the numbers here to change the score preference — nothing else.
-// ---------------------------------------------------------------------------
+
 const SCORE_BANDS = [
     { min: 80, max: Infinity },  // row 1 — above 80
     { min: 60, max: 80 },        // row 2 — 60 to 80
@@ -32,12 +26,24 @@ const SCORE_BANDS = [
     },
 ]
 
-const PRODUCTS_PER_ROW = 2
+const PRODUCTS_PER_ROW = 3
+
+const DISPLAY_SCORE_BANDS = [
+    { min: 90, max: Infinity },
+    { min: 50, max: 90 },
+    { min: -Infinity, max: 50 },
+].slice(0, SCORE_BANDS.length)
+
+const PRODUCT_SCORE_SECTIONS = [
+    { title: 'Your Great Match', subtitle: '90+ score', min: 90, max: Infinity, color: '#4f8060', line: '#bfd8c7', badge: '#edf7f0' },
+    { title: 'Fits With Caution', subtitle: '50–89 score', min: 50, max: 90, color: '#906c25', line: '#e6d2a8', badge: '#fff8e8' },
+    { title: 'Not Recommended', subtitle: 'Below 50 score', min: -Infinity, max: 50, color: '#a6534b', line: '#e8c3bf', badge: '#fff0ee' },
+]
 
 // Last resort, only if a row is still short after its fallback. When true the
 // remaining slots take the next best unused products, appended at the end of
 // the grid. Set to false to leave the grid short instead.
-const FILL_EMPTY_SLOTS = true
+const FILL_EMPTY_SLOTS = false
 
 function productsInRange(products, { min, max }, used, count) {
     return products
@@ -53,7 +59,7 @@ function pickByScoreBands(products) {
     const used = new Set()
     const picked = []
 
-    for (const band of SCORE_BANDS) {
+    for (const band of DISPLAY_SCORE_BANDS) {
         const row = productsInRange(products, band, used, PRODUCTS_PER_ROW)
         for (const product of row) used.add(product.product_uid)
 
@@ -66,7 +72,7 @@ function pickByScoreBands(products) {
         picked.push(...row)
     }
 
-    const wanted = SCORE_BANDS.length * PRODUCTS_PER_ROW
+    const wanted = DISPLAY_SCORE_BANDS.length * PRODUCTS_PER_ROW
     if (FILL_EMPTY_SLOTS && picked.length < wanted) {
         const leftovers = products
             .filter((product) => !used.has(product.product_uid))
@@ -202,10 +208,11 @@ function ProductCard({ product }) {
 export const REQUEST_LOGIN_EVENT = 'roopsee-request-login'
 
 export default function Products() {
+    const [activeView, setActiveView] = useState('products')
     const [search, setSearch] = useState('')
     const [isLoginOpen, setIsLoginOpen] = useState(false)
     const [isAuthenticated, setIsAuthenticated] = useState(false)
-    const { products, loading, error, quizAnswers } = useScoredProducts()
+    const { products, routine, loading, error, quizAnswers } = useScoredProducts()
     const router = useRouter()
 
     const handleViewAll = async () => {
@@ -269,10 +276,31 @@ export default function Products() {
     return (
         <div id="products" className="scroll-mt-20 bg-[#FAF9F6]">
             <div className="max-w-6xl lg:max-w-[80%] mx-auto px-3 py-6">
-                          <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
-
-                    Products
-                </h2>
+                <div
+                    role="tablist"
+                    aria-label="Recommendations view"
+                    className="flex items-center justify-center gap-7 font-lato text-lg uppercase tracking-[0.16em] md:gap-12 md:text-3xl"
+                >
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-selected={activeView === 'products'}
+                        onClick={() => setActiveView('products')}
+                        className={`transition-colors ${activeView === 'products' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
+                    >
+                        Products
+                    </button>
+                    <span aria-hidden="true" className="font-light text-gray-400">|</span>
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-selected={activeView === 'routine'}
+                        onClick={() => setActiveView('routine')}
+                        className={`transition-colors ${activeView === 'routine' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
+                    >
+                        Routine
+                    </button>
+                </div>
 
                 <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
                     <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">
@@ -303,7 +331,7 @@ export default function Products() {
                     </div>
                 </div>
 
-                <div className="relative max-w-xl mx-auto mb-2 mt-3 lg:mt-4">
+                {activeView === 'products' ? <div className="relative max-w-xl mx-auto mb-2 mt-3 lg:mt-4">
                     <FiSearch
                         className="absolute left-4 top-1/2 -translate-y-1/2 text-[#e08a7d]"
                         size={18}
@@ -315,7 +343,7 @@ export default function Products() {
                         placeholder="Search products or brands"
                         className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-[#e08a7d] shadow-sm"
                     />
-                </div>
+                </div> : null}
 
                 {loading ? (
                     <p className="py-8 text-center text-sm text-gray-500">Loading products…</p>
@@ -323,15 +351,100 @@ export default function Products() {
                 {error ? (
                     <p className="py-8 text-center text-sm text-red-600">{error}</p>
                 ) : null}
-                {!loading && !error && visibleProducts.length === 0 ? (
+                {!loading && !error && activeView === 'products' && visibleProducts.length === 0 ? (
                     <p className="py-8 text-center text-sm text-gray-500">No products found.</p>
                 ) : null}
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 lg:mt-5 md:gap-6">
-                    {visibleProducts.map((product) => (
-                        <ProductCard key={product.product_uid} product={product} />
-                    ))}
-                </div>
+                {activeView === 'products' ? (
+                    <div className="mt-4 space-y-7 lg:mt-6">
+                        {PRODUCT_SCORE_SECTIONS.map((section) => {
+                            const sectionProducts = visibleProducts.filter((product) => {
+                                const score = Number(product.score)
+                                return score >= section.min && score < section.max
+                            })
+
+                            if (sectionProducts.length === 0) return null
+
+                            return (
+                                <section key={section.title}>
+                                    <div className="mb-3 flex flex-col items-center text-center">
+                                        <div className="flex w-full items-center gap-3">
+                                            <span className="h-px flex-1" style={{ backgroundColor: section.line }} />
+                                            <h3
+                                                className="shrink-0 font-cormorant text-[20px] font-semibold italic tracking-wide md:text-2xl"
+                                                style={{ color: section.color }}
+                                            >
+                                                {section.title}
+                                            </h3>
+                                            <span className="h-px flex-1" style={{ backgroundColor: section.line }} />
+                                        </div>
+                                        <span
+                                            className="mt-1.5 rounded-full px-3 py-1 font-lato text-[9px] font-semibold uppercase tracking-[0.14em] md:text-[10px]"
+                                            style={{ backgroundColor: section.badge, color: section.color }}
+                                        >
+                                            {section.subtitle}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-6">
+                                        {sectionProducts.map((product, index) => (
+                                            <div
+                                                key={product.product_uid}
+                                                className={index === 2 ? 'hidden md:block' : ''}
+                                            >
+                                                <ProductCard product={product} />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            )
+                        })}
+                    </div>
+                ) : (
+                    <div className="mx-auto mt-5 max-w-4xl space-y-6">
+                        {['cleanser', 'moisturiser'].map((slot) => {
+                            const valueFitItem = [
+                                ...(routine?.tiers?.value_fit?.am || []),
+                                ...(routine?.tiers?.value_fit?.pm || []),
+                            ].find((item) => item.slot === slot && item.product)
+                            const premiumItem = [
+                                ...(routine?.tiers?.premium?.am || []),
+                                ...(routine?.tiers?.premium?.pm || []),
+                            ].find((item) => item.slot === slot && item.product)
+                            const label = slot === 'moisturiser' ? 'Moisturiser' : 'Cleanser'
+
+                            return (
+                                <section key={slot}>
+                                    <h3 className="mb-2 text-center font-lato text-sm text-slate-700">
+                                        {label}
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-2 md:gap-6">
+                                        {[
+                                            ['Value Fit', valueFitItem],
+                                            ['Premium', premiumItem],
+                                        ].map(([tierLabel, item]) => (
+                                            <div key={tierLabel} className="flex min-w-0 flex-col">
+                                                <p className={`mx-auto mb-3 rounded-full border px-4 py-1.5 text-center font-lato text-[11px] font-semibold uppercase tracking-[0.14em] shadow-sm md:text-xs ${
+                                                    tierLabel === 'Premium'
+                                                        ? 'border-[#e7c8a0] bg-[#fff8ed] text-[#9a6428]'
+                                                        : 'border-[#c9dedc] bg-[#eef7f6] text-[#426d69]'
+                                                }`}>
+                                                    {tierLabel}
+                                                </p>
+                                                {item?.product ? (
+                                                    <ProductCard product={item.product} />
+                                                ) : (
+                                                    <div className="flex min-h-52 items-center justify-center rounded-lg bg-white p-4 text-center text-xs text-gray-400">
+                                                        No {tierLabel.toLowerCase()} match found
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            )
+                        })}
+                    </div>
+                )}
 
                 <button
                     type="button"

@@ -10,12 +10,17 @@ import { saveSkinProfile } from '@/lib/profile-storage'
 
 const skinTypes = ['Oily', 'Dry', 'Normal', 'Combination', 'I dont know']
 const sensitiveOptions = ['Yes', 'No']
-const concerns = [
-    'Acne', 'Body acne', 'Dryness',
+const faceConcerns = [
+    'Acne', 'Dryness',
     'Open pores', 'Dark spots', 'Melasma',
     'Barrier repair', 'Uneven skin', 'Comedones',
     'Wrinkles', 'redness', 'Dehydration',
     'Dullness', 'Tanning', 'None',
+]
+const bodyConcerns = [
+    'Body acne', 'Dryness', 'Dark spots',
+    'Barrier repair', 'Uneven skin', 'redness',
+    'Dehydration', 'Dullness', 'Tanning', 'None',
 ]
 const specialConditions = ['Excessive dryness', 'Pregnancy', 'Breast feeding', 'None']
 const maleRestrictedConditions = ['Pregnancy', 'Breast feeding']
@@ -45,6 +50,7 @@ function Pill({ disabled = false, label, selected, onClick }) {
 export default function MatchMySkin() {
     const [skinType, setSkinType] = useState(null)
     const [sensitive, setSensitive] = useState(null)
+    const [concernArea, setConcernArea] = useState('face')
     const [selectedConcerns, setSelectedConcerns] = useState([])
     const [conditions, setConditions] = useState([])
     const [age, setAge] = useState('')
@@ -79,7 +85,8 @@ export default function MatchMySkin() {
                     : savedAnswers.concern
                         ? [savedAnswers.concern]
                         : []
-                setSelectedConcerns(savedConcerns.slice(0, 2))
+                setConcernArea(savedAnswers.concernArea || (savedConcerns.includes('Body acne') ? 'body' : 'face'))
+                setSelectedConcerns(savedConcerns.slice(0, 1))
                 const savedGender = savedAnswers.gender || ''
                 const savedConditions = Array.isArray(savedAnswers.conditions)
                     ? savedAnswers.conditions
@@ -152,20 +159,18 @@ export default function MatchMySkin() {
         setSelectedConcerns((current) => {
             if (current.includes(item)) {
                 trackOption('concern', item)
-                return current.filter((concern) => concern !== item)
+                return []
             }
-
-            if (item === 'None') {
-                trackOption('concern', item)
-                return ['None']
-            }
-
-            const withoutNone = current.filter((concern) => concern !== 'None')
-            if (withoutNone.length >= 2) return current
 
             trackOption('concern', item)
-            return [...withoutNone, item]
+            return [item]
         })
+    }
+
+    const handleConcernAreaSelect = (area) => {
+        setConcernArea(area)
+        setSelectedConcerns([])
+        trackOption('concern_area', area)
     }
 
     const handleSubmit = async () => {
@@ -182,6 +187,7 @@ export default function MatchMySkin() {
         const answers = {
             skinType,
             sensitive,
+            concernArea,
             concerns: selectedConcerns,
             conditions,
             age,
@@ -195,6 +201,7 @@ export default function MatchMySkin() {
         trackingService.trackEvent(EVENTS.QUIZ_COMPLETED, {
             skin_type: skinType,
             sensitive,
+            concern_area: concernArea,
             concerns: selectedConcerns,
             conditions,
             age,
@@ -352,16 +359,39 @@ export default function MatchMySkin() {
 
                         {/* Concerns */}
                         <section id="quiz-concerns" className="md:col-span-2 lg:col-span-3">
-                            <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">
-                                Choose your skin concerns <span className="text-gray-400 text-sm">(Choose up to 2)</span>
-                            </h2>
+                            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900">
+                                    Choose your skin concern <span className="text-gray-400 text-sm">(Choose 1)</span>
+                                </h2>
+                                <div
+                                    role="tablist"
+                                    aria-label="Concern area"
+                                    className="grid w-full grid-cols-2 rounded-full border border-[#ead8d3] bg-[#faf7f5] p-1 sm:w-52"
+                                >
+                                    {['face', 'body'].map((area) => (
+                                        <button
+                                            key={area}
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={concernArea === area}
+                                            onClick={() => handleConcernAreaSelect(area)}
+                                            className={`rounded-full px-4 py-1.5 font-lato text-xs font-semibold uppercase tracking-[0.12em] transition-all ${
+                                                concernArea === area
+                                                    ? 'bg-[#d8e7e6] text-[#355d59] shadow-sm'
+                                                    : 'text-gray-400 hover:text-gray-600'
+                                            }`}
+                                        >
+                                            {area}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                             <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 lg:gap-3">
-                                {concerns.map((item) => (
+                                {(concernArea === 'face' ? faceConcerns : bodyConcerns).map((item) => (
                                     <Pill
                                         key={item}
                                         label={item}
                                         selected={selectedConcerns.includes(item)}
-                                        disabled={selectedConcerns.length >= 2 && item !== 'None' && !selectedConcerns.includes(item)}
                                         onClick={() => handleConcernSelect(item)}
                                     />
                                 ))}

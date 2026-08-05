@@ -6,6 +6,7 @@ import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 export function useScoredProducts() {
     const [quizAnswers, setQuizAnswers] = useState(undefined)
     const [products, setProducts] = useState([])
+    const [routine, setRoutine] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
@@ -49,6 +50,7 @@ export function useScoredProducts() {
                 }
 
                 setProducts(payload.products || [])
+                setRoutine(payload.routine || null)
                 setError('')
             } catch (fetchError) {
                 if (fetchError.name !== 'AbortError') {
@@ -63,5 +65,5 @@ export function useScoredProducts() {
         return () => controller.abort()
     }, [quizAnswers])
 
-    return { products, loading, error, quizAnswers }
+    return { products, routine, loading, error, quizAnswers }
 }

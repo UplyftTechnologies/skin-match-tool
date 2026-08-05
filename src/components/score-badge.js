@@ -1,10 +1,9 @@
 export default function ScoreBadge({ score }) {
     const value = Number.isFinite(Number(score)) ? Math.round(Number(score)) : 0
 
-    // Bands aligned with the curated-products score tiers:
-    // >90 Great · 70-89 Good · 60-69 Fair · <60 Low
+   
     const band =
-        value > 90
+        value > 89
             ? { label: 'GREAT', ring: '#1fae74', fill: '#12996a', glow: 'rgba(18,153,106,0.35)' }
             : value >= 70
                 ? { label: 'GOOD', ring: '#e8b53a', fill: '#d9a52c', glow: 'rgba(217,165,44,0.35)' }
