@@ -31,7 +31,7 @@ function IconButton({ children, ...props }) {
   return (
     <button
       {...props}
-      className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+      className="w-[30px] h-[30px] flex items-center justify-center rounded-full border border-gray-300 text-gray-800 hover:bg-gray-100 transition-colors duration-200"
     >
       {children}
     </button>

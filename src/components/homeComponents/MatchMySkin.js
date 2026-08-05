@@ -7,7 +7,6 @@ import { getSessionId } from '@/lib/tracking/identity'
 import { quizAnswersToResultProfile } from '@/lib/quiz-profile'
 import { supabase } from '@/lib/supabase/client'
 import { saveSkinProfile } from '@/lib/profile-storage'
-import { REQUEST_LOGIN_EVENT } from '@/components/homeComponents/Products'
 
 const skinTypes = ['Oily', 'Dry', 'Normal', 'Combination', 'I dont know']
 const sensitiveOptions = ['Yes', 'No']
@@ -207,21 +206,18 @@ export default function MatchMySkin() {
         window.dispatchEvent(new CustomEvent('roopsee-quiz-answers-updated', {
             detail: answers,
         }))
-        document.getElementById('products')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                document.getElementById('products')?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                })
+            })
         })
 
         try {
             const { data: { session } } = await supabase.auth.getSession()
-
-            // Give guests time to review their matches before prompting login.
-            // This timer is created only after a successfully completed quiz.
-            if (!session) {
-                window.setTimeout(() => {
-                    window.dispatchEvent(new CustomEvent(REQUEST_LOGIN_EVENT))
-                }, 30_000)
-            }
 
             const headers = { 'Content-Type': 'application/json' }
             if (session?.access_token) {
