@@ -15,6 +15,69 @@ import { scoredProductPath } from '@/lib/site'
 import { useScoredProducts } from '@/hooks/use-scored-products'
 import ScoreBadge from '@/components/score-badge'
 
+// ---------------------------------------------------------------------------
+// Which scores show up in which row. One entry per row, top row first.
+// `min` is inclusive, `max` is exclusive, so bands never overlap.
+// `fallback` is optional: if the row can't be filled from its own range, the
+// leftover slots are topped up from the fallback range instead.
+// Change the numbers here to change the score preference — nothing else.
+// ---------------------------------------------------------------------------
+const SCORE_BANDS = [
+    { min: 80, max: Infinity },  // row 1 — above 80
+    { min: 60, max: 80 },        // row 2 — 60 to 80
+    {
+        min: -Infinity,
+        max: 60,                          // row 3 — below 60
+        fallback: { min: 60, max: 80 },   // ...topped up from 60-80 when short
+    },
+]
+
+const PRODUCTS_PER_ROW = 2
+
+// Last resort, only if a row is still short after its fallback. When true the
+// remaining slots take the next best unused products, appended at the end of
+// the grid. Set to false to leave the grid short instead.
+const FILL_EMPTY_SLOTS = true
+
+function productsInRange(products, { min, max }, used, count) {
+    return products
+        .filter((product) => {
+            const score = Number(product.score)
+            return score >= min && score < max && !used.has(product.product_uid)
+        })
+        .sort((a, b) => Number(b.score) - Number(a.score))
+        .slice(0, count)
+}
+
+function pickByScoreBands(products) {
+    const used = new Set()
+    const picked = []
+
+    for (const band of SCORE_BANDS) {
+        const row = productsInRange(products, band, used, PRODUCTS_PER_ROW)
+        for (const product of row) used.add(product.product_uid)
+
+        if (band.fallback && row.length < PRODUCTS_PER_ROW) {
+            const topUp = productsInRange(products, band.fallback, used, PRODUCTS_PER_ROW - row.length)
+            for (const product of topUp) used.add(product.product_uid)
+            row.push(...topUp)
+        }
+
+        picked.push(...row)
+    }
+
+    const wanted = SCORE_BANDS.length * PRODUCTS_PER_ROW
+    if (FILL_EMPTY_SLOTS && picked.length < wanted) {
+        const leftovers = products
+            .filter((product) => !used.has(product.product_uid))
+            .sort((a, b) => Number(b.score) - Number(a.score))
+
+        picked.push(...leftovers.slice(0, wanted - picked.length))
+    }
+
+    return picked
+}
+
 function formatPrice(value) {
     const amount = Number(value)
 
@@ -195,33 +258,7 @@ export default function Products() {
 
         const withScore = filtered.filter((product) => Number.isFinite(Number(product.score)))
 
-        const greenBand = withScore
-            .filter((product) => Number(product.score) > 90)
-            .sort((a, b) => Number(b.score) - Number(a.score))
-            .slice(0, 2)
-
-        const yellowBand = withScore
-            .filter((product) => Number(product.score) >= 50 && Number(product.score) < 70)
-            .sort((a, b) => Number(b.score) - Number(a.score))
-            .slice(0, 2)
-
-        const lightYellowBand = withScore
-            .filter((product) => Number(product.score) < 50)
-            .sort((a, b) => Number(b.score) - Number(a.score))
-            .slice(0, 2)
-
-        const curated = [...greenBand, ...yellowBand, ...lightYellowBand]
-
-        if (curated.length < Math.min(6, withScore.length)) {
-            const usedIds = new Set(curated.map((product) => product.product_uid))
-            const remaining = withScore
-                .filter((product) => !usedIds.has(product.product_uid))
-                .sort((a, b) => Number(b.score) - Number(a.score))
-
-            curated.push(...remaining.slice(0, 6 - curated.length))
-        }
-
-        return curated
+        return pickByScoreBands(withScore)
     }, [products, search])
 
     // Nothing to show until the quiz has actually been completed.
