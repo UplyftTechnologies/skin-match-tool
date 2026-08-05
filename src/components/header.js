@@ -9,7 +9,6 @@ import { supabase } from "@/lib/supabase/client";
 import { useWishlist } from "@/context/WishlistContext";
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
-import { GoPerson } from "react-icons/go";
 
 export const Logo = ({ dark, onClick }) => (
   <div
@@ -32,7 +31,7 @@ function IconButton({ children, ...props }) {
   return (
     <button
       {...props}
-      className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+      className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-800 hover:bg-gray-100 transition-colors duration-200"
     >
       {children}
     </button>
@@ -82,7 +81,7 @@ export default function Header() {
           }}
         />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Link
             href="/wishlist"
             aria-label="View wishlist"
@@ -103,24 +102,17 @@ export default function Header() {
             )}
           </Link>
 
-          {/* Direct profile/login button on every screen size. */}
-          {sessionLoaded && (
+          {/* Profile icon only appears once the user is logged in. */}
+          {sessionLoaded && userSession && (
             <Link
-              href={userSession ? "/profile" : "/login"}
-              aria-label={userSession ? "My profile" : "Login"}
+              href="/profile"
+              aria-label="My profile"
               className="flex items-center justify-center h-9 w-9 lg:w-auto lg:gap-2 lg:pl-1 lg:pr-3
               rounded-  border-gray- text-gray-600 hover:bg-gray-100 transition-colors duration-200"
-              onClick={() =>
-                trackingService.trackEvent(
-                  userSession ? EVENTS.CLICKED_PROFILE_ICON : EVENTS.CLICKED_LOGIN_ICON
-                )
-              }
+              onClick={() => trackingService.trackEvent(EVENTS.CLICKED_PROFILE_ICON)}
             >
-              {/* <IoPersonCircleOutline size={40} /> */}
-              <GoPerson size={30} />
-              <span className="hidden lg:inline text-sm font-medium">
-                {userSession ? "My Profile" : ""}
-              </span>
+              <IoPersonCircleOutline size={30} />
+              <span className="hidden lg:inline text-sm font-medium">My Profile</span>
             </Link>
           )}
         </div>

@@ -7,6 +7,7 @@ import { getSessionId } from '@/lib/tracking/identity'
 import { quizAnswersToResultProfile } from '@/lib/quiz-profile'
 import { supabase } from '@/lib/supabase/client'
 import { saveSkinProfile } from '@/lib/profile-storage'
+import { REQUEST_LOGIN_EVENT } from '@/components/homeComponents/Products'
 
 const skinTypes = ['Oily', 'Dry', 'Normal', 'Combination', 'I dont know']
 const sensitiveOptions = ['Yes', 'No']
@@ -213,6 +214,15 @@ export default function MatchMySkin() {
 
         try {
             const { data: { session } } = await supabase.auth.getSession()
+
+            // Give guests time to review their matches before prompting login.
+            // This timer is created only after a successfully completed quiz.
+            if (!session) {
+                window.setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent(REQUEST_LOGIN_EVENT))
+                }, 30_000)
+            }
+
             const headers = { 'Content-Type': 'application/json' }
             if (session?.access_token) {
                 headers.Authorization = `Bearer ${session.access_token}`
@@ -379,22 +389,12 @@ export default function MatchMySkin() {
                                     />
                                 ))}
                             </div>
-                            {/* {gender === 'Male' ? (
-                                <p className="mt-1 text-xs text-gray-500">Pregnancy and Breast feeding are unavailable when Male is selected.</p>
-                            ) : null} */}
                             {hasFieldError('conditions') ? (
                                 <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select a special condition, or choose None.</p>
                             ) : null}
                         </section>
                     </div>
 
-                    {/* Submit */}
-                    {/* {validationAttempted && missingFields.length > 0 ? (
-                        <div className="mx-auto mt-6 max-w-xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
-                            <p className="font-semibold">Please complete the following:</p>
-                            <p className="mt-1">{missingFields.map((field) => field.label).join(', ')}</p>
-                        </div>
-                    ) : null} */}
                     <div className="flex justify-center">
                         <button
                             type="button"

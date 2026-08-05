@@ -549,7 +549,7 @@ function ProductsPageContent() {
                     <p className="py-8 text-center text-sm text-gray-500">No products found.</p>
                 ) : null}
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mt-3 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-3 md:gap-6">
                     {products.map((product) => (
                         <ProductCard key={product.product_uid} product={product} />
                     ))}

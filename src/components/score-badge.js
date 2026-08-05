@@ -1,22 +1,39 @@
 export default function ScoreBadge({ score }) {
     const value = Number.isFinite(Number(score)) ? Math.round(Number(score)) : 0
-    const band = value >= 80
-        ? { label: 'GREAT', color: 'bg-[#16845d]' }
-        : value >= 70
-            ? { label: 'GOOD', color: 'bg-[#3f8f72]' }
-            : value >= 50
-                ? { label: 'CAUTION', color: 'bg-[#d28a32]' }
-                : { label: 'LOW', color: 'bg-[#c75b57]' }
+
+    // Bands aligned with the curated-products score tiers:
+    // >90 Great · 70-89 Good · 60-69 Fair · <60 Low
+    const band =
+        value > 90
+            ? { label: 'GREAT', ring: '#1fae74', fill: '#12996a', glow: 'rgba(18,153,106,0.35)' }
+            : value >= 70
+                ? { label: 'GOOD', ring: '#e8b53a', fill: '#d9a52c', glow: 'rgba(217,165,44,0.35)' }
+                : value >= 60
+                    ? { label: 'FAIR', ring: '#f0cf6b', fill: '#e6c157', glow: 'rgba(230,193,87,0.35)' }
+                    : { label: 'LOW', ring: '#e0645f', fill: '#d1524d', glow: 'rgba(209,82,77,0.35)' }
+
+    const progressDeg = Math.min(100, Math.max(0, value)) * 3.6
 
     return (
         <div
-            className={`absolute right-2 top-2 z-10 flex h-14 w-14 flex-col items-center justify-center rounded-full text-white shadow-lg md:h-16 md:w-16 ${band.color}`}
+            className="absolute right-2 top-2 z-10 flex h-12 w-12 items-center justify-center rounded-full p-[3px] md:h-16 md:w-16"
+            style={{
+                background: `conic-gradient(${band.ring} ${progressDeg}deg, rgba(255,255,255,0.55) ${progressDeg}deg)`,
+                boxShadow: `0 6px 16px ${band.glow}, 0 1px 3px rgba(0,0,0,0.08)`,
+            }}
             aria-label={`Match score ${value}, ${band.label.toLowerCase()}`}
         >
-            <strong className="text-base font-extrabold leading-none md:text-lg">{value}</strong>
-            <span className="mt-0.5 text-[8px] font-extrabold leading-none tracking-wide md:text-[9px]">
-                {band.label}
-            </span>
+            <div
+                className="flex h-full w-full flex-col items-center justify-center rounded-full text-white ring-2 ring-white/80"
+                style={{ backgroundColor: band.fill }}
+            >
+                <strong className="text-[14px] font-extrabold leading-none tracking-tight md:text-lg">
+                    {value}
+                </strong>
+                <span className="mt-1 text-[7px] font-bold leading-none tracking-widest opacity-90 md:text-[8px]">
+                    {band.label}
+                </span>
+            </div>
         </div>
     )
 }

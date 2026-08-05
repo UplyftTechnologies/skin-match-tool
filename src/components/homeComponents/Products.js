@@ -135,6 +135,9 @@ function ProductCard({ product }) {
     )
 }
 
+
+export const REQUEST_LOGIN_EVENT = 'roopsee-request-login'
+
 export default function Products() {
     const [search, setSearch] = useState('')
     const [isLoginOpen, setIsLoginOpen] = useState(false)
@@ -170,17 +173,61 @@ export default function Products() {
         }
     }, [])
 
+    useEffect(() => {
+        const showLoginForGuest = async () => {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) setIsLoginOpen(true)
+        }
+
+        window.addEventListener(REQUEST_LOGIN_EVENT, showLoginForGuest)
+        return () => window.removeEventListener(REQUEST_LOGIN_EVENT, showLoginForGuest)
+    }, [])
+
+
     const visibleProducts = useMemo(() => {
         const query = search.trim().toLowerCase()
-        const matches = query
+        const filtered = query
             ? products.filter((product) =>
                 [product.product_name, product.brand_name, product.category, product.product_type]
                     .some((value) => value?.toLowerCase().includes(query)),
             )
             : products
 
-        return matches.slice(0, 6)
+        const withScore = filtered.filter((product) => Number.isFinite(Number(product.score)))
+
+        const greenBand = withScore
+            .filter((product) => Number(product.score) > 90)
+            .sort((a, b) => Number(b.score) - Number(a.score))
+            .slice(0, 2)
+
+        const yellowBand = withScore
+            .filter((product) => Number(product.score) >= 50 && Number(product.score) < 70)
+            .sort((a, b) => Number(b.score) - Number(a.score))
+            .slice(0, 2)
+
+        const lightYellowBand = withScore
+            .filter((product) => Number(product.score) < 50)
+            .sort((a, b) => Number(b.score) - Number(a.score))
+            .slice(0, 2)
+
+        const curated = [...greenBand, ...yellowBand, ...lightYellowBand]
+
+        if (curated.length < Math.min(6, withScore.length)) {
+            const usedIds = new Set(curated.map((product) => product.product_uid))
+            const remaining = withScore
+                .filter((product) => !usedIds.has(product.product_uid))
+                .sort((a, b) => Number(b.score) - Number(a.score))
+
+            curated.push(...remaining.slice(0, 6 - curated.length))
+        }
+
+        return curated
     }, [products, search])
+
+    // Nothing to show until the quiz has actually been completed.
+    if (!quizAnswers) {
+        return null
+    }
 
     return (
         <div id="products" className="scroll-mt-20 bg-[#FAF9F6]">
@@ -190,36 +237,34 @@ export default function Products() {
                     Products
                 </h2>
 
-                {quizAnswers ? (
-                    <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
-                        <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">
-                            Your selections
-                        </p>
-                        <div className="mt-2 flex flex-wrap justify-center gap-2">
-                            {[
-                                ['Skin', quizAnswers.skinType],
-                                ['Sensitive', quizAnswers.sensitive],
-                                ...(
-                                    Array.isArray(quizAnswers.concerns)
-                                        ? quizAnswers.concerns
-                                        : quizAnswers.concern
-                                            ? [quizAnswers.concern]
-                                            : []
-                                ).map((concern) => ['Concern', concern]),
-                                ['Age', quizAnswers.age],
-                                ['Gender', quizAnswers.gender],
-                                ...(quizAnswers.conditions || []).map((condition) => ['Condition', condition]),
-                            ].filter(([, value]) => value).map(([label, value], index) => (
-                                <span
-                                    key={`${label}-${value}-${index}`}
-                                    className="rounded-full bg-[#f8eeeb] px-3 py-1 text-xs font-medium text-slate-700"
-                                >
-                                    <strong>{label}:</strong> {value}
-                                </span>
-                            ))}
-                        </div>
+                <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
+                    <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">
+                        Your selections
+                    </p>
+                    <div className="mt-2 flex flex-wrap justify-center gap-2">
+                        {[
+                            ['Skin', quizAnswers.skinType],
+                            ['Sensitive', quizAnswers.sensitive],
+                            ...(
+                                Array.isArray(quizAnswers.concerns)
+                                    ? quizAnswers.concerns
+                                    : quizAnswers.concern
+                                        ? [quizAnswers.concern]
+                                        : []
+                            ).map((concern) => ['Concern', concern]),
+                            ['Age', quizAnswers.age],
+                            ['Gender', quizAnswers.gender],
+                            ...(quizAnswers.conditions || []).map((condition) => ['Condition', condition]),
+                        ].filter(([, value]) => value).map(([label, value], index) => (
+                            <span
+                                key={`${label}-${value}-${index}`}
+                                className="rounded-full bg-[#f8eeeb] px-3 py-1 text-xs font-medium text-slate-700"
+                            >
+                                <strong>{label}:</strong> {value}
+                            </span>
+                        ))}
                     </div>
-                ) : null}
+                </div>
 
                 <div className="relative max-w-xl mx-auto mb-2 mt-3 lg:mt-4">
                     <FiSearch
@@ -245,7 +290,7 @@ export default function Products() {
                     <p className="py-8 text-center text-sm text-gray-500">No products found.</p>
                 ) : null}
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 mt-3 lg:mt-5 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 lg:mt-5 md:gap-6">
                     {visibleProducts.map((product) => (
                         <ProductCard key={product.product_uid} product={product} />
                     ))}
@@ -258,7 +303,7 @@ export default function Products() {
                      capitalize text-[#ff7e67] border border-[#e08a7d] rounded-[10px] py-2
                       hover:bg-[#d17a6d] hover:text-white transition-colors duration-300"
                 >
-                  {isAuthenticated ? 'View all' : 'Login to View all'}
+                    {isAuthenticated ? 'View all' : 'Login to View all'}
                 </button>
             </div>
 
