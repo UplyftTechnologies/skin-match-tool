@@ -366,7 +366,7 @@ export default function MatchMySkin() {
                                 <div
                                     role="tablist"
                                     aria-label="Concern area"
-                                    className="grid w-full grid-cols-2 rounded-full border border-[#ead8d3] bg-[#faf7f5] p-1 sm:w-52"
+                                    className="grid w-36 grid-cols-2 self-end rounded-full border border-[#ead8d3] bg-[#faf7f5] p-0.5 sm:w-40"
                                 >
                                     {['face', 'body'].map((area) => (
                                         <button
@@ -375,7 +375,9 @@ export default function MatchMySkin() {
                                             role="tab"
                                             aria-selected={concernArea === area}
                                             onClick={() => handleConcernAreaSelect(area)}
-                                            className={`rounded-full px-4 py-1.5 font-lato text-xs font-semibold uppercase tracking-[0.12em] transition-all ${
+                                            style={{fontSize:'12px',fontWeight:'600'}}
+                                            className={`rounded-full px-2.5 py-[8px] font-lato text-[10px] 
+                                                font-semibold uppercase tracking-[0.1em] transition-all ${
                                                 concernArea === area
                                                     ? 'bg-[#d8e7e6] text-[#355d59] shadow-sm'
                                                     : 'text-gray-400 hover:text-gray-600'
