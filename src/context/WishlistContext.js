@@ -2,6 +2,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { triggerWishlistReminder } from "@/lib/push/wishlist-reminder";
 
 const WishlistContext = createContext(null);
 const STORAGE_KEY = "wishlist_products";
@@ -34,11 +35,13 @@ export function WishlistProvider({ children }) {
     }
 
     function toggleWishlist(product) {
+        const alreadySaved = wishlistItems.some((item) => item.product_uid === product.product_uid);
         setWishlistItems((current) =>
             current.some((item) => item.product_uid === product.product_uid)
                 ? current.filter((item) => item.product_uid !== product.product_uid)
                 : [...current, product]
         );
+        if (!alreadySaved) triggerWishlistReminder(product);
     }
 
     function removeFromWishlist(productUid) {
