@@ -358,9 +358,17 @@ function ProductsPageContent() {
     const initialCategories = searchParams.getAll('category')
         .map((category) => category.trim())
         .filter(Boolean)
+    const initialTypes = searchParams.getAll('type')
+        .map((type) => type.trim())
+        .filter(Boolean)
+    const initialBrands = searchParams.getAll('brand')
+        .map((brand) => brand.trim())
+        .filter(Boolean)
     const initialFilters = {
         ...emptyFilters,
         category: [...new Set(initialCategories)],
+        type: [...new Set(initialTypes)],
+        brand: [...new Set(initialBrands)],
     }
     const restoredState = rememberedProductListState?.routeStateKey === routeStateKey
         ? rememberedProductListState
@@ -549,7 +557,7 @@ function ProductsPageContent() {
                     <p className="py-8 text-center text-sm text-gray-500">No products found.</p>
                 ) : null}
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-3 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 mt-3 md:gap-6">
                     {products.map((product) => (
                         <ProductCard key={product.product_uid} product={product} />
                     ))}
@@ -595,6 +603,7 @@ function ProductsPageContent() {
                         </div>
                     </nav>
                 ) : null}
+
             </div>
         </div>
     )

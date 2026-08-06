@@ -3,7 +3,9 @@ import KnowBefore from '@/components/homeComponents/KnowBefore'
 import MatchMySkin from '@/components/homeComponents/MatchMySkin'
 import Products from '@/components/homeComponents/Products'
 import SearchByCategory from '@/components/homeComponents/SearchByCategory'
-// import SearchByBrands from '@/components/homeComponents/SearchByBrands'
+import SearchByProducts from '@/components/homeComponents/SearchByProducts'
+import SearchByBrands from '@/components/homeComponents/SearchByBrands'
+import IndianRockstar from '@/components/homeComponents/IndianRockstar.js'
 
 function page() {
   return (
@@ -12,7 +14,9 @@ function page() {
       <MatchMySkin />
       <Products />
       <SearchByCategory />
-      {/* <SearchByBrands /> */}
+      <SearchByProducts />
+      <SearchByBrands />
+      <IndianRockstar />
     </div>
   )
 }

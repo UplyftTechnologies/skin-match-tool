@@ -598,6 +598,11 @@ class TrackingService {
     return this.trackEvent(eventName, { page_type: 'page_view' });
   }
 
+  trackScroll(pageName) {
+    const eventName = `scrolled_${pageName.toLowerCase().replace(/\//g, '_').replace(/\s+/g, '_')}`;
+    return this.trackEvent(eventName, { page_type: 'page_scroll' });
+  }
+
   trackClick(actionName, properties = {}) {
     return this.trackEvent(`clicked_${actionName.toLowerCase().replace(/\s+/g, '_')}`, {
       event_type: 'click',

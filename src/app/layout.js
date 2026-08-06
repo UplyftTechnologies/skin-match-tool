@@ -3,6 +3,7 @@ import Script from "next/script";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { WishlistProvider } from "@/context/WishlistContext";
 import SiteExitTracker from "@/components/tracking/site-exit-tracker";
+import ScrollTracker from "@/components/tracking/scroll-tracker";
 import { Cormorant_Garamond, Lato } from 'next/font/google'
 
 export const metadata = {
@@ -85,6 +86,7 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${cormorant.variable} ${lato.variable}`}>
       <body suppressHydrationWarning>
         <SiteExitTracker />
+        <ScrollTracker />
         <WishlistProvider>
           {children}
         </WishlistProvider>

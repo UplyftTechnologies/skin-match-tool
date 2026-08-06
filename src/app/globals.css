@@ -32,6 +32,15 @@ body {
   font-family: "Arial", sans-serif;
 }
 
+html,
+body {
+  max-width: 100%;
+}
+
+html {
+  overflow-x: clip;
+}
+
 /* body {
   min-height: 100vh;
   margin: 0;
@@ -102,7 +111,8 @@ header p {
   line-height: 1.55;
 }
 
-main {
+main#matcher,
+main.guide-layout {
   display: grid;
   grid-template-columns: minmax(360px, 440px) minmax(0, 1fr);
   gap: 22px;
@@ -877,7 +887,8 @@ details.payload-details summary {
 }
 
 @media (max-width: 1180px) {
-  main {
+  main#matcher,
+  main.guide-layout {
     grid-template-columns: 1fr;
   }
 
@@ -896,7 +907,8 @@ details.payload-details summary {
     margin-top: 0px;
   }
 
-  main {
+  main#matcher,
+  main.guide-layout {
     padding-inline: 0px;
   }
 

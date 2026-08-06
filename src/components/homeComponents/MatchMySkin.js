@@ -263,7 +263,7 @@ export default function MatchMySkin() {
             <div className='bg-[#FFFFFF]'>
                 <div className="max-w-md mx-auto px-4 py-6 md:py-12 lg:max-w-6xl xl:max-w-7xl lg:px-8">
                     <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
-                        MATCH MY SKIN
+                        SKIN QUIZ
                     </h2>
 
                     <div className="mt-2 lg:mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 lg:gap-x-8 lg:gap-y-5">
@@ -366,7 +366,7 @@ export default function MatchMySkin() {
                                 <div
                                     role="tablist"
                                     aria-label="Concern area"
-                                    className="grid w-36 grid-cols-2 self-end rounded-full border border-[#ead8d3] bg-[#faf7f5] p-0.5 sm:w-40"
+                                    className="grid w-36 grid-cols-2 self-left rounded-full border border-[#ead8d3] bg-[#faf7f5] p-0.5 sm:w-40"
                                 >
                                     {['face', 'body'].map((area) => (
                                         <button
