@@ -58,14 +58,14 @@ export default function SearchByProducts() {
             <div className="max-w-6xl mx-auto mt-5 lg:mt-8">
                 <Swiper
                     modules={[FreeMode]}
-                    slidesPerView={2.4}
+                    slidesPerView="auto"
                     spaceBetween={16}
                     freeMode={true}
                     breakpoints={{
-                        480: { slidesPerView: 3, spaceBetween: 18 },
-                        768: { slidesPerView: 4, spaceBetween: 20 },
-                        1024: { slidesPerView: 5, spaceBetween: 28 },
-                        1280: { slidesPerView: 6, spaceBetween: 28 },
+                        480: { spaceBetween: 18 },
+                        768: { spaceBetween: 20 },
+                        1024: { spaceBetween: 28 },
+                        1280: { spaceBetween: 28 },
                     }}
                 >
                     {productTypes.map((product) => (

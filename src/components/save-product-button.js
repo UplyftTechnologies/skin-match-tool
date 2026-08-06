@@ -12,7 +12,7 @@ export default function SaveProductButton({ product, className, mobile = false }
   const wishlisted = isWishlisted(product.product_uid);
 
   function handleClick() {
-    toggleWishlist(product);
+    if (!toggleWishlist(product)) return;
     trackingService.trackEvent(
       wishlisted ? EVENTS.CLICKED_REMOVE_FROM_WISHLIST : EVENTS.CLICKED_ADD_TO_WISHLIST,
       {

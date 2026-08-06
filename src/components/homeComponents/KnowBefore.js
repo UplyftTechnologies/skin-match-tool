@@ -49,7 +49,7 @@ export default function KnowBefore() {
     <div>
       <AnnouncementBar />
 
-      <section className="bg-[#fffefa] px-3 pt-7 sm:pt-9">
+      <section className="bg-[#FAF9F6] px-3 pt-7 sm:pt-9">
         <div className="mx-auto max-w-7xl text-center">
           <h2 className="font-cormorant text-[25px] leading-none tracking-[0.17em] text-black sm:text-[34px] md:text-[42px]">
             Skin <em className="italic">match</em> tool

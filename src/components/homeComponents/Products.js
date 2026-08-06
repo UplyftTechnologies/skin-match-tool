@@ -118,7 +118,7 @@ function ProductCard({ product }) {
 
     function handleSaveMatch(event) {
         event.stopPropagation()
-        toggleWishlist(savedProduct)
+        if (!toggleWishlist(savedProduct)) return
         trackingService.trackEvent(
             wishlisted ? EVENTS.CLICKED_REMOVE_FROM_WISHLIST : EVENTS.CLICKED_ADD_TO_WISHLIST,
             {

@@ -58,13 +58,15 @@ export default function SearchByCategory() {
             <div className="max-w-6xl mx-auto mt-5 lg:mt-8">
                 <Swiper
                     modules={[FreeMode]}
-                    slidesPerView={2.4}
+                    slidesPerView="auto"
                     spaceBetween={16}
-                    freeMode={true}
+                    freeMode={{ enabled: true, momentumBounce: false }}
+                    touchStartPreventDefault={false}
+                    className="touch-pan-y"
                     breakpoints={{
-                        480: { slidesPerView: 3, spaceBetween: 18 },
-                        768: { slidesPerView: 4, spaceBetween: 20 },
-                        1024: { slidesPerView: 4, spaceBetween: 28 },
+                        480: { spaceBetween: 18 },
+                        768: { spaceBetween: 20 },
+                        1024: { spaceBetween: 28 },
                     }}
                 >
                     {categories.map((cat) => (
