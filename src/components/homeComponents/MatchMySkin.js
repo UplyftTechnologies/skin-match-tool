@@ -110,7 +110,8 @@ export default function MatchMySkin() {
     const trackOption = (question, value) => {
         trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
             question,
-            option: value,
+            answer: value,
+            value,
         })
     }
 
