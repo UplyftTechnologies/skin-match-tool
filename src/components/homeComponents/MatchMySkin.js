@@ -59,6 +59,7 @@ export default function MatchMySkin() {
     const [validationAttempted, setValidationAttempted] = useState(false)
     const [savingQuiz, setSavingQuiz] = useState(false)
     const [saveError, setSaveError] = useState('')
+    const [hasCompletedQuiz, setHasCompletedQuiz] = useState(false)
 
     const missingFields = [
         !skinType && { key: 'skin-type', label: 'Skin type' },
@@ -78,6 +79,7 @@ export default function MatchMySkin() {
                 const savedAnswers = JSON.parse(sessionStorage.getItem('roopsee-quiz-answers') || 'null')
                 if (!savedAnswers) return
 
+                setHasCompletedQuiz(true)
                 setSkinType(savedAnswers.skinType || null)
                 setSensitive(savedAnswers.sensitive || null)
                 const savedConcerns = Array.isArray(savedAnswers.concerns)
@@ -198,7 +200,7 @@ export default function MatchMySkin() {
         setSavingQuiz(true)
         setSaveError('')
 
-        trackingService.trackEvent(EVENTS.QUIZ_COMPLETED, {
+        trackingService.trackEvent(hasCompletedQuiz ? EVENTS.QUIZ_UPDATED : EVENTS.QUIZ_COMPLETED, {
             skin_type: skinType,
             sensitive,
             concern_area: concernArea,
@@ -207,6 +209,7 @@ export default function MatchMySkin() {
             age,
             gender,
         })
+        setHasCompletedQuiz(true)
 
         sessionStorage.setItem('roopsee-quiz-answers', JSON.stringify(answers))
         saveSkinProfile(resultProfile)

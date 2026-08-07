@@ -131,15 +131,31 @@ function ProductCard({ product }) {
         )
     }
 
+    function trackVisit() {
+        trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
+            productId: savedProduct.product_uid,
+            productName: savedProduct.product_name,
+            brand: savedProduct.brand_name,
+            price: savedProduct.selling_price || savedProduct.mrp,
+            score: product.score,
+            section: 'home_products',
+        })
+    }
+
+    function handleVisit() {
+        trackVisit()
+        router.push(productHref)
+    }
+
     return (
         <div
             role="link"
             tabIndex={0}
-            onClick={() => router.push(productHref)}
+            onClick={handleVisit}
             onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
-                    router.push(productHref)
+                    handleVisit()
                 }
             }}
             className="bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
@@ -165,7 +181,9 @@ function ProductCard({ product }) {
                     if (!nameExpanded) {
                         event.preventDefault()
                         setNameExpanded(true)
+                        return
                     }
+                    trackVisit()
                 }}
                 aria-expanded={nameExpanded}
                 title={nameExpanded ? undefined : 'Click to show full product name'}
