@@ -22,6 +22,8 @@ function LoginPageContent() {
 
   const avatarInputRef = useRef(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [avatarError, setAvatarError] = useState('')
   const [googleLoading, setGoogleLoading] = useState(false)
   const [googleError, setGoogleError] = useState('')
 
@@ -39,13 +41,54 @@ function LoginPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const MAX_AVATAR_BYTES = 5 * 1024 * 1024
+
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setAvatarError('Please choose an image file.')
+      return
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      setAvatarError('Image is larger than 5MB.')
+      return
+    }
+
+    setAvatarError('')
+    setAvatarFile(file)
     setAvatarPreview((prev) => {
       if (prev) URL.revokeObjectURL(prev)
       return URL.createObjectURL(file)
     })
+  }
+
+  const uploadAvatarIfNeeded = async () => {
+    if (!avatarFile) return
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) return
+
+      const body = new FormData()
+      body.append('file', avatarFile)
+
+      const response = await fetch('/api/auth/upload-avatar', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        body,
+      })
+
+      if (response.ok) {
+        // Pull the updated user_metadata.avatar_url into the client's cached session.
+        await supabase.auth.refreshSession()
+      } else {
+        console.error('[login] Avatar upload failed:', await response.json().catch(() => ({})))
+      }
+    } catch (err) {
+      console.error('[login] Avatar upload failed:', err)
+    }
   }
 
   const {
@@ -68,7 +111,10 @@ function LoginPageContent() {
     resetToPhoneStep,
   } = useOtpAuth({
     active: true,
-    onSuccess: () => router.push(redirectTo),
+    onSuccess: async () => {
+      await uploadAvatarIfNeeded()
+      router.push(redirectTo)
+    },
   })
 
   const handleGoogleLogin = async () => {
@@ -96,8 +142,8 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="relative min-h-[100svh] overflow-x-hidden bg-[#fffdfa] lg:grid lg:grid-cols-[minmax(340px,0.9fr)_minmax(500px,1.1fr)]">
-      <aside className="relative hidden overflow-hidden bg-[#171417] px-10 py-12 text-white lg:flex lg:min-h-screen lg:flex-col lg:justify-between xl:px-16 xl:py-16">
+    <div className="relative min-h-[100svh] overflow-x-hidden bg-[#fffdfa] md:grid md:grid-cols-[minmax(280px,0.85fr)_minmax(420px,1.15fr)] lg:grid-cols-[minmax(340px,0.9fr)_minmax(500px,1.1fr)]">
+      <aside className="relative hidden overflow-hidden bg-[#171417] px-6 py-8 text-white md:flex md:min-h-screen md:flex-col md:justify-between lg:px-10 lg:py-12 xl:px-16 xl:py-16">
         <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-[#b852a4]/30 blur-3xl" aria-hidden="true" />
         <div className="absolute -bottom-28 -right-24 h-96 w-96 rounded-full bg-[#90f5da]/15 blur-3xl" aria-hidden="true" />
 
@@ -109,7 +155,7 @@ function LoginPageContent() {
           <p className="font-lato text-[10px] font-bold uppercase tracking-[0.24em] text-[#90f5da]">
             Your skin, better understood
           </p>
-          <h2 className="mt-5 font-cormorant text-3xl font-medium leading-[0.98] tracking-[-0.035em] xl:text-4xl">
+          <h2 className="mt-5 font-cormorant text-2xl font-medium leading-[1.05] tracking-[-0.035em] lg:text-3xl lg:leading-[0.98] xl:text-4xl">
             Save your profile.<br />Find better <em className="font-normal">matches.</em>
           </h2>
           <p className="mt-6 max-w-md font-lato text-sm leading-7 text-white/60">
@@ -122,7 +168,7 @@ function LoginPageContent() {
         </div>
       </aside>
 
-      <div className="absolute left-3 top-3 z-10 sm:left-5 sm:top-5 lg:left-auto lg:right-6 lg:top-6">
+      <div className="absolute left-3 top-3 z-10 sm:left-5 sm:top-5 md:left-auto md:right-6 md:top-6">
         <button
           type="button"
           onClick={() => router.back()}
@@ -132,14 +178,14 @@ function LoginPageContent() {
           <FiArrowLeft size={20} />
         </button>
       </div>
-      <div className="flex min-h-[100svh] items-center justify-center px-3 py-16 sm:px-6 sm:py-20 lg:col-start-2 lg:row-start-1 lg:px-10 xl:px-16">
+      <div className="flex min-h-[100svh] items-center justify-center px-3 py-16 sm:px-6 sm:py-20 md:col-start-2 md:row-start-1 md:px-8 lg:px-10 xl:px-16">
 
-      <div className="relative w-full max-w-[430px] rounded-2xl border border-[#eee7e3] bg-white px-5 py-7 shadow-[0_18px_55px_rgba(62,45,57,0.08)] sm:px-9 sm:py-9 lg:border-0 lg:shadow-none">
+      <div className="relative w-full max-w-[430px] rounded-2xl border border-[#eee7e3] bg-white px-5 py-7 shadow-[0_18px_55px_rgba(62,45,57,0.08)] sm:px-9 sm:py-9 md:border-0 md:shadow-none">
 
 
         <h2
           style={{ letterSpacing: '0.15em' }}
-          className="text-center font-lato text-base font-semibold uppercase text-gray-900 sm:text-lg"
+          className="text-center font-lato text-sm font-semibold uppercase text-gray-900 sm:text-lg"
         >
           Create Profile
         </h2>
@@ -167,6 +213,9 @@ function LoginPageContent() {
           onChange={handleAvatarChange}
           className="hidden"
         />
+        {avatarError ? (
+          <p className="mt-2 text-center text-xs font-medium text-red-600" role="alert">{avatarError}</p>
+        ) : null}
 
         {error ? (
           <p className="mt-4 text-center text-xs font-medium text-red-600" role="alert">{error}</p>

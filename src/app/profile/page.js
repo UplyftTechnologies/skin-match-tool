@@ -3,43 +3,77 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { BiArrowBack, BiHeart } from "react-icons/bi";
+import { BiArrowBack, BiChevronRight, BiHeart, BiUser } from "react-icons/bi";
 import { HiPencil } from "react-icons/hi";
 import { IoExitOutline } from "react-icons/io5";
+import Serum from "@/assets/images/serum.png";
 import { supabase } from "@/lib/supabase/client";
 import { useWishlist } from "@/context/WishlistContext";
 import { getSavedSkinProfile } from "@/lib/profile-storage";
-import ProductCard from "@/components/ProductCard";
+import { scoredProductPath } from "@/lib/site";
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
 
 function ProfileRow({ label, value, isLast }) {
     return (
-        <div className={`flex items-start justify-between gap-4 py-4 ${!isLast ? "border-b border-gray-100" : ""}`}>
-            <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-                {label}
-            </span>
-            <span className="min-w-0 break-words text-right text-[15px] font-semibold text-gray-900">
-                {value}
-            </span>
+        <div className={`flex items-center justify-between gap-3 px-4 py-3.5 ${!isLast ? "border-b border-gray-100" : ""}`}>
+            <span className="text-[13px] text-gray-500">{label}</span>
+            <div className="flex items-center gap-1 min-w-0">
+                <span className="min-w-0 truncate text-[14px] font-semibold text-gray-900">{value}</span>
+                <BiChevronRight className="shrink-0 text-gray-300" size={18} />
+            </div>
         </div>
     );
 }
 
-function ConcernPill({ label }) {
+function WishlistCard({ product, onVisit, onRemove }) {
+    const price = product.selling_price || product.mrp;
+    const mrp = product.mrp;
+    const showMrp = mrp && Number(mrp) > Number(price);
+
     return (
-        <span className="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 text-[13px] font-semibold text-rose-600">
-            {label}
-        </span>
+        <div className="rounded-2xl border border-gray-100 bg-white p-3 flex flex-col items-center text-center">
+            <Link
+                href={scoredProductPath(product.product_uid, product.score)}
+                onClick={() => onVisit(product)}
+                className="flex flex-col items-center w-full"
+            >
+                <div className="relative w-full aspect-square mb-2">
+                    <Image
+                        src={product.image || Serum}
+                        alt={product.product_name || "Skincare product"}
+                        fill
+                        sizes="(max-width: 639px) 40vw, 25vw"
+                        className="object-contain"
+                    />
+                </div>
+                <p className="text-[12px] leading-snug text-gray-700 line-clamp-2">{product.product_name}</p>
+            </Link>
+            <div className="flex items-center gap-1.5 mt-1.5">
+                {showMrp ? <span className="text-[12px] text-gray-400 line-through">₹{mrp}</span> : null}
+                <span className="text-[12px] font-semibold text-gray-900">
+                    {price ? `₹${price}` : "Price unavailable"}
+                </span>
+            </div>
+            <button
+                type="button"
+                onClick={() => onRemove(product)}
+                className="mt-2 text-[11px] font-medium text-rose-500 hover:text-rose-600 hover:underline"
+            >
+                Remove from wishlist
+            </button>
+        </div>
     );
 }
 
 export default function ProfilePage() {
     const router = useRouter();
-    const { wishlistItems, hydrated, clearWishlist } = useWishlist();
+    const { wishlistItems, hydrated, clearWishlist, removeFromWishlist } = useWishlist();
     const [savedProfile, setSavedProfile] = useState(null);
     const [profileLoaded, setProfileLoaded] = useState(false);
+    const [userSession, setUserSession] = useState(null);
 
     useEffect(() => {
         const loadTimer = window.setTimeout(() => {
@@ -48,6 +82,12 @@ export default function ProfilePage() {
         }, 0);
 
         return () => window.clearTimeout(loadTimer);
+    }, []);
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setUserSession(session);
+        });
     }, []);
 
     useEffect(() => {
@@ -62,6 +102,14 @@ export default function ProfilePage() {
     }, [profileLoaded, savedProfile, wishlistItems.length]);
 
     const profile = savedProfile?.profile;
+    const avatarUrl = userSession?.user?.user_metadata?.avatar_url || null;
+
+    const loginMethod =
+        userSession?.user?.email ||
+        userSession?.user?.phone ||
+        userSession?.user?.user_metadata?.phone_no ||
+        userSession?.user?.user_metadata?.phone ||
+        "—";
 
     function handleVisit(product) {
         trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
@@ -69,6 +117,15 @@ export default function ProfilePage() {
             productName: product.product_name,
             section: "profile_wishlist",
         });
+    }
+
+    function handleRemove(product) {
+        trackingService.trackEvent(EVENTS.CLICKED_REMOVE_FROM_WISHLIST, {
+            productId: product.product_uid,
+            productName: product.product_name,
+            source: "profile_page",
+        });
+        removeFromWishlist(product.product_uid);
     }
 
     async function handleLogout() {
@@ -94,13 +151,13 @@ export default function ProfilePage() {
 
     return (
         <div className="min-h-screen bg-[#FAFAF8]">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 sm:py-10">
-                <div className="flex items-start justify-between">
+            <div className="max-w-lg mx-auto px-4 py-6">
+                <div className="flex items-center justify-between mb-4">
                     <button
                         type="button"
                         onClick={() => router.back()}
                         aria-label="Go back"
-                        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors mb- mt-2"
+                        className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
                     >
                         <BiArrowBack size={18} />
                         Back
@@ -109,7 +166,7 @@ export default function ProfilePage() {
                         type="button"
                         onClick={handleLogout}
                         aria-label="Logout"
-                        className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-1  
+                        className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-1
                          text-[13px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                         <IoExitOutline size={15} />
@@ -117,61 +174,58 @@ export default function ProfilePage() {
                     </button>
                 </div>
 
+                {/* <h2 className="text-center text-[15px] font-bold uppercase tracking-[0.15em] text-gray-900 mb-5">
+                    Your Profile
+                </h2> */}
 
-                {/* Skin profile card */}
+                <div className="flex flex-col items-center mb-5">
+                    <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-[#f6a189] to-[#e8735c] flex items-center justify-center shadow-sm">
+                        {avatarUrl ? (
+                            <Image src={avatarUrl} alt="Profile photo" fill sizes="96px" className="object-cover" />
+                        ) : (
+                            <BiUser className="text-white" size={48} />
+                        )}
+                    </div>
+                    <Link
+                        href="/#matcher"
+                        onClick={() => trackingService.trackEvent(EVENTS.CLICKED_EDIT_PROFILE, { source: "profile_page" })}
+                        className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-1.5
+                         text-[12px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                        <HiPencil size={13} />
+                        Edit Details
+                    </Link>
+                </div>
+
+                <div className="rounded-2xl border border-gray-100 bg-white mb-6">
+                    <ProfileRow label="Login Method" value={loginMethod} isLast />
+                </div>
+
                 {profileLoaded && profile ? (
-                    <div className="max-w-3xl mx-auto rounded-2xl mt-4 bg-white shadow-sm border border-gray-100 px-5 py-6 sm:px-7 sm:py-7">
-                        <div className="flex items-center justify-between mb-5">
-                            <h2 className="text-xl sm:text-[22px] font-bold text-gray-900" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
-                                Your Skin Profile
-                            </h2>
-                            <div className="flex items-center gap-2">
-                                <Link
-                                    href="/#matcher"
-                                    className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 px-4 py-2 text-[13px] font-semibold text-white hover:opacity-90 transition-opacity"
-                                    onClick={() =>
-                                        trackingService.trackEvent(EVENTS.CLICKED_EDIT_PROFILE, {
-                                            source: "profile_page",
-                                        })
-                                    }
-                                >
-                                    <HiPencil size={14} />
-                                    Edit
-                                </Link>
-
-
-                            </div>
-                        </div>
-
-                        <div>
-                            <ProfileRow label="Skin Type" value={profile.selectedSkinType || "—"} />
-                            <div className="flex items-center justify-between py-4 border-b border-gray-100">
-                                <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-                                    Concerns
-                                </span>
-                                <div className="flex flex-wrap gap-2 justify-end">
-                                    {(profile.selectedFaceBodyConcerns || []).length
-                                        ? profile.selectedFaceBodyConcerns.map((concern) => (
-                                            <ConcernPill key={concern} label={concern} />
-                                        ))
-                                        : <span className="text-[15px] font-semibold text-gray-900">—</span>}
-                                </div>
-                            </div>
+                    <>
+                        <h2 className="text-center text-[12px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-2">
+                            Skin Profile
+                        </h2>
+                        <div className="rounded-2xl border border-gray-100 bg-white mb-6">
+                            <ProfileRow label="skin type" value={profile.selectedSkinType || "—"} />
                             <ProfileRow
-                                label="Conditions"
-                                value={(profile.selectedSpecialConditions || []).join(", ") || "—"}
+                                label="skin concern"
+                                value={(profile.selectedFaceBodyConcerns || []).join(", ") || "—"}
                             />
-                            <ProfileRow label="Life Stage" value={profile.age || "—"} />
-                            <ProfileRow label="Gender" value={profile.selectedGender || "—"} />
+                            <ProfileRow label="age" value={profile.age || "—"} />
                             <ProfileRow
-                                label="Sensitivity"
+                                label="special concerns"
+                                value={(profile.selectedSpecialConditions || []).join(", ") || "None"}
+                            />
+                            <ProfileRow
+                                label="skin sensitivity"
                                 value={profile.selectedSensitive ? "Yes" : "No"}
                                 isLast
                             />
                         </div>
-                    </div>
+                    </>
                 ) : profileLoaded ? (
-                    <div className="max-w-3xl mx-auto rounded-2xl bg-white shadow-sm border border-gray-100 px-6 py-10 text-center">
+                    <div className="rounded-2xl bg-white border border-gray-100 px-6 py-8 text-center mb-6">
                         <p className="text-sm text-gray-500 mb-4">
                             You haven&apos;t taken the skin match quiz yet.
                         </p>
@@ -183,8 +237,7 @@ export default function ProfilePage() {
                         </Link>
                     </div>
                 ) : (
-                    <div className="max-w-3xl mx-auto rounded-2xl bg-white shadow-sm border border-gray-100 px-6 py-8">
-                        <div className="h-6 w-40 bg-gray-100 rounded animate-pulse mb-6" />
+                    <div className="rounded-2xl bg-white border border-gray-100 px-6 py-8 mb-6">
                         <div className="space-y-4">
                             {Array.from({ length: 5 }).map((_, i) => (
                                 <div key={i} className="h-4 bg-gray-100 rounded animate-pulse" />
@@ -193,50 +246,43 @@ export default function ProfilePage() {
                     </div>
                 )}
 
-                {/* Wishlist section below the profile card */}
-                <div className="profile-wishlist mt-8 sm:mt-10">
-                    <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                        <h2 className="text-lg font-semibold text-gray-900">Your Wishlist</h2>
-                        {hydrated && wishlistItems.length > 0 ? (
-                            <span className="text-sm text-gray-500 bg-white border border-gray-200 rounded-full px-3 py-1">
-                                {wishlistItems.length} {wishlistItems.length === 1 ? "item" : "items"}
-                            </span>
-                        ) : null}
-                    </div>
+                <h2 className="text-center text-[12px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-3">
+                    Your Wishlist
+                </h2>
 
-                    {!hydrated ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 mt-5 min-w-0">
-                            {Array.from({ length: 4 }).map((_, i) => (
-                                <div key={i} className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
-                                    <div className="aspect-square bg-gray-100 animate-pulse" />
-                                </div>
-                            ))}
-                        </div>
-                    ) : wishlistItems.length === 0 ? (
-                        <div className="mt-5 rounded-2xl bg-white border border-gray-100 px-6 py-8 text-center">
-                            <BiHeart className="mx-auto mb-3 text-rose-300" size={26} />
-                            <p className="text-sm text-gray-500 mb-4">
-                                Nothing saved yet — products you wishlist will appear here.
-                            </p>
-                            <Link
-                                href="/"
-                                className="inline-flex items-center justify-center rounded-full bg-gray-900 text-white text-sm font-medium px-5 py-2.5 hover:bg-gray-800 transition-colors"
-                            >
-                                Browse products
-                            </Link>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 mt-5">
-                            {wishlistItems.map((product) => (
-                                <ProductCard
-                                    key={product.product_uid}
-                                    product={product}
-                                    onVisit={handleVisit}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </div>
+                {!hydrated ? (
+                    <div className="grid grid-cols-2 gap-3">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
+                                <div className="aspect-square bg-gray-100 animate-pulse" />
+                            </div>
+                        ))}
+                    </div>
+                ) : wishlistItems.length === 0 ? (
+                    <div className="rounded-2xl bg-white border border-gray-100 px-6 py-8 text-center">
+                        <BiHeart className="mx-auto mb-3 text-rose-300" size={26} />
+                        <p className="text-sm text-gray-500 mb-4">
+                            Nothing saved yet — products you wishlist will appear here.
+                        </p>
+                        <Link
+                            href="/"
+                            className="inline-flex items-center justify-center rounded-full bg-gray-900 text-white text-sm font-medium px-5 py-2.5 hover:bg-gray-800 transition-colors"
+                        >
+                            Browse products
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                        {wishlistItems.map((product) => (
+                            <WishlistCard
+                                key={product.product_uid}
+                                product={product}
+                                onVisit={handleVisit}
+                                onRemove={handleRemove}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
