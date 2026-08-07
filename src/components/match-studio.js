@@ -8,7 +8,6 @@ import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { productPath, scoredProductPath } from "@/lib/site";
-import OtpModal from "@/components/auth/otp-modal";
 import { supabase } from "@/lib/supabase/client";
 import { BiHeart } from "react-icons/bi";
 import { BsHeartFill } from "react-icons/bs";
@@ -456,9 +455,8 @@ export default function MatchStudio({ initialData }) {
     setTouched((prev) => ({ ...prev, [field]: true }));
   }
 
-  // Auth & OTP Modal State
+  // Auth state
   const [userSession, setUserSession] = useState(null);
-  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -480,7 +478,6 @@ export default function MatchStudio({ initialData }) {
       if (session) {
         void claimGuestQuizResults(session);
         void claimGuestEventLogs(session);
-        setIsOtpModalOpen(false);
       }
     });
 
@@ -1165,19 +1162,6 @@ export default function MatchStudio({ initialData }) {
       </main>
 
       <ProductModal onClose={() => setModalProduct(null)} product={modalProduct} />
-      <OtpModal
-        isOpen={isOtpModalOpen}
-        onClose={() => setIsOtpModalOpen(false)}
-        onSuccess={(user) => {
-          setIsOtpModalOpen(false);
-          if (user) {
-            setUserSession({ user });
-          }
-          supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) setUserSession(session);
-          });
-        }}
-      />
     </>
   );
 }

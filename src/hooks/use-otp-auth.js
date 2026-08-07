@@ -230,12 +230,6 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, widgetId, tokenAuth])
 
-  useEffect(() => {
-    if (active) {
-      trackingService.trackEvent(EVENTS.LOGIN_POPUP_SHOWN)
-    }
-  }, [active])
-
   const handleSendOtp = async (e) => {
     e?.preventDefault()
     setError('')

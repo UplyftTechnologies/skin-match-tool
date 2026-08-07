@@ -122,7 +122,13 @@ export default function Header() {
           {sessionLoaded && !userSession && (
             <button
               type="button"
-              onClick={() => router.push(`/login?redirect=${encodeURIComponent(pathname || "/")}`)}
+              onClick={() => {
+                trackingService.trackEvent(EVENTS.CLICKED_LOGIN, {
+                  source: "header",
+                  path: pathname || "/",
+                });
+                router.push(`/login?redirect=${encodeURIComponent(pathname || "/")}`);
+              }}
               className="ml-1 flex h-9 items-center justify-center rounded-full border border-gray-300 px-3
               text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
             >

@@ -2,9 +2,12 @@
 
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import { FiUser, FiArrowLeft } from 'react-icons/fi'
+import { FcGoogle } from 'react-icons/fc'
+import { supabase } from '@/lib/supabase/client'
 import { useOtpAuth } from '@/hooks/use-otp-auth'
+import { trackingService } from '@/lib/tracking/trackingClient'
+import { EVENTS } from '@/lib/tracking/events'
 
 const benefits = [
   'Save Your Skin Profile',
@@ -19,12 +22,22 @@ function LoginPageContent() {
 
   const avatarInputRef = useRef(null)
   const [avatarPreview, setAvatarPreview] = useState(null)
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const [googleError, setGoogleError] = useState('')
 
   useEffect(() => {
     return () => {
       if (avatarPreview) URL.revokeObjectURL(avatarPreview)
     }
   }, [avatarPreview])
+
+  useEffect(() => {
+    trackingService.trackPageLoad(EVENTS.PAGE_VIEWED_LOGIN, {
+      page_type: 'login',
+      redirect_to: redirectTo,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0]
@@ -58,23 +71,47 @@ function LoginPageContent() {
     onSuccess: () => router.push(redirectTo),
   })
 
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true)
+    setGoogleError('')
+
+    const safeRedirect = redirectTo.startsWith('/') && !redirectTo.startsWith('//')
+      ? redirectTo
+      : '/'
+
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}${safeRedirect}`,
+        },
+      })
+
+      if (oauthError) throw oauthError
+    } catch (oauthError) {
+      console.error('Google sign-in failed:', oauthError)
+      setGoogleError('Google sign-in is temporarily unavailable. Please use your phone number or try again later.')
+      setGoogleLoading(false)
+    }
+  }
+
   return (
     <div className="relative min-h-[100svh] overflow-x-hidden bg-[#fffdfa] lg:grid lg:grid-cols-[minmax(340px,0.9fr)_minmax(500px,1.1fr)]">
       <aside className="relative hidden overflow-hidden bg-[#171417] px-10 py-12 text-white lg:flex lg:min-h-screen lg:flex-col lg:justify-between xl:px-16 xl:py-16">
         <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-[#b852a4]/30 blur-3xl" aria-hidden="true" />
         <div className="absolute -bottom-28 -right-24 h-96 w-96 rounded-full bg-[#90f5da]/15 blur-3xl" aria-hidden="true" />
 
-        <Link href="/" className="relative text-[30px] font-semibold leading-none tracking-[-0.04em]">
+        <a href="/" className="relative text-[30px] font-semibold leading-none tracking-[-0.04em]">
           roopsee<span className="text-[#ff00e6]">.</span>
-        </Link>
+        </a>
 
         <div className="relative max-w-lg">
           <p className="font-lato text-[10px] font-bold uppercase tracking-[0.24em] text-[#90f5da]">
             Your skin, better understood
           </p>
-          <h1 className="mt-5 font-cormorant text-3xl font-medium leading-[0.98] tracking-[-0.035em] xl:text-4xl">
+          <h2 className="mt-5 font-cormorant text-3xl font-medium leading-[0.98] tracking-[-0.035em] xl:text-4xl">
             Save your profile.<br />Find better <em className="font-normal">matches.</em>
-          </h1>
+          </h2>
           <p className="mt-6 max-w-md font-lato text-sm leading-7 text-white/60">
             Create a free profile to keep your personalised scores, wishlist and price-drop updates together.
           </p>
@@ -120,7 +157,7 @@ function LoginPageContent() {
             <FiUser className="h-8 w-8 sm:h-10 sm:w-10" />
           )}
           {/* <span className="absolute bottom-0 right-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-[#e08a7d] text-white">
-            <FiCamera size={12} />
+            <FiCamera size={12} /> 
           </span> */}
         </button>
         <input
@@ -224,8 +261,29 @@ function LoginPageContent() {
             </button>
           </form>
         )}
+{/* 
+        <div className="my-4 flex items-center gap-3 sm:my-5">
+          <span className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs uppercase tracking-widest text-gray-400">Or</span>
+          <span className="h-px flex-1 bg-gray-200" />
+        </div> */}
+{/* 
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={googleLoading}
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-wait disabled:opacity-60"
+        >
+          <FcGoogle size={18} />
+          {googleLoading ? 'Connecting to Google…' : 'Continue with Google'}
+        </button>
+        {googleError ? (
+          <p className="mt-3 text-center text-xs font-medium text-red-600" role="alert">
+            {googleError}
+          </p>
+        ) : null} */}
 
-        <div className="mt-7 grid grid-cols-3 divide-x divide-gray-300 text-center sm:mt-8">
+        <div className="mt-6 grid grid-cols-3 divide-x divide-gray-300 text-center sm:mt-7">
           {benefits.map((benefit) => (
             <p key={benefit} className="px-1.5 text-[9px] leading-tight text-gray-600 min-[360px]:px-2 min-[360px]:text-[10px] sm:text-[11px]">
               {benefit}
