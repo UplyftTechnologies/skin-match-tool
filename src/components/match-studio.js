@@ -229,6 +229,10 @@ function scoreBand(score) {
   return { label: "Poor", className: "poor" };
 }
 
+function displayScore(score) {
+  return Math.max(0, score);
+}
+
 function formatPrice(product) {
   const value = product.selling_price || product.mrp;
   return value ? `Rs. ${value}` : "Price unavailable";
@@ -296,7 +300,7 @@ function RoutineCard({ item, onOpen }) {
         <h4>{product.product_name}</h4>
         <p>{product.brand_name} · {product.product_type} · {product.when_to_use || "Routine"}</p>
       </div>
-      <div className={`routine-score score-${band.className}`}>{product.score}</div>
+      <div className={`routine-score score-${band.className}`}>{displayScore(product.score)}</div>
     </article>
   );
 }
@@ -364,7 +368,7 @@ function ProductModal({ product, onClose }) {
               <button aria-label="Close product details" className="close-button" onClick={onClose} type="button">×</button>
             </div>
             <div className="detail-grid">
-              <div className="detail-box"><span>Score</span><strong className={`score-${band.className}`}>{product.score} · {band.label}</strong></div>
+              <div className="detail-box"><span>Score</span><strong className={`score-${band.className}`}>{displayScore(product.score)} · {band.label}</strong></div>
               <div className="detail-box"><span>Price</span><strong>{formatPrice(product)}</strong></div>
               <div className="detail-box"><span>Size</span><strong>{product.size || "Unavailable"}</strong></div>
               <div className="detail-box"><span>Use</span><strong>{product.when_to_use || "Routine"}</strong></div>

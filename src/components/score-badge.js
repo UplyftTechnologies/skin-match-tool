@@ -1,5 +1,5 @@
 export default function ScoreBadge({ score }) {
-    const value = Number.isFinite(Number(score)) ? Math.round(Number(score)) : 0
+    const value = Number.isFinite(Number(score)) ? Math.max(0, Math.round(Number(score))) : 0
 
    
     const band =

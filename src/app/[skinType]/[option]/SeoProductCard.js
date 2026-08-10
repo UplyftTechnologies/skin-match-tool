@@ -25,7 +25,7 @@ export default function SeoProductCard({ product, section }) {
       <div className="product-image-wrap">
         {product.image ? <img alt={product.product_name} loading="lazy" src={product.image} /> : <div className="image-fallback">R</div>}
         <div className={`score-badge ${product.score >= 80 ? "score-good" : product.score >= 60 ? "score-present" : "score-weak"}`}>
-          <div>{product.score}<small>Match</small></div>
+          <div>{Math.max(0, product.score)}<small>Match</small></div>
         </div>
       </div>
       <div className="product-body">
