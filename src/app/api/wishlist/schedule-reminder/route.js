@@ -2,7 +2,7 @@ import { supabaseAdmin, supabaseAuth } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-const REMINDER_DELAY_MS = 1 * 60 * 1000;
+const REMINDER_DELAY_MS = 5 * 60 * 1000;
 const UNIQUE_VIOLATION = "23505";
 
 // A pending reminder blocks any new one for that visitor, so if the sweeper
