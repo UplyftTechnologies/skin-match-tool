@@ -283,7 +283,7 @@ class TrackingService {
         visitorId: this.getVisitorId(),
         sessionId: this.getSessionId(),
         timestamp: new Date().toISOString(),
-        url: window.location.href,
+        url: this.getSafeUrl(),
         enrich_failed: true,
       };
     }
@@ -464,6 +464,18 @@ class TrackingService {
   // HELPER FUNCTIONS
   // ==========================================
 
+  // Drops the URL hash before it goes anywhere (Telegram, Supabase,
+  // analytics). Supabase's OAuth redirect (e.g. /auth/callback) puts
+  // access_token/refresh_token in the hash — window.location.href would
+  // leak them straight into event logs otherwise.
+  getSafeUrl() {
+    try {
+      return `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    } catch {
+      return '';
+    }
+  }
+
   enrichProperties(properties, location = {}) {
     const userId = properties.userId || this.getUserId();
     const userName = properties.userName || this.getUserName();
@@ -491,8 +503,8 @@ class TrackingService {
       timestamp: new Date().toISOString(),
       time_ist: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
 
-      url: window.location.href,
-      page: window.location.href,
+      url: this.getSafeUrl(),
+      page: this.getSafeUrl(),
       user_agent: navigator.userAgent,
       referrer: document.referrer,
       screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
