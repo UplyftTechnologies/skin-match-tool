@@ -126,10 +126,12 @@ function LoginPageContent() {
       : '/'
 
     try {
+      trackingService.trackEvent(EVENTS.CLICKED_LOGIN, { method: 'google' })
+
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}${safeRedirect}`,
+          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(safeRedirect)}`,
         },
       })
 
@@ -310,13 +312,12 @@ function LoginPageContent() {
             </button>
           </form>
         )}
-{/* 
         <div className="my-4 flex items-center gap-3 sm:my-5">
           <span className="h-px flex-1 bg-gray-200" />
           <span className="text-xs uppercase tracking-widest text-gray-400">Or</span>
           <span className="h-px flex-1 bg-gray-200" />
-        </div> */}
-{/* 
+        </div>
+
         <button
           type="button"
           onClick={handleGoogleLogin}
@@ -330,7 +331,7 @@ function LoginPageContent() {
           <p className="mt-3 text-center text-xs font-medium text-red-600" role="alert">
             {googleError}
           </p>
-        ) : null} */}
+        ) : null}
 
         <div className="mt-6 grid grid-cols-3 divide-x divide-gray-300 text-center sm:mt-7">
           {benefits.map((benefit) => (

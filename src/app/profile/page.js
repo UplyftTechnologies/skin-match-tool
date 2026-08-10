@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { BiArrowBack, BiChevronRight, BiHeart, BiUser } from "react-icons/bi";
+import { FcGoogle } from "react-icons/fc";
 import { HiPencil } from "react-icons/hi";
 import { IoExitOutline } from "react-icons/io5";
 import Serum from "@/assets/images/serum.png";
@@ -74,6 +75,8 @@ export default function ProfilePage() {
     const [savedProfile, setSavedProfile] = useState(null);
     const [profileLoaded, setProfileLoaded] = useState(false);
     const [userSession, setUserSession] = useState(null);
+    const [linkingGoogle, setLinkingGoogle] = useState(false);
+    const [linkGoogleError, setLinkGoogleError] = useState("");
 
     useEffect(() => {
         const loadTimer = window.setTimeout(() => {
@@ -103,6 +106,7 @@ export default function ProfilePage() {
 
     const profile = savedProfile?.profile;
     const avatarUrl = userSession?.user?.user_metadata?.avatar_url || null;
+    const googleLinked = userSession?.user?.identities?.some((identity) => identity.provider === "google") || false;
 
     const loginMethod =
         userSession?.user?.email ||
@@ -117,6 +121,28 @@ export default function ProfilePage() {
             productName: product.product_name,
             section: "profile_wishlist",
         });
+    }
+
+    async function handleLinkGoogle() {
+        setLinkingGoogle(true);
+        setLinkGoogleError("");
+        trackingService.trackEvent(EVENTS.CLICKED_LOGIN, {
+            method: "google",
+            action: "link_account",
+            source: "profile_page",
+        });
+
+        try {
+            const { error } = await supabase.auth.linkIdentity({
+                provider: "google",
+                options: { redirectTo: `${window.location.origin}/profile` },
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.error("[profile] Google account link failed:", error);
+            setLinkGoogleError("Could not link your Google account. Please try again.");
+            setLinkingGoogle(false);
+        }
     }
 
     function handleRemove(product) {
@@ -197,8 +223,30 @@ export default function ProfilePage() {
                     </Link>
                 </div>
 
-                <div className="rounded-2xl border border-gray-100 bg-white mb-6">
+                <div className="rounded-2xl border border-gray-100 bg-white mb-3">
                     <ProfileRow label="Login Method" value={loginMethod} isLast />
+                </div>
+
+                <div className="mb-6">
+                    {googleLinked ? (
+                        <div className="flex items-center gap-2 rounded-2xl border border-gray-100 bg-white px-4 py-3 text-[13px] font-semibold text-gray-700">
+                            <FcGoogle size={16} />
+                            Google account linked
+                        </div>
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handleLinkGoogle}
+                            disabled={linkingGoogle}
+                            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-gray-100 bg-white px-4 py-3 text-[13px] font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:cursor-wait disabled:opacity-60"
+                        >
+                            <FcGoogle size={16} />
+                            {linkingGoogle ? "Linking Google…" : "Link Google Account"}
+                        </button>
+                    )}
+                    {linkGoogleError ? (
+                        <p className="mt-2 text-center text-xs font-medium text-red-600" role="alert">{linkGoogleError}</p>
+                    ) : null}
                 </div>
 
                 {profileLoaded && profile ? (
