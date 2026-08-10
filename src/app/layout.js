@@ -7,6 +7,11 @@ import ScrollTracker from "@/components/tracking/scroll-tracker";
 import QuizRehydrator from "@/components/tracking/quiz-rehydrator";
 import { Cormorant_Garamond, Lato } from 'next/font/google'
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
