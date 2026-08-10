@@ -4,6 +4,7 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { WishlistProvider } from "@/context/WishlistContext";
 import SiteExitTracker from "@/components/tracking/site-exit-tracker";
 import ScrollTracker from "@/components/tracking/scroll-tracker";
+import QuizRehydrator from "@/components/tracking/quiz-rehydrator";
 import { Cormorant_Garamond, Lato } from 'next/font/google'
 
 export const metadata = {
@@ -87,6 +88,7 @@ export default function RootLayout({ children }) {
       <body suppressHydrationWarning>
         <SiteExitTracker />
         <ScrollTracker />
+        <QuizRehydrator />
         <WishlistProvider>
           {children}
         </WishlistProvider>

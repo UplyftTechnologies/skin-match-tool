@@ -119,12 +119,19 @@ function AuthCallbackContent() {
   const [pendingProfile, setPendingProfile] = useState(null)
 
   useEffect(() => {
+    const redirectTo = sanitizeRedirect(searchParams.get('redirect'))
+
     if (oauthError) {
       console.error('[auth/callback] OAuth provider returned an error:', oauthError)
+      // /profile's "Link Google Account" started this — bounce back there
+      // with the error so it renders inline instead of stranding the user
+      // on a standalone error screen with nowhere obvious to go.
+      if (redirectTo === '/profile') {
+        router.replace(`${redirectTo}?googleError=${encodeURIComponent(oauthError)}`)
+      }
       return
     }
 
-    const redirectTo = sanitizeRedirect(searchParams.get('redirect'))
     let cancelled = false
 
     const finish = async () => {

@@ -18,21 +18,38 @@ export function WishlistProvider({ children }) {
     useEffect(() => {
         let active = true;
 
-        const applySession = (session) => {
+        const applySession = async (session) => {
             if (!active) return;
             setUserSession(session);
 
             if (!session) {
                 localStorage.removeItem(STORAGE_KEY);
                 setWishlistItems([]);
-            } else {
-                try {
-                    setWishlistItems(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
-                } catch {
-                    setWishlistItems([]);
-                }
+                setHydrated(true);
+                return;
             }
-            setHydrated(true);
+
+            // Local storage paints instantly while the DB fetch (source of
+            // truth, so wishlist survives logout/login) is in flight.
+            try {
+                setWishlistItems(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
+            } catch {
+                setWishlistItems([]);
+            }
+
+            try {
+                const response = await fetch("/api/wishlist", {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (active && response.ok && Array.isArray(payload.products)) {
+                    setWishlistItems(payload.products);
+                }
+            } catch (error) {
+                console.warn("[wishlist] Failed to fetch saved wishlist:", error);
+            } finally {
+                if (active) setHydrated(true);
+            }
         };
 
         supabase.auth.getSession().then(({ data: { session } }) => applySession(session));
@@ -58,6 +75,21 @@ export function WishlistProvider({ children }) {
         return wishlistIds.includes(productUid);
     }
 
+    function syncToServer(productUid, isAdding) {
+        if (!userSession?.access_token) return;
+
+        fetch("/api/wishlist", {
+            method: isAdding ? "POST" : "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${userSession.access_token}`,
+            },
+            body: JSON.stringify({ productUid }),
+        }).catch((error) => {
+            console.warn("[wishlist] Failed to sync change to server:", error);
+        });
+    }
+
     function toggleWishlist(product) {
         if (!userSession) {
             const redirect = pathname && pathname !== "/login" ? pathname : "/";
@@ -65,16 +97,19 @@ export function WishlistProvider({ children }) {
             return false;
         }
 
+        const isAdding = !wishlistIds.includes(product.product_uid);
         setWishlistItems((current) =>
             current.some((item) => item.product_uid === product.product_uid)
                 ? current.filter((item) => item.product_uid !== product.product_uid)
                 : [...current, product]
         );
+        syncToServer(product.product_uid, isAdding);
         return true;
     }
 
     function removeFromWishlist(productUid) {
         setWishlistItems((current) => current.filter((item) => item.product_uid !== productUid));
+        syncToServer(productUid, false);
     }
     function clearWishlist() {
         setWishlistItems([]);

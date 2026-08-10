@@ -76,7 +76,14 @@ export default function ProfilePage() {
     const [profileLoaded, setProfileLoaded] = useState(false);
     const [userSession, setUserSession] = useState(null);
     const [linkingGoogle, setLinkingGoogle] = useState(false);
-    const [linkGoogleError, setLinkGoogleError] = useState("");
+    const [linkGoogleError, setLinkGoogleError] = useState(() => {
+        if (typeof window === "undefined") return "";
+        const googleError = new URLSearchParams(window.location.search).get("googleError");
+        if (!googleError) return "";
+        return googleError.toLowerCase().includes("already linked")
+            ? "This Google account is already linked to another account."
+            : "Could not link your Google account. Please try again.";
+    });
 
     useEffect(() => {
         const loadTimer = window.setTimeout(() => {
@@ -92,6 +99,11 @@ export default function ProfilePage() {
             setUserSession(session);
         });
     }, []);
+
+    useEffect(() => {
+        if (!window.location.search.includes("googleError")) return;
+        router.replace("/profile");
+    }, [router]);
 
     useEffect(() => {
         if (!profileLoaded) return;
@@ -135,7 +147,7 @@ export default function ProfilePage() {
         try {
             const { error } = await supabase.auth.linkIdentity({
                 provider: "google",
-                options: { redirectTo: `${window.location.origin}/profile` },
+                options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent("/profile")}` },
             });
             if (error) throw error;
         } catch (error) {

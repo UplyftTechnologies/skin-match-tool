@@ -21,12 +21,26 @@ const EVENT_CHAT_ID = process.env.TELEGRAM_EVENT_CHAT_ID;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
+// Third group — quiz/OTP/login reports
+const REPORTS_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN_REPORTS;
+const REPORTS_CHAT_ID = process.env.TELEGRAM_CHAT_ID_REPORTS;
+
 // Events that should also be shared in the second Telegram group
 const SECOND_GROUP_EVENTS = new Set([
   'login_successful',
   'existing_user_login',
   'clicked_send_otp',
   'clicked_resend_otp',
+]);
+
+const REPORTS_GROUP_EVENTS = new Set([
+  'quiz_completed',
+  'quiz_updated',
+  'clicked_send_otp',
+  'clicked_resend_otp',
+  'otp_verified',
+  'login_successful',
+  'existing_user_login',
 ]);
 
 // ─── Save event in Supabase ────────────────────────────────────────────────
@@ -151,6 +165,15 @@ const telegramSecondGroupRequest = (path, payload) =>
     path,
     payload,
     groupName: 'Telegram login group',
+  });
+
+const telegramReportsRequest = (path, payload) =>
+  telegramRequest({
+    botToken: REPORTS_BOT_TOKEN,
+    chatId: REPORTS_CHAT_ID,
+    path,
+    payload,
+    groupName: 'Telegram reports group',
   });
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -345,6 +368,9 @@ export const sendWebsiteVisitorEvent = async ({
     // Every event goes to the main event group
     telegramEventRequest('sendMessage', { text }),
   ];
+  if (REPORTS_GROUP_EVENTS.has(normalizedEventName)) {
+    requests.push(telegramReportsRequest('sendMessage', { text }));
+  }
 
   // Only these events also go to the second Telegram group
   if (SECOND_GROUP_EVENTS.has(normalizedEventName)) {

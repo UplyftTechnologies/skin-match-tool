@@ -55,3 +55,52 @@ export function quizAnswersToResultProfile(answers) {
         selectedFaceBodyConcerns: mappedConcerns(answers, true),
     }
 }
+
+const reverseConcernLabels = Object.fromEntries(
+    Object.entries(concernLabels).map(([key, label]) => [label, key]),
+)
+const reverseConditionLabels = Object.fromEntries(
+    Object.entries(conditionLabels).map(([key, label]) => [label, key]),
+)
+const genderOptionsByKey = {
+    female: 'Female',
+    male: 'Male',
+    other: 'Other',
+    'prefer not to say': 'Prefer not to say',
+}
+const skinTypeOptionsByKey = {
+    oily: 'Oily',
+    dry: 'Dry',
+    normal: 'Normal',
+    combination: 'Combination',
+}
+const conditionOptionsByKey = {
+    pregnancy: 'Pregnancy',
+    'breast feeding': 'Breast feeding',
+    'excessive dryness': 'Excessive dryness',
+    none: 'None',
+}
+const BODY_ONLY_CONCERN_KEY = 'body acne'
+
+// Best-effort inverse of quizAnswersToResultProfile — the DB only stores the
+// normalized scoring profile, not the exact quiz-widget answer shape, so a
+// couple of fields (concern area, exact pill casing) are reconstructed
+// rather than round-tripped byte-for-byte.
+export function resultProfileToQuizAnswers(profile) {
+    if (!profile) return null
+
+    const storedConcern = (profile.selectedFaceBodyConcerns || [])
+        .find((label) => normalizedLabel(label) !== 'none')
+    const concern = storedConcern ? (reverseConcernLabels[storedConcern] || storedConcern) : ''
+
+    return {
+        skinType: skinTypeOptionsByKey[normalizedLabel(profile.selectedSkinType)] || profile.selectedSkinType || '',
+        sensitive: profile.selectedSensitive === true ? 'Yes' : profile.selectedSensitive === false ? 'No' : '',
+        concernArea: normalizedLabel(concern) === BODY_ONLY_CONCERN_KEY ? 'body' : 'face',
+        concerns: concern ? [concern] : [],
+        conditions: (profile.selectedSpecialConditions || [])
+            .map((label) => conditionOptionsByKey[normalizedLabel(reverseConditionLabels[label] || label)] || label),
+        age: profile.age || '',
+        gender: genderOptionsByKey[normalizedLabel(profile.selectedGender)] || profile.selectedGender || '',
+    }
+}

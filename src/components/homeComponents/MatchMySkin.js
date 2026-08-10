@@ -74,37 +74,50 @@ export default function MatchMySkin() {
         && missingFields.some((field) => field.key === key)
 
     useEffect(() => {
+        const applySavedAnswers = (savedAnswers) => {
+            if (!savedAnswers) return
+
+            setHasCompletedQuiz(true)
+            setSkinType(savedAnswers.skinType || null)
+            setSensitive(savedAnswers.sensitive || null)
+            const savedConcerns = Array.isArray(savedAnswers.concerns)
+                ? savedAnswers.concerns
+                : savedAnswers.concern
+                    ? [savedAnswers.concern]
+                    : []
+            setConcernArea(savedAnswers.concernArea || (savedConcerns.includes('Body acne') ? 'body' : 'face'))
+            setSelectedConcerns(savedConcerns.slice(0, 1))
+            const savedGender = savedAnswers.gender || ''
+            const savedConditions = Array.isArray(savedAnswers.conditions)
+                ? savedAnswers.conditions
+                : []
+            setConditions(
+                savedGender === 'Male'
+                    ? savedConditions.filter((item) => !maleRestrictedConditions.includes(item))
+                    : savedConditions,
+            )
+            setAge(savedAnswers.age || '')
+            setGender(savedGender)
+        }
+
         const timer = setTimeout(() => {
             try {
-                const savedAnswers = JSON.parse(sessionStorage.getItem('roopsee-quiz-answers') || 'null')
-                if (!savedAnswers) return
-
-                setHasCompletedQuiz(true)
-                setSkinType(savedAnswers.skinType || null)
-                setSensitive(savedAnswers.sensitive || null)
-                const savedConcerns = Array.isArray(savedAnswers.concerns)
-                    ? savedAnswers.concerns
-                    : savedAnswers.concern
-                        ? [savedAnswers.concern]
-                        : []
-                setConcernArea(savedAnswers.concernArea || (savedConcerns.includes('Body acne') ? 'body' : 'face'))
-                setSelectedConcerns(savedConcerns.slice(0, 1))
-                const savedGender = savedAnswers.gender || ''
-                const savedConditions = Array.isArray(savedAnswers.conditions)
-                    ? savedAnswers.conditions
-                    : []
-                setConditions(
-                    savedGender === 'Male'
-                        ? savedConditions.filter((item) => !maleRestrictedConditions.includes(item))
-                        : savedConditions,
-                )
-                setAge(savedAnswers.age || '')
-                setGender(savedGender)
+                applySavedAnswers(JSON.parse(sessionStorage.getItem('roopsee-quiz-answers') || 'null'))
             } catch {
                 sessionStorage.removeItem('roopsee-quiz-answers')
             }
         }, 0)
-        return () => clearTimeout(timer)
+
+        // Picks up answers restored from the DB after login, which lands
+        // asynchronously (see QuizRehydrator) — this mount effect alone can
+        // run before that fetch resolves.
+        const onAnswersUpdated = (event) => applySavedAnswers(event.detail)
+        window.addEventListener('roopsee-quiz-answers-updated', onAnswersUpdated)
+
+        return () => {
+            clearTimeout(timer)
+            window.removeEventListener('roopsee-quiz-answers-updated', onAnswersUpdated)
+        }
     }, [])
 
     const trackOption = (question, value) => {
@@ -209,6 +222,15 @@ export default function MatchMySkin() {
             conditions,
             age,
             gender,
+            quizAnswerSummary: [
+                skinType,
+                sensitive ? `Sensitive: ${sensitive}` : null,
+                concernArea,
+                ...selectedConcerns,
+                ...conditions,
+                age,
+                gender,
+            ].filter(Boolean).join(' | '),
         })
         setHasCompletedQuiz(true)
 
