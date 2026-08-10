@@ -2,9 +2,14 @@ import { supabaseAdmin, supabaseAuth } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-// TESTING: 1 minute instead of 15 — revert before shipping.
 const REMINDER_DELAY_MS = 1 * 60 * 1000;
 const UNIQUE_VIOLATION = "23505";
+
+// A pending reminder blocks any new one for that visitor, so if the sweeper
+// stops running the stale row would mute that visitor permanently. Anything
+// still pending well past its send time is treated as dead and stood down so
+// the next wishlist add can schedule again.
+const STALE_PENDING_MS = 24 * 60 * 60 * 1000;
 
 function cleanIdentity(value) {
   if (typeof value !== "string") return "";
@@ -49,14 +54,26 @@ export async function POST(request) {
   try {
     const { data: pending, error: lookupError } = await supabaseAdmin
       .from("wishlist_reminders")
-      .select("id")
+      .select("id, send_at")
       .eq("visitor_id", visitorId)
       .eq("status", "pending")
-      .maybeSingle();
+      .order("send_at", { ascending: false })
+      .limit(1);
 
     if (lookupError) throw lookupError;
-    if (pending) {
-      return Response.json({ ok: true, alreadyScheduled: true });
+
+    const existing = pending?.[0];
+    if (existing) {
+      const overdueBy = Date.now() - new Date(existing.send_at).getTime();
+      if (overdueBy < STALE_PENDING_MS) {
+        return Response.json({ ok: true, alreadyScheduled: true });
+      }
+
+      // Stand the dead row down so this visitor isn't muted forever.
+      await supabaseAdmin
+        .from("wishlist_reminders")
+        .update({ status: "failed", failure_reason: "expired_unsent" })
+        .eq("id", existing.id);
     }
 
     const sendAt = new Date(Date.now() + REMINDER_DELAY_MS).toISOString();

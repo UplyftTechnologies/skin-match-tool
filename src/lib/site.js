@@ -1,5 +1,5 @@
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || "https://mymatches.roopsee.com"
+  process.env.NEXT_PUBLIC_SITE_URL || "https://matchmyskin.roopsee.com"
 ).replace(/\/$/, "");
 
 export const SITE_NAME = "Match My Skin";

@@ -4,12 +4,19 @@ name: Wishlist reminder cron
 # waiting" push notification to anyone whose 15-minute wishlist reminder is
 # due. Requires two repo secrets (Settings > Secrets and variables >
 # Actions):
-#   SITE_URL     e.g. https://mymatches.roopsee.com
+#   SITE_URL     e.g. https://matchmyskin.roopsee.com
 #   CRON_SECRET  must match the CRON_SECRET env var set on the deployment
 on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch: {}
+
+# GitHub's scheduler is best-effort and runs are often delayed, so two of them
+# can land close together. Serialise to stop overlapping sweeps picking up the
+# same due rows twice.
+concurrency:
+  group: wishlist-reminder-cron
+  cancel-in-progress: false
 
 jobs:
   send-reminders:
