@@ -1,13 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiSearch } from 'react-icons/fi'
 import Serum from '@/assets/images/serum.png'
-import OtpModal from '@/components/auth/otp-modal'
-import { supabase } from '@/lib/supabase/client'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
@@ -120,7 +118,7 @@ function ProductCard({ product }) {
 
     function handleSaveMatch(event) {
         event.stopPropagation()
-        toggleWishlist(savedProduct)
+        if (!toggleWishlist(savedProduct)) return
         trackingService.trackEvent(
             wishlisted ? EVENTS.CLICKED_REMOVE_FROM_WISHLIST : EVENTS.CLICKED_ADD_TO_WISHLIST,
             {
@@ -133,15 +131,31 @@ function ProductCard({ product }) {
         )
     }
 
+    function trackVisit() {
+        trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
+            productId: savedProduct.product_uid,
+            productName: savedProduct.product_name,
+            brand: savedProduct.brand_name,
+            price: savedProduct.selling_price || savedProduct.mrp,
+            score: product.score,
+            section: 'home_products',
+        })
+    }
+
+    function handleVisit() {
+        trackVisit()
+        router.push(productHref)
+    }
+
     return (
         <div
             role="link"
             tabIndex={0}
-            onClick={() => router.push(productHref)}
+            onClick={handleVisit}
             onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
-                    router.push(productHref)
+                    handleVisit()
                 }
             }}
             className="bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
@@ -167,7 +181,9 @@ function ProductCard({ product }) {
                     if (!nameExpanded) {
                         event.preventDefault()
                         setNameExpanded(true)
+                        return
                     }
+                    trackVisit()
                 }}
                 aria-expanded={nameExpanded}
                 title={nameExpanded ? undefined : 'Click to show full product name'}
@@ -205,60 +221,20 @@ function ProductCard({ product }) {
 }
 
 
-export const REQUEST_LOGIN_EVENT = 'roopsee-request-login'
-
 export default function Products() {
     const [activeView, setActiveView] = useState('products')
     const [search, setSearch] = useState('')
-    const [isLoginOpen, setIsLoginOpen] = useState(false)
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
     const { products, routine, loading, error, quizAnswers } = useScoredProducts()
     const router = useRouter()
 
-    const handleViewAll = async () => {
+    const handleViewAll = () => {
         trackingService.trackEvent('clicked_view_all_products', {
             source: 'home_products',
             view: activeView,
-            authenticated: isAuthenticated,
         })
 
-        const { data: { session } } = await supabase.auth.getSession()
-
-        if (session) {
-            router.push('/AllProducts')
-            return
-        }
-
-        setIsLoginOpen(true)
+        router.push('/AllProducts')
     }
-
-    useEffect(() => {
-        let isMounted = true
-
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (isMounted) setIsAuthenticated(Boolean(session))
-        })
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setIsAuthenticated(Boolean(session))
-        })
-
-        return () => {
-            isMounted = false
-            subscription.unsubscribe()
-        }
-    }, [])
-
-    useEffect(() => {
-        const showLoginForGuest = async () => {
-            const { data: { session } } = await supabase.auth.getSession()
-            if (!session) setIsLoginOpen(true)
-        }
-
-        window.addEventListener(REQUEST_LOGIN_EVENT, showLoginForGuest)
-        return () => window.removeEventListener(REQUEST_LOGIN_EVENT, showLoginForGuest)
-    }, [])
-
 
     const visibleProducts = useMemo(() => {
         const query = search.trim().toLowerCase()
@@ -459,18 +435,9 @@ export default function Products() {
                      capitalize text-[#ff7e67] border border-[#e08a7d] rounded-[10px] py-2
                       hover:bg-[#d17a6d] hover:text-white transition-colors duration-300"
                 >
-                    {isAuthenticated ? 'View all' : 'Login to View all'}
+                    View all
                 </button>
             </div>
-
-            <OtpModal
-                isOpen={isLoginOpen}
-                onClose={() => setIsLoginOpen(false)}
-                onSuccess={() => {
-                    setIsLoginOpen(false)
-                    router.push('/AllProducts')
-                }}
-            />
         </div>
     )
 }

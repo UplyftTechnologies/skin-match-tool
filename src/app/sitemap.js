@@ -1,5 +1,5 @@
 import { loadProducts } from "@/lib/data";
-import { SKIN_GUIDES } from "@/lib/seo-pages";
+import { SKIN_GUIDES, SKIN_TYPE_OPTION_PAGES } from "@/lib/seo-pages";
 import { absoluteUrl, productPath } from "@/lib/site";
 
 export default function sitemap() {
@@ -13,6 +13,12 @@ export default function sitemap() {
     },
     ...SKIN_GUIDES.map((guide) => ({
       url: absoluteUrl(`/skincare-for/${guide.slug}`),
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    })),
+    ...SKIN_TYPE_OPTION_PAGES.map(({ skinType, option }) => ({
+      url: absoluteUrl(`/${skinType}/${option}`),
       lastModified,
       changeFrequency: "monthly",
       priority: 0.8,

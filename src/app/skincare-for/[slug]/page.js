@@ -127,7 +127,7 @@ export default async function SkinGuidePage({ params }) {
         <p>{guide.answer}</p>
       </header>
 
-      <main>
+      <main className="guide-layout">
         <aside className="panel profile-panel">
           <div className="section-title">Profile used for these matches</div>
           <ul className="component-list">
@@ -168,7 +168,7 @@ export default async function SkinGuidePage({ params }) {
         </section>
       </main>
 
-      <main>
+      <main className="guide-layout">
         <aside className="panel profile-panel">
           <div className="studio-title">
             <h2>How matching works</h2>

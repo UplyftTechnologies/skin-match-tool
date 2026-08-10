@@ -1,39 +1,69 @@
 'use client'
-import Image from 'next/image'
+
 import BrandSlider from '../BrandSlider'
 
-export default function KnowBefore() {
-  const handleScrollToMatch = () => {
-    document.getElementById('match-my-skin')?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    })
-  }
+const announcements = [
+  'Free Registration',
+  'Save Skin Profile',
+  'Save Wishlist',
+  'Price Drop Alert',
+]
+
+function AnnouncementBar() {
+  const track = [...announcements, ...announcements]
+
   return (
-    <div>
-   
-      <div className="bg-[#FAF9F6] py-6 px-5 lg:py-12">
-        <div className="max-w-6xl lg:max-w-7xl mx-auto text-center">
-          <h2 className="font-cormorant text-[34px] md:text-5xl text-black leading-tight">
-            Know <span className="italic">Before</span>
-            <br />
-            You Buy
-          </h2>
-
-          <p className="font-lato text-[11px] md:text-base tracking- text-gray-700    mt-4 uppercase">
-            Find products that suits you across 500+ brands
-          </p>
-
-          <BrandSlider />
-          <button
-            onClick={handleScrollToMatch}
-            className="font-lato text-xs md:text-sm tracking-widest uppercase text-[#ff7e67] border border-[#ff7e67] 
-        rounded-[2px] px-8 py-2 mt-6 hover:bg-[#e08a7d] hover:text-white transition-colors duration-300">
-            Match My Skin
-          </button>
-
+    <div className="w-full overflow-hidden bg-black ring-1 ring-inset ring-[#ca58ff]">
+      <div className="relative w-full overflow-hidden">
+        <div className="flex w-max animate-announcement-scroll items-center">
+          {track.map((item, index) => (
+            <span
+              key={`${item}-${index}`}
+              className="flex shrink-0 items-center gap-2 px-2.5 py-1 font-lato text-[7px] font-semibold uppercase leading-none text-white whitespace-nowrap sm:gap-3 sm:px-4 sm:py-1.5 sm:text-[9px]"
+            >
+              {item}
+              <span aria-hidden="true">•</span>
+            </span>
+          ))}
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes announcement-scroll {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+        .animate-announcement-scroll {
+          animation: announcement-scroll 18s linear infinite;
+        }
+        .animate-announcement-scroll:hover {
+          animation-play-state: paused;
+        }
+      `}</style>
+    </div>
+  )
+}
+
+export default function KnowBefore() {
+  return (
+    <div>
+      <AnnouncementBar />
+
+      <section className="bg-[#FAF9F6] px-3 pt-7 sm:pt-9">
+        <div className="mx-auto max-w-7xl text-center">
+          <h2 className="font-cormorant text-[25px] leading-none tracking-[0.17em] text-black sm:text-[34px] md:text-[42px]">
+            Skin <em className="italic">match</em> tool
+          </h2>
+
+          <p className="mt-1.5 font-lato text-[8px] leading-tight text-black sm:text-[10px] md:text-xs">
+            Skincare Products scored for your skin across 500+ brands
+          </p>
+
+          <div className="mt-7 sm:mt-9">
+            <BrandSlider />
+          </div>
+        </div>
+      </section>
     </div>
   )
 }

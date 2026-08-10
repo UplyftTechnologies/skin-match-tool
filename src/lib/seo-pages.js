@@ -120,3 +120,62 @@ export const SKIN_GUIDES = [
 export function getSkinGuide(slug) {
   return SKIN_GUIDES.find((guide) => guide.slug === slug);
 }
+
+const skinTypes = ["oily", "dry", "normal", "combination"];
+
+const quizOptions = [
+  { slug: "acne", label: "Acne", kind: "concern" },
+  { slug: "body-acne", label: "Body Acne", kind: "concern" },
+  { slug: "dryness", label: "Dryness", kind: "concern" },
+  { slug: "open-pores", label: "Open Pores", kind: "concern" },
+  { slug: "dark-spots", label: "Dark Spots/Pigmentation", display: "Dark Spots", kind: "concern" },
+  { slug: "melasma", label: "Melasma", kind: "concern" },
+  { slug: "barrier-repair", label: "Barrier Repair", kind: "concern" },
+  { slug: "uneven-skin", label: "Uneven Skin Tone", display: "Uneven Skin Tone", kind: "concern" },
+  { slug: "comedones", label: "Comedones", kind: "concern" },
+  { slug: "wrinkles", label: "Wrinkles/Fine lines", display: "Wrinkles and Fine Lines", kind: "concern" },
+  { slug: "redness", label: "Redness/Irritation", display: "Redness and Irritation", kind: "concern" },
+  { slug: "dehydration", label: "Dehydration", kind: "concern" },
+  { slug: "dullness", label: "Dullness", kind: "concern" },
+  { slug: "tanning", label: "Tanning", kind: "concern" },
+  { slug: "sensitive", label: "Sensitive Skin", display: "Sensitive Skin", kind: "sensitivity" },
+  { slug: "excessive-dryness", label: "Excessive Dryness", kind: "condition" },
+  { slug: "pregnant", label: "Pregnancy", display: "Pregnancy", kind: "condition", value: "Pregnant" },
+  { slug: "breast-feeding", label: "Breastfeeding", kind: "condition", value: "Breastfeeding" },
+];
+
+export const SKIN_TYPE_OPTION_PAGES = skinTypes.flatMap((skinType) =>
+  quizOptions.map((option) => ({ skinType, option: option.slug }))
+);
+
+export function getSkinTypeOptionGuide(skinTypeSlug, optionSlug) {
+  if (!skinTypes.includes(skinTypeSlug)) return null;
+  const option = quizOptions.find((item) => item.slug === optionSlug);
+  if (!option) return null;
+
+  const skinType = skinTypeSlug[0].toUpperCase() + skinTypeSlug.slice(1);
+  const topic = option.display || option.label;
+  const profile = {
+    ...baseProfile,
+    selectedSkinType: skinType,
+    selectedSensitive: option.kind === "sensitivity",
+    selectedFaceBodyConcerns: option.kind === "concern" ? [option.label] : [],
+    selectedSpecialConditions: option.kind === "condition" ? [option.value || option.label] : ["None"],
+  };
+
+  return {
+    skinTypeSlug,
+    optionSlug,
+    skinType,
+    topic,
+    profile,
+    title: `Best Skincare Products for ${skinType} Skin with ${topic}`,
+    description: `Compare skincare products matched for ${skinType.toLowerCase()} skin and ${topic.toLowerCase()}, with profile-aware scores and practical routine guidance.`,
+    answer: `For ${skinType.toLowerCase()} skin with ${topic.toLowerCase()}, begin with gentle cleansing, a suitable moisturiser and daily sunscreen. Add targeted products one at a time and follow their usage and safety instructions.`,
+    faqs: [
+      [`What routine suits ${skinType.toLowerCase()} skin with ${topic.toLowerCase()}?`, `Start with a gentle cleanser, a moisturiser suited to ${skinType.toLowerCase()} skin and broad-spectrum sunscreen. Add a targeted product gradually if it is appropriate for ${topic.toLowerCase()}.`],
+      ["How are these product matches selected?", `Products are compared using catalog scores applicable to ${skinType.toLowerCase()} skin and ${topic.toLowerCase()}. A higher match score indicates stronger alignment with this profile.`],
+      ["When should I seek professional advice?", "Consult a qualified dermatologist for persistent, painful, severe or worsening symptoms, and for individual guidance during pregnancy or breastfeeding."],
+    ],
+  };
+}

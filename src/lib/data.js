@@ -17,14 +17,19 @@ export function normKey(value) {
 function firstImage(value) {
   const raw = cleanText(value);
   if (!raw) return "";
+  let candidate = "";
   try {
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length) return cleanText(parsed[0]);
+    if (Array.isArray(parsed) && parsed.length) candidate = cleanText(parsed[0]);
   } catch {
     // The catalog also stores comma- and space-separated URL lists.
   }
-  const urls = raw.match(/https?:\/\/\S+/g);
-  return urls?.[0]?.replace(/,$/, "") || raw.split(",")[0].trim();
+  if (!candidate) {
+    const urls = raw.match(/https?:\/\/\S+/g);
+    candidate = urls?.[0]?.replace(/,$/, "") || raw.split(",")[0].trim();
+  }
+  // Guard against junk like a bare "https://" with no host, which crashes next/image's URL parsing.
+  return /^https?:\/\/\S+/.test(candidate) ? candidate : "";
 }
 
 function parseCsv(text) {

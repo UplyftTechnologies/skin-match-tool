@@ -7,12 +7,12 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { FreeMode } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/free-mode'
+import { useQuizAnswers } from '@/hooks/use-quiz-answers'
+import RequireQuizModal from '@/components/RequireQuizModal'
 import Face from '@/assets/images/face.webp'
 import Body from '@/assets/images/body.webp'
 import lips from '@/assets/images/lips.webp'
 import eyes from '@/assets/images/eyes.webp'
-import OtpModal from '@/components/auth/otp-modal'
-import { supabase } from '@/lib/supabase/client'
 
 
 const categories = [
@@ -35,75 +35,65 @@ function categoryHref(filters) {
 
 export default function SearchByCategory() {
     const router = useRouter()
-    const [isLoginOpen, setIsLoginOpen] = useState(false)
-    const [pendingHref, setPendingHref] = useState('')
+    const quizAnswers = useQuizAnswers()
+    const [showQuizModal, setShowQuizModal] = useState(false)
 
-    const handleCategoryClick = async (filters) => {
-        const href = categoryHref(filters)
-        const { data: { session } } = await supabase.auth.getSession()
-
-        if (session) {
-            router.push(href)
+    // Browsing by category still routes to the results page, but a category
+    // tile is only actionable once the skin quiz has been completed.
+    const handleCategoryClick = (filters) => {
+        if (!quizAnswers) {
+            setShowQuizModal(true)
             return
         }
-
-        setPendingHref(href)
-        setIsLoginOpen(true)
+        router.push(categoryHref(filters))
     }
 
     return (
-        <>
-            <div className="bg-[#dbe6e2] py-6 px-4">
-                <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
-                    Search by Category
-                </h2>
+        <div className="bg-[#dbe6e2] py-6 px-4">
+            <RequireQuizModal open={showQuizModal} onClose={() => setShowQuizModal(false)} />
+            <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
+                Search by Category
+            </h2>
 
-                <div className="max-w-6xl lg:max-w-3xl mx-auto mt-5 lg:mt-6">
-                    <Swiper
-                        modules={[FreeMode]}
-                        slidesPerView={2.2}
-                        spaceBetween={16}
-                        freeMode={true}
-                        breakpoints={{
-                            640: { slidesPerView: 2, spaceBetween: 15 },
-                            1024: { slidesPerView: 4, spaceBetween: 24 },
-                        }}
-                    >
-                        {categories.map((cat) => (
-                            <SwiperSlide key={cat.id} className="!w-auto">
-                                <button
-                                    type="button"
-                                    onClick={() => handleCategoryClick(cat.filters)}
-                                    className="flex flex-col items-center gap-3 cursor-pointer"
-                                    aria-label={`View ${cat.name} products`}
-                                >
-                                    <div className="relative w-[120px] h-[120px] md:w-32 md:h-32 rounded-lg overflow-hidden border-2 border-white shadow-sm">
-                                        <Image
-                                            src={cat.image}
-                                            alt={cat.name}
-                                            fill
-                                            sizes="(max-width: 767px) 120px, 128px"
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                    <span className="text-sm md:text-base tracking-wide text-gray-800">
-                                        {cat.name}
-                                    </span>
-                                </button>
-                            </SwiperSlide>
-                        ))}
-                    </Swiper>
-                </div>
+            <div className="max-w-6xl mx-auto mt-5 lg:mt-8">
+                <Swiper
+                    modules={[FreeMode]}
+                    slidesPerView="auto"
+                    spaceBetween={16}
+                    freeMode={{ enabled: true, momentumBounce: false }}
+                    touchStartPreventDefault={false}
+                    className="touch-pan-y"
+                    breakpoints={{
+                        480: { spaceBetween: 18 },
+                        768: { spaceBetween: 20 },
+                        1024: { spaceBetween: 28 },
+                    }}
+                >
+                    {categories.map((cat) => (
+                        <SwiperSlide key={cat.id} className="!w-auto">
+                            <button
+                                type="button"
+                                onClick={() => handleCategoryClick(cat.filters)}
+                                className="flex flex-col items-center gap-3 cursor-pointer"
+                                aria-label={`View ${cat.name} products`}
+                            >
+                                <div className="relative w-[150px] h-[150px] sm:w-44 sm:h-44 lg:w-52 lg:h-52 rounded-2xl overflow-hidden border-2 border-white shadow-md transition-transform duration-200 hover:scale-[1.03]">
+                                    <Image
+                                        src={cat.image}
+                                        alt={cat.name}
+                                        fill
+                                        sizes="(max-width: 639px) 150px, (max-width: 1023px) 176px, 208px"
+                                        className="object-cover"
+                                    />
+                                </div>
+                                <span className="text-sm md:text-base tracking-wide text-gray-800">
+                                    {cat.name}
+                                </span>
+                            </button>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
             </div>
-
-            <OtpModal
-                isOpen={isLoginOpen}
-                onClose={() => setIsLoginOpen(false)}
-                onSuccess={() => {
-                    setIsLoginOpen(false)
-                    if (pendingHref) router.push(pendingHref)
-                }}
-            />
-        </>
+        </div>
     )
 }

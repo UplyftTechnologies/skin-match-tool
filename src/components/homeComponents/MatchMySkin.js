@@ -59,6 +59,7 @@ export default function MatchMySkin() {
     const [validationAttempted, setValidationAttempted] = useState(false)
     const [savingQuiz, setSavingQuiz] = useState(false)
     const [saveError, setSaveError] = useState('')
+    const [hasCompletedQuiz, setHasCompletedQuiz] = useState(false)
 
     const missingFields = [
         !skinType && { key: 'skin-type', label: 'Skin type' },
@@ -78,6 +79,7 @@ export default function MatchMySkin() {
                 const savedAnswers = JSON.parse(sessionStorage.getItem('roopsee-quiz-answers') || 'null')
                 if (!savedAnswers) return
 
+                setHasCompletedQuiz(true)
                 setSkinType(savedAnswers.skinType || null)
                 setSensitive(savedAnswers.sensitive || null)
                 const savedConcerns = Array.isArray(savedAnswers.concerns)
@@ -108,7 +110,8 @@ export default function MatchMySkin() {
     const trackOption = (question, value) => {
         trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
             question,
-            option: value,
+            answer: value,
+            value,
         })
     }
 
@@ -198,7 +201,7 @@ export default function MatchMySkin() {
         setSavingQuiz(true)
         setSaveError('')
 
-        trackingService.trackEvent(EVENTS.QUIZ_COMPLETED, {
+        trackingService.trackEvent(hasCompletedQuiz ? EVENTS.QUIZ_UPDATED : EVENTS.QUIZ_COMPLETED, {
             skin_type: skinType,
             sensitive,
             concern_area: concernArea,
@@ -207,6 +210,7 @@ export default function MatchMySkin() {
             age,
             gender,
         })
+        setHasCompletedQuiz(true)
 
         sessionStorage.setItem('roopsee-quiz-answers', JSON.stringify(answers))
         saveSkinProfile(resultProfile)
@@ -263,7 +267,7 @@ export default function MatchMySkin() {
             <div className='bg-[#FFFFFF]'>
                 <div className="max-w-md mx-auto px-4 py-6 md:py-12 lg:max-w-6xl xl:max-w-7xl lg:px-8">
                     <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
-                        MATCH MY SKIN
+                        SKIN QUIZ
                     </h2>
 
                     <div className="mt-2 lg:mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 lg:gap-x-8 lg:gap-y-5">
@@ -366,7 +370,7 @@ export default function MatchMySkin() {
                                 <div
                                     role="tablist"
                                     aria-label="Concern area"
-                                    className="grid w-full grid-cols-2 rounded-full border border-[#ead8d3] bg-[#faf7f5] p-1 sm:w-52"
+                                    className="grid w-36 grid-cols-2 self-left rounded-full border border-[#ead8d3] bg-[#faf7f5] p-0.5 sm:w-40"
                                 >
                                     {['face', 'body'].map((area) => (
                                         <button
@@ -375,7 +379,9 @@ export default function MatchMySkin() {
                                             role="tab"
                                             aria-selected={concernArea === area}
                                             onClick={() => handleConcernAreaSelect(area)}
-                                            className={`rounded-full px-4 py-1.5 font-lato text-xs font-semibold uppercase tracking-[0.12em] transition-all ${
+                                            style={{fontSize:'12px',fontWeight:'600'}}
+                                            className={`rounded-full px-2.5 py-[8px] font-lato text-[10px] 
+                                                font-semibold uppercase tracking-[0.1em] transition-all ${
                                                 concernArea === area
                                                     ? 'bg-[#d8e7e6] text-[#355d59] shadow-sm'
                                                     : 'text-gray-400 hover:text-gray-600'

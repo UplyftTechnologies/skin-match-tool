@@ -83,7 +83,7 @@ export default function ProductCard({ product, onVisit }) {
   function handleToggle(event) {
     event.preventDefault();
     event.stopPropagation();
-    toggleWishlist(product);
+    if (!toggleWishlist(product)) return;
 
     trackingService.trackEvent(
       wishlisted ? EVENTS.CLICKED_REMOVE_FROM_WISHLIST : EVENTS.CLICKED_ADD_TO_WISHLIST,

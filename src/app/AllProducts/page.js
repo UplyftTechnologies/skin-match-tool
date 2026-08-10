@@ -88,7 +88,7 @@ function ProductCard({ product }) {
 
     function handleSaveMatch(event) {
         event.stopPropagation()
-        toggleWishlist(savedProduct)
+        if (!toggleWishlist(savedProduct)) return
         trackingService.trackEvent(
             wishlisted ? EVENTS.CLICKED_REMOVE_FROM_WISHLIST : EVENTS.CLICKED_ADD_TO_WISHLIST,
             {
@@ -101,15 +101,31 @@ function ProductCard({ product }) {
         )
     }
 
+    function trackVisit() {
+        trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
+            productId: savedProduct.product_uid,
+            productName: savedProduct.product_name,
+            brand: savedProduct.brand_name,
+            price: savedProduct.selling_price || savedProduct.mrp,
+            score: product.score,
+            section: 'all_products',
+        })
+    }
+
+    function handleVisit() {
+        trackVisit()
+        router.push(productHref)
+    }
+
     return (
         <div
             role="link"
             tabIndex={0}
-            onClick={() => router.push(productHref)}
+            onClick={handleVisit}
             onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
-                    router.push(productHref)
+                    handleVisit()
                 }
             }}
             className="bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
@@ -134,7 +150,9 @@ function ProductCard({ product }) {
                     if (!nameExpanded) {
                         event.preventDefault()
                         setNameExpanded(true)
+                        return
                     }
+                    trackVisit()
                 }}
                 aria-expanded={nameExpanded}
                 title={nameExpanded ? undefined : 'Click to show full product name'}
@@ -358,9 +376,17 @@ function ProductsPageContent() {
     const initialCategories = searchParams.getAll('category')
         .map((category) => category.trim())
         .filter(Boolean)
+    const initialTypes = searchParams.getAll('type')
+        .map((type) => type.trim())
+        .filter(Boolean)
+    const initialBrands = searchParams.getAll('brand')
+        .map((brand) => brand.trim())
+        .filter(Boolean)
     const initialFilters = {
         ...emptyFilters,
         category: [...new Set(initialCategories)],
+        type: [...new Set(initialTypes)],
+        brand: [...new Set(initialBrands)],
     }
     const restoredState = rememberedProductListState?.routeStateKey === routeStateKey
         ? rememberedProductListState
@@ -549,7 +575,7 @@ function ProductsPageContent() {
                     <p className="py-8 text-center text-sm text-gray-500">No products found.</p>
                 ) : null}
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-3 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 mt-3 md:gap-6">
                     {products.map((product) => (
                         <ProductCard key={product.product_uid} product={product} />
                     ))}
@@ -595,6 +621,7 @@ function ProductsPageContent() {
                         </div>
                     </nav>
                 ) : null}
+
             </div>
         </div>
     )

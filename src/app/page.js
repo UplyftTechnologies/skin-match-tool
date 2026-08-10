@@ -4,6 +4,7 @@ import Header from "@/components/header";
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { recommend } from "@/lib/engine";
 import { absoluteUrl, SITE_NAME, SITE_URL } from "@/lib/site";
+import FooterPage from "./footer/page";
 
 export default function Home() {
   const initialData = recommend(DEFAULT_PROFILE, 500);
@@ -46,6 +47,7 @@ export default function Home() {
       />
       <Header/>
       <MatchStudio initialData={initialData} />
+      <FooterPage />
     </>
   );
 }
