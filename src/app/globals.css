@@ -618,6 +618,36 @@ select {
   color: #fff;
 }
 
+/* The PDP becomes a compact product sheet on phones, matching the product-first
+   hierarchy used by the mobile matcher rather than the wider desktop card UI. */
+@media (max-width: 639px) {
+  .pdp-mobile-sheet {
+    max-width: 390px;
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .rps-pdp {
+    background: #fff;
+    padding-bottom: 24px;
+  }
+
+  .pdp-product-image .score-badge {
+    top: 10px;
+    right: auto;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgb(15 23 42 / 18%);
+    font-size: .75rem;
+  }
+
+  .pdp-product-image .score-badge small {
+    font-size: .42rem;
+  }
+}
+
 .score-good {
   color: var(--green);
 }

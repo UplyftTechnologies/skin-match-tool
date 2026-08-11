@@ -1,15 +1,17 @@
 export default function ScoreBadge({ score }) {
     const value = Number.isFinite(Number(score)) ? Math.max(0, Math.round(Number(score))) : 0
 
-   
+
     const band =
         value > 89
             ? { label: 'GREAT', ring: '#1fae74', fill: '#12996a', glow: 'rgba(18,153,106,0.35)' }
-            : value >= 70
-                ? { label: 'GOOD', ring: '#e8b53a', fill: '#d9a52c', glow: 'rgba(217,165,44,0.35)' }
-                : value >= 60
-                    ? { label: 'FAIR', ring: '#f0cf6b', fill: '#e6c157', glow: 'rgba(230,193,87,0.35)' }
-                    : { label: 'LOW', ring: '#e0645f', fill: '#d1524d', glow: 'rgba(209,82,77,0.35)' }
+            : value >= 80
+                ? { label: 'GREAT', ring: '#7bc96f', fill: '#6cbf5f', glow: 'rgba(108,191,95,0.35)' } // light green for 80-89
+                : value >= 70
+                    ? { label: 'GOOD', ring: '#e8b53a', fill: '#d9a52c', glow: 'rgba(217,165,44,0.35)' }
+                    : value >= 60
+                        ? { label: 'FAIR', ring: '#f0cf6b', fill: '#e6c157', glow: 'rgba(230,193,87,0.35)' }
+                        : { label: 'LOW', ring: '#e0645f', fill: '#d1524d', glow: 'rgba(209,82,77,0.35)' }
 
     const progressDeg = Math.min(100, Math.max(0, value)) * 3.6
 

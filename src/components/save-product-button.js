@@ -7,7 +7,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
 
-export default function SaveProductButton({ product, className, mobile = false }) {
+export default function SaveProductButton({ product, className, mobile = false, label = "Save Product" }) {
   const { isWishlisted, toggleWishlist } = useWishlist();
   const wishlisted = isWishlisted(product.product_uid);
 
@@ -32,7 +32,7 @@ export default function SaveProductButton({ product, className, mobile = false }
       ) : (
         <BiHeart size={mobile ? 18 : 20} />
       )}
-      {wishlisted ? "Saved to Wishlist" : "Save Product"}
+      {wishlisted ? "Saved to Wishlist" : label}
     </button>
   );
 }

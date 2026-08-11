@@ -18,6 +18,7 @@ import SaveProductButton from "@/components/save-product-button";
 import Header from "@/components/header";
 import ProductScoreBadge from "@/components/product-score-badge";
 import RetailerPriceCompare from "@/components/retailer-price-compare";
+import MobileProductDetails from "@/components/mobile-product-details";
 
 export const dynamicParams = false;
 
@@ -169,13 +170,13 @@ export default async function ProductPage({ params }) {
 
   return (
     <div className="rps-pdp min-h-screen overflow-x-hidden bg-[#FAF9F6] pb-10 text-slate-800">
-      <Header />
+      <div className="hidden sm:block"><Header /></div>
       <script
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
         type="application/ld+json"
       />
 
-      <div className="mx-auto w-full max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8 lg:px-10">
+      <div className="hidden sm:block mx-auto w-full max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8 lg:px-10">
         <Link
           className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 transition hover:text-[#e08a7d] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e08a7d]"
           href="/AllProducts"
@@ -186,11 +187,11 @@ export default async function ProductPage({ params }) {
       </div>
 
       {/* ------------------------------------------------------------- Hero split */}
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-10">
-        <div className="mt-5 grid gap-7 sm:mt-6 lg:mt-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-12 lg:items-start">
+      <div className="pdp-mobile-sheet mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-10">
+        <div className="mt-0 grid gap-0 sm:mt-6 sm:gap-7 lg:mt-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-12 lg:items-start">
           {/* Image column */}
           <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
-            <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-slate-100 bg-white p-3 shadow-sm sm:p-6">
+            <div className="pdp-product-image relative aspect-[1.42] w-full overflow-hidden bg-white p-0 sm:aspect-square sm:rounded-3xl sm:border sm:border-slate-100 sm:p-6 sm:shadow-sm">
               {product.image ? (
                 <img
                   alt={product.product_name}
@@ -207,22 +208,25 @@ export default async function ProductPage({ params }) {
           </div>
 
           {/* Content column */}
-          <div className="min-w-0 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:p-7">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#e08a7d] sm:text-[12px]">
+          <div className="min-w-0 bg-white pt-2 sm:rounded-3xl sm:border sm:border-slate-100 sm:p-7 sm:shadow-sm">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#e08a7d] sm:text-[12px]">
               {product.brand_name || "Roopsee catalog product"}
             </span>
 
-            <h1 className="mt-2 break-words font-cormorant text-2xl font-semibold leading-tight text-slate-950 sm:text-4xl">
+            <h1 className="mt-1 break-words text-[13px] font-semibold leading-[1.28] text-slate-950 sm:mt-2 sm:font-cormorant sm:text-4xl">
               {product.product_name}
             </h1>
 
-            <p className="mt-3 max-w-xl break-words text-[14px] leading-relaxed text-slate-500 sm:text-[14.5px]">
+            <p className="mt-1 text-[11px] text-slate-500 sm:hidden">
+              {product.sku_size || product.product_type || "Skincare product"}
+            </p>
+            <p className="mt-3 hidden max-w-xl break-words text-[14px] leading-relaxed text-slate-500 sm:block sm:text-[14.5px]">
               {product.product_description || descriptionFor(product)}
             </p>
 
             {/* Price */}
-            <div className="mt-5 flex flex-wrap items-end gap-x-3 gap-y-1">
-              <span className="text-[1.7rem] font-extrabold leading-none text-slate-900 sm:text-[1.9rem]">
+            <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1 sm:mt-5">
+              <span className="text-[15px] font-extrabold leading-none text-slate-900 sm:text-[1.9rem]">
                 {product.sp || product.mrp ? `Rs. ${product.sp || product.mrp}` : "Price not listed"}
               </span>
               {hasDiscount ? (
@@ -236,21 +240,22 @@ export default async function ProductPage({ params }) {
                 </>
               ) : null}
             </div>
-            <p className="mt-1 text-[12px] text-slate-400">Inclusive of all taxes</p>
+            <p className="mt-1 hidden text-[12px] text-slate-400 sm:block">Inclusive of all taxes</p>
 
             {/* CTA — desktop / tablet button, hidden below lg since the mobile sticky bar covers it there */}
-            <div className="mt-6">
+            <div className="mt-3 sm:mt-6">
               <SaveProductButton
                 product={wishlistProduct}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#f3a99a]
-                 px-7 py-3.5 text-[13.5px] font-semibold tracking-wide text-white shadow-sm transition-all
-                 hover:-translate-y-0.5 hover:bg-[#e08a7d] focus-visible:outline-2 focus-visible:outline-offset-4
-                 focus-visible:outline-[#e08a7d] sm:w-auto"
+                label="Save my match"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#f3a99a] bg-white
+                 px-7 py-2 text-[10px] font-semibold tracking-wide text-[#d77465] transition-all
+                 hover:-translate-y-0.5 hover:bg-[#e08a7d] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4
+                 focus-visible:outline-[#e08a7d] sm:w-auto sm:border-0 sm:bg-[#f3a99a] sm:px-7 sm:py-3.5 sm:text-[13.5px] sm:text-white"
               />
             </div>
 
             {/* Signature: catalog spec "label" card */}
-            <div className="mt-6 rounded-[14px] border border-slate-100 bg-slate-50/60 px-4 py-4 sm:px-5">
+            <div className="mt-4 rounded-none border-y border-slate-100 bg-white px-2 py-3 sm:mt-6 sm:rounded-[14px] sm:border sm:bg-slate-50/60 sm:px-5 sm:py-4">
               <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-400 sm:text-[10.5px]">
                 <FiTag aria-hidden="true" className="h-3.5 w-3.5 text-[#e08a7d]" />
                 Catalog information
@@ -275,10 +280,18 @@ export default async function ProductPage({ params }) {
           productUid={product.product_uid}
         />
 
+        <MobileProductDetails
+          description={product.product_description || descriptionFor(product)}
+          heroIngredient={product.single_hero_ingredient}
+          ingredients={product.ingredients}
+          secondaryIngredients={secondaryIngredients}
+          usageInstructions={product.usage_instructions}
+        />
+
         {/* ---------------------------------------------------------- Detail rows */}
-        <div className="mt-6 min-w-0 rounded-3xl border border-slate-100 bg-white shadow-sm sm:mt-8 lg:mt-10">
+        <div className="mt-6 hidden min-w-0 rounded-3xl border border-slate-100 bg-white shadow-sm sm:mt-8 sm:block lg:mt-10">
           {/* Key ingredients */}
-          <div className="grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
+          <div className="hidden grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
             <SectionHeading icon={FiDroplet} title="KEY INGREDIENTS" />
             <div className="max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
@@ -314,7 +327,7 @@ export default async function ProductPage({ params }) {
           </div>
 
           {/* How to use */}
-          <div className="grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
+          <div className="hidden grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
             <SectionHeading icon={FiInfo} title="HOW TO USE" />
             <p className="max-w-2xl break-words text-[14px] leading-relaxed text-slate-600 sm:text-[14.5px]">
               {product.usage_instructions || "Follow the directions printed on the product packaging."}
