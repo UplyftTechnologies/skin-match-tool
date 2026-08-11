@@ -240,7 +240,7 @@ function formatPrice(value) {
       style: "currency",
       currency: "INR",
       maximumFractionDigits: 0,
-    }).format(amount)
+    }).format(Math.ceil(amount))
     : null;
 }
 

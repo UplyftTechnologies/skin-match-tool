@@ -82,6 +82,7 @@ function ProductCard({ product }) {
     const router = useRouter()
     const { isWishlisted, toggleWishlist } = useWishlist()
     const [nameExpanded, setNameExpanded] = useState(false)
+    const [imageFailed, setImageFailed] = useState(false)
     const savedProduct = product
     const wishlisted = isWishlisted(savedProduct.product_uid)
     const productHref = scoredProductPath(product.product_uid, product.score)
@@ -133,11 +134,12 @@ function ProductCard({ product }) {
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/3] mb-3">
                 <ScoreBadge score={product.score} />
                 <Image
-                    src={product.image || Serum}
+                    src={imageFailed || !product.image ? Serum : product.image}
                     alt={product.product_name}
                     fill
                     sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, 25vw"
                     className="object-contain"
+                    onError={() => setImageFailed(true)}
                 />
             </div>
             <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">
@@ -164,10 +166,10 @@ function ProductCard({ product }) {
             </Link>
             <div className="flex items-center gap-2 mb-3">
                 {Number(product.mrp) > Number(product.selling_price) ? (
-                    <span className="text-sm text-gray-400 line-through">₹{product.mrp}</span>
+                    <span className="text-sm text-gray-400 line-through">₹{Math.ceil(product.mrp)}</span>
                 ) : null}
                 <span className="text-sm font-semibold text-gray-900">
-                    {product.selling_price || product.mrp ? `₹${product.selling_price || product.mrp}` : 'Price unavailable'}
+                    {product.selling_price || product.mrp ? `₹${Math.ceil(product.selling_price || product.mrp)}` : 'Price unavailable'}
                 </span>
             </div>
             <button

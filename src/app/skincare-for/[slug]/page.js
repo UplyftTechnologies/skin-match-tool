@@ -55,7 +55,7 @@ function GuideProductCard({ product }) {
           <p className="product-meta">{product.brand_name} · {product.category} · {product.product_type}</p>
         </div>
         <div className="price-row">
-          <span>{price ? `Rs. ${price}` : "Price unavailable"}</span>
+          <span>{price ? `Rs. ${Math.ceil(price)}` : "Price unavailable"}</span>
         </div>
         <p className="product-copy">{product.match_label}. {product.hero_ingredient || "See the product page for ingredient information."}</p>
         <div className="tagline">

@@ -25,7 +25,10 @@ function firstImage(value) {
     // The catalog also stores comma- and space-separated URL lists.
   }
   if (!candidate) {
-    const urls = raw.match(/https?:\/\/\S+/g);
+    // Some rows glue multiple URLs together with no delimiter at all, so a
+    // greedy \S+ swallows all of them into one broken URL. Stop each match
+    // right before the next "http(s)://" starts instead.
+    const urls = raw.match(/https?:\/\/(?:(?!https?:\/\/)\S)+/g);
     candidate = urls?.[0]?.replace(/,$/, "") || raw.split(",")[0].trim();
   }
   // Guard against junk like a bare "https://" with no host, which crashes next/image's URL parsing.
@@ -128,4 +131,25 @@ export function loadProducts() {
 export function findProduct(productUid) {
   const wantedKey = normKey(decodeURIComponent(productUid || ""));
   return loadProducts().find((product) => normKey(product.product_uid) === wantedKey) || null;
+}
+
+// Ranks the rest of the catalog against one product: sharing category and
+// product_type counts most, brand alone counts least. No shared attribute at
+// all means it's not "similar" and gets dropped rather than padding the list.
+export function findSimilarProducts(product, limit = 8) {
+  if (!product) return [];
+
+  return loadProducts()
+    .map((candidate) => {
+      if (candidate.product_uid === product.product_uid) return null;
+      let score = 0;
+      if (product.category && candidate.category === product.category) score += 2;
+      if (product.product_type && candidate.product_type === product.product_type) score += 2;
+      if (product.brand_name && candidate.brand_name === product.brand_name) score += 1;
+      return score > 0 ? { candidate, score } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map((entry) => entry.candidate);
 }

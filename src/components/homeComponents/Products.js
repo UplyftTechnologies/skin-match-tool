@@ -90,7 +90,7 @@ function formatPrice(value) {
             style: 'currency',
             currency: 'INR',
             maximumFractionDigits: 0,
-        }).format(amount)
+        }).format(Math.ceil(amount))
         : null
 }
 
@@ -109,6 +109,7 @@ function ProductCard({ product }) {
     const { isWishlisted, toggleWishlist } = useWishlist()
     const router = useRouter()
     const [nameExpanded, setNameExpanded] = useState(false)
+    const [imageFailed, setImageFailed] = useState(false)
     const savedProduct = wishlistProduct(product)
     const wishlisted = isWishlisted(savedProduct.product_uid)
     const productHref = scoredProductPath(product.product_uid, product.score)
@@ -163,11 +164,12 @@ function ProductCard({ product }) {
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/2] mb-3">
                 <ScoreBadge score={product.score} />
                 <Image
-                    src={product.image || Serum}
+                    src={imageFailed || !product.image ? Serum : product.image}
                     alt={product.product_name || 'Skincare product'}
                     fill
                     sizes="(max-width: 639px) 50vw, 33vw"
                     className="object-contain"
+                    onError={() => setImageFailed(true)}
                 />
             </div>
 

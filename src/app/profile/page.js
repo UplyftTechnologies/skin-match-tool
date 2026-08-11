@@ -53,9 +53,9 @@ function WishlistCard({ product, onVisit, onRemove }) {
                 <p className="text-[12px] leading-snug text-gray-700 line-clamp-2">{product.product_name}</p>
             </Link>
             <div className="flex items-center gap-1.5 mt-1.5">
-                {showMrp ? <span className="text-[12px] text-gray-400 line-through">₹{mrp}</span> : null}
+                {showMrp ? <span className="text-[12px] text-gray-400 line-through">₹{Math.ceil(mrp)}</span> : null}
                 <span className="text-[12px] font-semibold text-gray-900">
-                    {price ? `₹${price}` : "Price unavailable"}
+                    {price ? `₹${Math.ceil(price)}` : "Price unavailable"}
                 </span>
             </div>
             <button

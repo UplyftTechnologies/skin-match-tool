@@ -1,16 +1,50 @@
 'use client'
-
-/* eslint-disable @next/next/no-img-element */
-
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { FiChevronRight, FiExternalLink, FiStar, FiTag, FiX } from 'react-icons/fi'
+import { FiChevronUp, FiExternalLink, FiStar, FiTag, FiThumbsUp, FiX } from 'react-icons/fi'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
+import Amazon from '@/assets/images/amazon.png'
+import Tira from '@/assets/images/tiira.png'
+import Nyka from '@/assets/images/nyka.webp'
+import Image from 'next/image'
 
-const SITE_LABELS = { nykaa: 'Nykaa', tira: 'Tira', amazon: 'Amazon' }
 
-function siteLabel(site) {
-    return SITE_LABELS[site] || site
+const SITE_LOGOS = { nykaa: Nyka, tira: Tira, amazon: Amazon }
+const SITE_NAMES = { nykaa: 'Nykaa', tira: 'Tira', amazon: 'Amazon', roopsee: 'Roopsee' }
+
+function siteName(site) {
+    return SITE_NAMES[site] || site
+}
+
+function roopseeStoreUrl(productUid) {
+    return `https://roopsee.com/products/${encodeURIComponent(productUid)}`
+}
+
+function RetailerLogo({ site, height = 18, className = '' }) {
+    if (site === 'roopsee') {
+        return (
+            <span
+                className={`font-semibold text-black ${className}`}
+                style={{ fontSize: height * 0.62, letterSpacing: '-0.02em' }}
+            >
+                roopsee<span style={{ color: '#ff00e6' }}>.</span>
+            </span>
+        )
+    }
+    const logo = SITE_LOGOS[site]
+    if (!logo) {
+        return <span className={`font-bold ${className}`}>{siteName(site)}</span>
+    }
+    return (
+        <Image
+            src={logo}
+            alt={siteName(site)}
+            height={height}
+            width={height * 3}
+            style={{ height, width: 'auto' }}
+            className={`object-contain ${className}`}
+        />
+    )
 }
 
 function formatPrice(value) {
@@ -20,8 +54,13 @@ function formatPrice(value) {
             style: 'currency',
             currency: 'INR',
             maximumFractionDigits: 0,
-        }).format(amount)
+        }).format(Math.ceil(amount))
         : null
+}
+
+function formatApproxPrice(value) {
+    const rounded = Math.ceil(Number(value))
+    return Number.isFinite(rounded) ? `~${formatPrice(rounded)}` : null
 }
 
 function Rating({ offer }) {
@@ -57,11 +96,10 @@ function BuyButton({ offer, productName, primary, compact }) {
                 target="_blank"
                 rel="noopener noreferrer nofollow sponsored"
                 onClick={handleBuy}
-                aria-label={`Buy ${offer.product_name} from ${siteLabel(offer.site)}`}
+                aria-label={`Buy ${offer.product_name} from ${siteName(offer.site)}`}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#e08a7d] px-3 py-1.5 text-[12px] font-semibold text-[#d77465] transition-colors hover:bg-[#e08a7d] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e08a7d] sm:px-3.5 sm:py-2"
             >
-                Buy
-                <FiExternalLink aria-hidden="true" className="h-3 w-3" />
+                Buy now
             </a>
         )
     }
@@ -78,7 +116,7 @@ function BuyButton({ offer, productName, primary, compact }) {
                     : 'border border-[#e08a7d] text-[#d77465] hover:bg-[#e08a7d] hover:text-white'
             }`}
         >
-            Buy from {siteLabel(offer.site)}
+            Buy from {siteName(offer.site)}
             <span className="font-bold">{formatPrice(offer.price)}</span>
             <FiExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
         </a>
@@ -108,7 +146,8 @@ function OfferModal({ offer, offers, productName, onClose }) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 
+            p-0 backdrop-blur-sm sm:items-center sm:p-4"
             onClick={(event) => {
                 if (event.target === event.currentTarget) onClose()
             }}
@@ -116,12 +155,12 @@ function OfferModal({ offer, offers, productName, onClose }) {
             <div
                 role="dialog"
                 aria-modal="true"
-                aria-label={`${offer.product_name} on ${siteLabel(offer.site)}`}
+                aria-label={`${offer.product_name} on ${siteName(offer.site)}`}
                 className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-white p-5 shadow-xl sm:rounded-3xl sm:p-7"
             >
                 <div className="flex items-start justify-between gap-4">
-                    <span className="rounded-full bg-rose-50 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-[#d77465]">
-                        {siteLabel(offer.site)}
+                    <span className="flex items-center rounded-full bg-rose-50 px-3 py-1.5">
+                        <RetailerLogo site={offer.site} height={14} />
                     </span>
                     <button
                         ref={closeRef}
@@ -226,7 +265,7 @@ function OfferModal({ offer, offers, productName, onClose }) {
                 </div>
 
                 <p className="mt-3 text-[11.5px] leading-relaxed text-slate-400">
-                    Prices are captured when we last checked {siteLabel(offer.site)} and may have changed.
+                    Prices are captured when we last checked {siteName(offer.site)} and may have changed.
                     Confirm on the retailer&apos;s site before buying.
                 </p>
             </div>
@@ -285,69 +324,100 @@ export default function RetailerPriceCompare({ productUid, productName, catalogP
 
     const ownPrice = Number(String(catalogPrice || '').replace(/[^\d.]/g, ''))
     const hasOwnPrice = Number.isFinite(ownPrice) && ownPrice > 0
+    const ownOffer = hasOwnPrice
+        ? { site: 'roopsee', price: ownPrice, product_name: productName, product_url: roopseeStoreUrl(productUid) }
+        : null
+    const displayRows = ownOffer
+        ? [...offers, ownOffer].sort((a, b) => a.price - b.price)
+        : offers
     const cheapest = offers[0]
-    const saving = hasOwnPrice ? Math.round(ownPrice - cheapest.price) : 0
+    const comparedPrices = offers.map((offer) => Number(offer.price)).filter(Number.isFinite)
+    if (hasOwnPrice) comparedPrices.push(ownPrice)
+    const lowestPrice = Math.min(...comparedPrices)
+    const highestPrice = Math.max(...comparedPrices)
+    const rangePadding = Math.max(10, Math.round((highestPrice - lowestPrice) * 0.2))
+    const rangeStart = Math.max(0, lowestPrice - rangePadding)
+    const rangeEnd = highestPrice + rangePadding
+    const pricePosition = hasOwnPrice
+        ? Math.min(96, Math.max(4, ((ownPrice - rangeStart) / (rangeEnd - rangeStart || 1)) * 100))
+        : 50
 
     return (
-        <div className="mt-6 min-w-0 rounded-3xl border border-slate-100 bg-white p-5 shadow-sm sm:mt-8 sm:p-7">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                    <FiTag aria-hidden="true" className="h-4 w-4 shrink-0 text-[#e08a7d]" />
-                    <span className="text-[13px] font-bold tracking-wide text-slate-800">
-                        COMPARE PRICES
-                    </span>
-                </div>
-                {saving > 0 ? (
-                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-[12px] font-bold text-emerald-700">
-                        Save {formatPrice(saving)} on {siteLabel(cheapest.site)}
-                    </span>
-                ) : null}
+        <div className="mt- p-1 min-w-0 bg-white sm:rounded-2xl 
+         sm:p-5 s">
+            <div className="flex items-center justify-between gap-3">
+                <p className="flex items-center gap-2 text-[12px] font-semibold text-slate-800">
+                    <FiTag aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-[#f59e0b]" />
+                    This price is <span className="text-[#f26f5b]">typical.</span>
+                </p>
+                <FiChevronUp aria-hidden="true" className="h-4 w-4 text-slate-500" />
             </div>
 
-            <ul className="mt-4 divide-y divide-slate-100">
+            <div className="relative mt-7 px-1">
                 {hasOwnPrice ? (
-                    <li className="flex items-center justify-between gap-3 py-3">
-                        <span className="text-[13px] font-semibold text-slate-800">
-                            Roopsee
-                            <span className="ml-2 text-[11.5px] font-normal text-slate-400">this page</span>
-                        </span>
-                        <span className="text-[14px] font-bold text-slate-900">{formatPrice(ownPrice)}</span>
-                    </li>
+                    <span className="absolute -top-5 -translate-x-1/2 rounded bg-orange-100 px-1.5 py-0.5 text-[8px] font-semibold text-[#ec7b20]" style={{ left: `${pricePosition}%` }}>
+                        {formatPrice(ownPrice)} is typical
+                    </span>
                 ) : null}
+                <span className="block h-1 rounded-full bg-gradient-to-r from-[#198754] via-[#ff9517] to-[#ff2d63]" />
+                {hasOwnPrice ? <span className="absolute top-[-3px] h-2.5 w-2.5 -translate-x-1/2 rounded-full border-2 border-white bg-[#ff9517] shadow" style={{ left: `${pricePosition}%` }} /> : null}
+                <div className="mt-1 flex justify-between text-[10px] font-semibold text-slate-600">
+                    <span>{formatPrice(rangeStart)}</span><span>{formatPrice(rangeEnd)}</span>
+                </div>
+            </div>
 
-                {offers.map((offer) => (
-                    <li className="flex items-center gap-2 py-3 sm:gap-3" key={offer.site}>
-                        <button
-                            type="button"
-                            onClick={() => openOffer(offer)}
-                            className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-lg text-left transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e08a7d]"
-                        >
-                            <span className="min-w-0">
-                                <span className="block text-[13px] font-semibold text-slate-800">
-                                    {siteLabel(offer.site)}
-                                    {offer.site === cheapest.site && offers.length > 1 ? (
-                                        <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-emerald-700">
-                                            Best price
-                                        </span>
-                                    ) : null}
+            <div className="mt-3 flex items-center justify-between gap-3">
+                <div className="text-[11px] leading-tight text-slate-700">
+                    Similar items cost approximately between {formatApproxPrice(lowestPrice)} and {formatApproxPrice(highestPrice)}.
+                    <button className="ml-1 text-[9px] text-slate-500 underline" type="button" title="The range is calculated from confident retailer matches and rounded to the nearest rupee.">How was this calculated?</button>
+                </div>
+                <button className="inline-flex shrink-0 items-center gap-1 rounded bg-slate-950 px-2 py-1.5 text-[10px] font-semibold text-white" onClick={() => openOffer(cheapest)} type="button">
+                    <FiThumbsUp aria-hidden="true" className="h-3 w-3" /> Track price
+                </button>
+            </div>
+
+            <ul className="mt-3 divide-y divide-slate-100">
+
+                {displayRows.map((row) => (
+                    row.site === 'roopsee' ? (
+                        <li className="flex items-center gap-2 rounded-lg bg-rose-50/70 px-2 py-2 sm:gap-3" key="roopsee">
+                            <span className="flex min-w-0 flex-1 items-center justify-between gap-3">
+                                <span className="min-w-0">
+                                    <RetailerLogo site="roopsee" height={36} />
                                 </span>
-                                <span className="mt-0.5 block truncate text-[11.5px] text-slate-400">
-                                    {offer.product_name}
-                                </span>
-                            </span>
-                            <span className="flex shrink-0 items-center gap-2">
                                 <span className="text-right">
                                     <span className="block text-[14px] font-bold text-slate-900">
-                                        {formatPrice(offer.price)}
+                                        {formatPrice(row.price)}
                                     </span>
-                                    <Rating offer={offer} />
+                                    <span className="text-[10px] font-semibold text-[#d77465]">Roopsee</span>
                                 </span>
-                                <FiChevronRight aria-hidden="true" className="h-4 w-4 text-slate-300" />
                             </span>
-                        </button>
 
-                        <BuyButton compact offer={offer} productName={productName} />
-                    </li>
+                            <BuyButton compact offer={row} productName={productName} />
+                        </li>
+                    ) : (
+                        <li className="flex items-center gap-2 py-2 sm:gap-3" key={row.site}>
+                            <button
+                                type="button"
+                                onClick={() => openOffer(row)}
+                                className="flex min-w-0 flex-1 items-center justify-between gap-3 rounded-lg text-left transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e08a7d]"
+                            >
+                                <span className="min-w-0">
+                                    <RetailerLogo site={row.site} height={50} />
+                                </span>
+                                <span className="flex shrink-0 items-center gap-2">
+                                    <span className="text-right">
+                                        <span className="block text-[14px] font-medium text-slate-900">
+                                            {formatPrice(row.price)}
+                                        </span>
+                                        <Rating offer={row} />
+                                    </span>
+                                </span>
+                            </button>
+
+                            <BuyButton compact offer={row} productName={productName} />
+                        </li>
+                    )
                 ))}
             </ul>
 

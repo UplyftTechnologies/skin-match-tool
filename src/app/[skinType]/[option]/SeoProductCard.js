@@ -30,7 +30,7 @@ export default function SeoProductCard({ product, section }) {
       </div>
       <div className="product-body">
         <div><h3>{product.product_name}</h3><p className="product-meta">{product.brand_name} · {product.category} · {product.product_type}</p></div>
-        <div className="price-row"><span>{price ? `Rs. ${price}` : "Price unavailable"}</span></div>
+        <div className="price-row"><span>{price ? `Rs. ${Math.ceil(price)}` : "Price unavailable"}</span></div>
         <p className="product-copy">{product.match_label}. {product.hero_ingredient || "See the product page for ingredient information."}</p>
         <Link className="details-link" href={productPath(product.product_uid)} onClick={trackVisit}>View product details</Link>
       </div>

@@ -5,10 +5,12 @@ import { notFound } from "next/navigation";
 import {
   FiAlertTriangle,
   FiArrowLeft,
+  FiCheckCircle,
   FiCompass,
   FiDroplet,
   FiInfo,
   FiShield,
+  FiStar,
   FiTag,
 } from "react-icons/fi";
 import { findProduct, loadProducts } from "@/lib/data";
@@ -16,8 +18,10 @@ import { SKIN_GUIDES } from "@/lib/seo-pages";
 import { absoluteUrl, productPath } from "@/lib/site";
 import SaveProductButton from "@/components/save-product-button";
 import Header from "@/components/header";
+import ProductImage from "@/components/product-image";
 import ProductScoreBadge from "@/components/product-score-badge";
 import RetailerPriceCompare from "@/components/retailer-price-compare";
+import SimilarProducts from "@/components/similar-products";
 import MobileProductDetails from "@/components/mobile-product-details";
 
 export const dynamicParams = false;
@@ -31,7 +35,7 @@ function descriptionFor(product) {
 function priceAmount(product) {
   const value = product.sp || product.mrp;
   const number = Number(String(value || "").replace(/[^\d.]/g, ""));
-  return Number.isFinite(number) && number > 0 ? number : null;
+  return Number.isFinite(number) && number > 0 ? Math.ceil(number) : null;
 }
 
 function numericValue(raw) {
@@ -169,13 +173,14 @@ export default async function ProductPage({ params }) {
     .filter(Boolean);
 
   return (
-    <div className="rps-pdp min-h-screen overflow-x-hidden bg-[#FAF9F6] pb-10 text-slate-800">
+    <div className="rps-pdp min-h-screen bg-[#FAF9F6] pb-10 text-slate-800">
       <div className="hidden sm:block"><Header /></div>
       <script
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
         type="application/ld+json"
       />
 
+      <div className="overflow-x-hidden">
       <div className="hidden sm:block mx-auto w-full max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8 lg:px-10">
         <Link
           className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-500 transition hover:text-[#e08a7d] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e08a7d]"
@@ -188,22 +193,58 @@ export default async function ProductPage({ params }) {
 
       {/* ------------------------------------------------------------- Hero split */}
       <div className="pdp-mobile-sheet mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-10">
+        <Link className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 transition hover:text-[#e08a7d] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e08a7d] sm:hidden" href="/AllProducts">
+          <FiArrowLeft aria-hidden="true" className="h-3.5 w-3.5" />
+          Back to products
+        </Link>
         <div className="mt-0 grid gap-0 sm:mt-6 sm:gap-7 lg:mt-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-12 lg:items-start">
           {/* Image column */}
           <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
             <div className="pdp-product-image relative aspect-[1.42] w-full overflow-hidden bg-white p-0 sm:aspect-square sm:rounded-3xl sm:border sm:border-slate-100 sm:p-6 sm:shadow-sm">
-              {product.image ? (
-                <img
-                  alt={product.product_name}
-                  className="h-full w-full object-contain"
-                  src={product.image}
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-6xl font-extrabold text-[#f3a99a] sm:text-8xl">
-                  R
-                </div>
-              )}
+              <ProductImage alt={product.product_name} src={product.image} />
               <ProductScoreBadge />
+            </div>
+            <div className="mt-3 sm:mt-6">
+              <SaveProductButton
+                product={wishlistProduct}
+                label="Save my match"
+                unsavedClassName="inline-flex w-full items-center justify-center gap-2 rounded-full
+                border border-[#f3a99a] bg-white
+                 px-7 py-2 text-[10px] font-semibold tracking-wide text-[#d77465] transition-all
+                 hover:-translate-y-0.5 hover:bg-[#e08a7d] hover:text-white focus-visible:outline-2
+                  focus-visible:outline-offset-4
+                 focus-visible:outline-[#e08a7d] sm:w-[100%] sm:px-5
+                 sm:py-3.5 sm:text-[13.5px]"
+                savedClassName="inline-flex w-full items-center justify-center gap-2 rounded-full
+                border border-transparent bg-[#f3a99a]
+                 px-7 py-2 text-[10px] font-semibold tracking-wide text-white transition-all
+                 hover:-translate-y-0.5 hover:bg-[#e08a7d] focus-visible:outline-2
+                  focus-visible:outline-offset-4
+                 focus-visible:outline-[#e08a7d] sm:w-[100%] sm:px-5
+                 sm:py-3.5 sm:text-[13.5px]"
+              />
+            </div>
+
+            <div className="mt-3  rounded-3xl border border-slate-100
+             bg-gradient-to-b from-rose-50/50 to-white p-6 lg:block">
+              <div className="flex items-center gap-2">
+                <FiStar aria-hidden="true" className="h-4 w-4 shrink-0 text-[#e08a7d]" />
+                <span className="text-[13px] font-bold tracking-wide text-slate-800">Reasons for products score </span>
+              </div>
+              <ul className="mt-4 space-y-3">
+                <li className="flex items-start gap-2.5 text-[13px] leading-relaxed text-slate-600">
+                  <FiCheckCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-[#e08a7d]" />
+                  Helps other users with similar skin find products that actually work for them.
+                </li>
+                <li className="flex items-start gap-2.5 text-[13px] leading-relaxed text-slate-600">
+                  <FiCheckCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-[#e08a7d]" />
+                  Sharpens Roopsee&apos;s matching score so recommendations keep improving for everyone.
+                </li>
+                <li className="flex items-start gap-2.5 text-[13px] leading-relaxed text-slate-600">
+                  <FiCheckCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-[#e08a7d]" />
+                  Tells the brand what&apos;s working, straight from real skin, not guesswork.
+                </li>
+              </ul>
             </div>
           </div>
 
@@ -213,9 +254,10 @@ export default async function ProductPage({ params }) {
               {product.brand_name || "Roopsee catalog product"}
             </span>
 
-            <h1 className="mt-1 break-words text-[13px] font-semibold leading-[1.28] text-slate-950 sm:mt-2 sm:font-cormorant sm:text-4xl">
+            <h2 className="mt-1 break-words text-[16px] font
+            text-slate-950 sm:mt-2 font-lato sm:text-3xl">
               {product.product_name}
-            </h1>
+            </h2>
 
             <p className="mt-1 text-[11px] text-slate-500 sm:hidden">
               {product.sku_size || product.product_type || "Skincare product"}
@@ -226,13 +268,13 @@ export default async function ProductPage({ params }) {
 
             {/* Price */}
             <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1 sm:mt-5">
-              <span className="text-[15px] font-extrabold leading-none text-slate-900 sm:text-[1.9rem]">
-                {product.sp || product.mrp ? `Rs. ${product.sp || product.mrp}` : "Price not listed"}
-              </span>
+              {/* <span className="text-[15px] font-extrabold leading-none text-slate-900 sm:text-[1.9rem]">
+                {product.mrp ? `Rs. ${Math.ceil(product.sp || product.mrp)}` : "Price not listed"}
+              </span> */}
               {hasDiscount ? (
                 <>
                   <span className="text-[14px] text-slate-400 line-through">
-                    Rs. {product.mrp}
+                    Rs. {Math.ceil(product.mrp)}
                   </span>
                   <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-[#d77465]">
                     {percentOff}% off
@@ -243,19 +285,15 @@ export default async function ProductPage({ params }) {
             <p className="mt-1 hidden text-[12px] text-slate-400 sm:block">Inclusive of all taxes</p>
 
             {/* CTA — desktop / tablet button, hidden below lg since the mobile sticky bar covers it there */}
-            <div className="mt-3 sm:mt-6">
-              <SaveProductButton
-                product={wishlistProduct}
-                label="Save my match"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#f3a99a] bg-white
-                 px-7 py-2 text-[10px] font-semibold tracking-wide text-[#d77465] transition-all
-                 hover:-translate-y-0.5 hover:bg-[#e08a7d] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4
-                 focus-visible:outline-[#e08a7d] sm:w-auto sm:border-0 sm:bg-[#f3a99a] sm:px-7 sm:py-3.5 sm:text-[13.5px] sm:text-white"
-              />
-            </div>
+
+            <RetailerPriceCompare
+              catalogPrice={product.sp || product.mrp}
+              productName={product.product_name}
+              productUid={product.product_uid}
+            />
 
             {/* Signature: catalog spec "label" card */}
-            <div className="mt-4 rounded-none border-y border-slate-100 bg-white px-2 py-3 sm:mt-6 sm:rounded-[14px] sm:border sm:bg-slate-50/60 sm:px-5 sm:py-4">
+            {/* <div className="mt-4 rounded-none border-y border-slate-100 bg-white px-2 py-3 sm:mt-6 sm:rounded-[14px] sm:border sm:bg-slate-50/60 sm:px-5 sm:py-4">
               <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-400 sm:text-[10.5px]">
                 <FiTag aria-hidden="true" className="h-3.5 w-3.5 text-[#e08a7d]" />
                 Catalog information
@@ -267,18 +305,15 @@ export default async function ProductPage({ params }) {
                 <SpecRow label="Use" value={product.when_to_use || "As directed"} />
                 <SpecRow label="SKU" value={product.product_uid} />
               </ul>
-            </div>
+            </div> */}
           </div>
         </div>
 
         {/* ------------------------------------------------- Retailer price compare */}
         {/* Renders nothing unless the strict matcher is confident this exact SKU
             (same brand, strength and size) exists at a retailer. */}
-        <RetailerPriceCompare
-          catalogPrice={product.sp || product.mrp}
-          productName={product.product_name}
-          productUid={product.product_uid}
-        />
+
+        <SimilarProducts product={product} />
 
         <MobileProductDetails
           description={product.product_description || descriptionFor(product)}
@@ -375,6 +410,7 @@ export default async function ProductPage({ params }) {
             </div>
           </div>
         </div>
+      </div>
       </div>
 
       {/* --------------------------------------------------- Mobile sticky bar */}
