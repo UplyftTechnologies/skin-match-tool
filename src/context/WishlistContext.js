@@ -3,6 +3,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { triggerWishlistReminder } from "@/lib/push/wishlist-reminder";
 import { supabase } from "@/lib/supabase/client";
 
 const WishlistContext = createContext(null);

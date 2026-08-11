@@ -38,4 +38,9 @@ export const EVENTS = {
   CLICKED_EDIT_PROFILE: 'clicked_edit_profile',
   CLICKED_LOGOUT: 'clicked_logout',
 
+  // Retailer price comparison events
+  VIEWED_RETAILER_OFFERS: 'viewed_retailer_offers',
+  CLICKED_RETAILER_OFFER: 'clicked_retailer_offer',
+  CLICKED_BUY_FROM_RETAILER: 'clicked_buy_from_retailer',
+
 };

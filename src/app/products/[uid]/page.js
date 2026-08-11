@@ -17,6 +17,7 @@ import { absoluteUrl, productPath } from "@/lib/site";
 import SaveProductButton from "@/components/save-product-button";
 import Header from "@/components/header";
 import ProductScoreBadge from "@/components/product-score-badge";
+import RetailerPriceCompare from "@/components/retailer-price-compare";
 
 export const dynamicParams = false;
 
@@ -264,6 +265,15 @@ export default async function ProductPage({ params }) {
             </div>
           </div>
         </div>
+
+        {/* ------------------------------------------------- Retailer price compare */}
+        {/* Renders nothing unless the strict matcher is confident this exact SKU
+            (same brand, strength and size) exists at a retailer. */}
+        <RetailerPriceCompare
+          catalogPrice={product.sp || product.mrp}
+          productName={product.product_name}
+          productUid={product.product_uid}
+        />
 
         {/* ---------------------------------------------------------- Detail rows */}
         <div className="mt-6 min-w-0 rounded-3xl border border-slate-100 bg-white shadow-sm sm:mt-8 lg:mt-10">
