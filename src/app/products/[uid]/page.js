@@ -225,7 +225,7 @@ export default async function ProductPage({ params }) {
               />
             </div>
 
-            <div className="mt-3  rounded-3xl border border-slate-100
+            <div className="mt-3 hidden rounded-3xl border border-slate-100
              bg-gradient-to-b from-rose-50/50 to-white p-6 lg:block">
               <div className="flex items-center gap-2">
                 <FiStar aria-hidden="true" className="h-4 w-4 shrink-0 text-[#e08a7d]" />
