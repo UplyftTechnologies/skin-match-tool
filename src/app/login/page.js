@@ -138,6 +138,11 @@ function LoginPageContent() {
       if (oauthError) throw oauthError
     } catch (oauthError) {
       console.error('Google sign-in failed:', oauthError)
+      trackingService.trackEvent(EVENTS.GOOGLE_LOGIN_FAILED, {
+        method: 'google',
+        stage: 'initiate',
+        error: oauthError?.message || String(oauthError),
+      })
       setGoogleError('Google sign-in is temporarily unavailable. Please use your phone number or try again later.')
       setGoogleLoading(false)
     }

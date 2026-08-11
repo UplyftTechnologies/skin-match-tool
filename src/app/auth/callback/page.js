@@ -38,6 +38,8 @@ function CompleteProfileForm({ session, redirectTo, onDone }) {
     }
 
     setSubmitting(true)
+    trackingService.trackEvent(EVENTS.CLICKED_COMPLETE_PROFILE, { method: 'google', userId: session.user.id })
+
     try {
       await fetch('/api/auth/sync-user', {
         method: 'POST',
@@ -49,6 +51,11 @@ function CompleteProfileForm({ session, redirectTo, onDone }) {
       })
     } catch (err) {
       console.error('[auth/callback] sync-user failed:', err)
+      trackingService.trackEvent(EVENTS.PROFILE_SYNC_FAILED, {
+        method: 'google',
+        userId: session.user.id,
+        error: err?.message || String(err),
+      })
     }
 
     onDone(redirectTo)
@@ -123,6 +130,11 @@ function AuthCallbackContent() {
 
     if (oauthError) {
       console.error('[auth/callback] OAuth provider returned an error:', oauthError)
+      trackingService.trackEvent(EVENTS.GOOGLE_LOGIN_FAILED, {
+        method: 'google',
+        stage: 'callback',
+        error: oauthError,
+      })
       // /profile's "Link Google Account" started this — bounce back there
       // with the error so it renders inline instead of stranding the user
       // on a standalone error screen with nowhere obvious to go.
@@ -163,6 +175,11 @@ function AuthCallbackContent() {
             })
           } catch (err) {
             console.error('[auth/callback] sync-user failed:', err)
+            trackingService.trackEvent(EVENTS.PROFILE_SYNC_FAILED, {
+              method: 'google',
+              userId: session.user.id,
+              error: err?.message || String(err),
+            })
           }
 
           router.replace(redirectTo)
