@@ -217,6 +217,8 @@ const EXTRA_DATA_IGNORED_FIELDS = new Set([
   'referrer',
   'value',
   'timestamp',
+  'retailer',
+  'site',
 ]);
 
 const buildExtraData = (body = {}) => {
@@ -297,6 +299,8 @@ export const sendWebsiteVisitorEvent = async ({
   brand,
   price,
   section,
+  retailer,
+  site,
   cartItems,
   cartTotal,
   question,
@@ -307,7 +311,8 @@ export const sendWebsiteVisitorEvent = async ({
   step,
   quizAnswerSummary,
 }) => {
-  const hasProductDetails = productName || productId || brand || price || section;
+  const retailerName = retailer || site;
+  const hasProductDetails = productName || productId || brand || price || section || retailerName;
   const hasCartDetails = cartItems !== null && cartItems !== undefined && cartItems !== '';
   const hasAnswerDetails = quizAnswerSummary || question || answer || field || answerType || step;
 
@@ -334,7 +339,8 @@ export const sendWebsiteVisitorEvent = async ({
 🏷 Brand: ${getValue(brand)}
 🆔 Product ID: ${getValue(productId)}
 💰 Price: ${getValue(price)}
-📦 Section: ${getValue(section)}`
+📦 Section: ${getValue(section)}
+🏬 Retailer: ${getValue(retailerName)}`
     : '';
 
   const cartBlock = hasCartDetails
@@ -465,6 +471,8 @@ export const buildVisitorEventFromRequest = async (body, headers) => {
     brand: body?.brand || '',
     price: body?.price ?? '',
     section: body?.section || '',
+    retailer: body?.retailer || '',
+    site: body?.site || '',
 
     cartItems: body?.cartItems || '',
     cartTotal: body?.cartTotal ?? '',

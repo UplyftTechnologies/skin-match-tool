@@ -18,9 +18,14 @@ export const EVENTS = {
   PROFILE_SYNC_FAILED: 'profile_sync_failed',
   CLICKED_PRODUCT_CARD: 'clicked_product_card',
   CLICKED_FILTER_OPTION: 'clicked_filter_option',
+  CLICKED_RESET_FILTERS: 'clicked_reset_filters',
+  CLICKED_SORT_OPTION: 'clicked_sort_option',
   CLICKED_LOAD_MORE: 'clicked_load_more',
   SEARCH_PERFORMED: 'search_performed',
   LEFT_SITE: 'left_site',
+
+  // All products / listing page events
+  PAGE_VIEWED_ALL_PRODUCTS: 'page_viewed_all_products',
 
   // Wishlist events
   CLICKED_ADD_TO_WISHLIST: 'clicked_add_to_wishlist',
@@ -39,8 +44,18 @@ export const EVENTS = {
   CLICKED_LOGOUT: 'clicked_logout',
 
   // Retailer price comparison events
-  VIEWED_RETAILER_OFFERS: 'viewed_retailer_offers',
   CLICKED_RETAILER_OFFER: 'clicked_retailer_offer',
   CLICKED_BUY_FROM_RETAILER: 'clicked_buy_from_retailer',
+
+  // Home page carousels
+  CLICKED_SEARCH_BY_PRODUCT_TYPE: 'clicked_search_by_product_type',
+  CLICKED_SEARCH_BY_CATEGORY: 'clicked_search_by_category',
+  CLICKED_SEARCH_K_BEAUTY_BRAND: 'clicked_search_k_beauty_brand',
+  CLICKED_INDIAN_ROCKSTAR_PRODUCT_TYPE: 'clicked_indian_rockstar_product_type',
+  CLICKED_VIEW_ALL_PRODUCTS: 'clicked_view_all_products',
+
+  // How it works page
+  PAGE_VIEWED_HOW_IT_WORKS: 'page_viewed_how_it_works',
+  CLICKED_HOW_IT_WORKS_CTA: 'clicked_how_it_works_cta',
 
 };

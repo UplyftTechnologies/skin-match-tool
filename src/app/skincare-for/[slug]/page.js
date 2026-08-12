@@ -73,7 +73,7 @@ export default async function SkinGuidePage({ params }) {
   const guide = getSkinGuide(slug);
   if (!guide) notFound();
 
-  const response = recommend(guide.profile, 12);
+  const response = await recommend(guide.profile, 12);
   const canonical = absoluteUrl(`/skincare-for/${guide.slug}`);
   const structuredData = [
     {

@@ -9,6 +9,8 @@ import 'swiper/css'
 import 'swiper/css/free-mode'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import RequireQuizModal from '@/components/RequireQuizModal'
+import { trackingService } from '@/lib/tracking/trackingClient'
+import { EVENTS } from '@/lib/tracking/events'
 import B1 from '@/assets/Kbeauty/k1.png'
 import B2 from '@/assets/Kbeauty/k2.png'
 import B3 from '@/assets/Kbeauty/k3.png'
@@ -41,11 +43,17 @@ export default function SearchByBrands() {
   const [showQuizModal, setShowQuizModal] = useState(false)
 
   const handleBrandClick = (brand) => {
+    trackingService.trackEvent(EVENTS.CLICKED_SEARCH_K_BEAUTY_BRAND, {
+      brand: brand.brand,
+      brandName: brand.name,
+      section: 'search_k_beauty',
+    })
+
     if (!quizAnswers) {
       setShowQuizModal(true)
       return
     }
-    router.push(brandHref(brand))
+    router.push(brandHref(brand.brand))
   }
 
   return (
@@ -72,7 +80,7 @@ export default function SearchByBrands() {
             <SwiperSlide key={brand.id} className="!w-auto">
               <button
                 type="button"
-                onClick={() => handleBrandClick(brand.brand)}
+                onClick={() => handleBrandClick(brand)}
                 className="flex flex-col items-center gap-3 cursor-pointer"
                 aria-label={`Shop ${brand.name}`}
               >

@@ -22,7 +22,13 @@ export default function WishlistPage() {
   }, [hydrated]);
   
   function handleVisit(product) {
-    // your existing analytics/tracking call, if any
+    trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
+      productId: product.product_uid,
+      productName: product.product_name,
+      brand: product.brand_name,
+      price: product.selling_price || product.mrp,
+      section: "wishlist_page",
+    });
   }
 
   if (!hydrated) {

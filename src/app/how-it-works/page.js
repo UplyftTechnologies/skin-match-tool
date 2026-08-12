@@ -1,6 +1,8 @@
-import Link from 'next/link'
 import Header from '@/components/header'
 import { FiArrowRight, FiCheck, FiHeart, FiSliders, FiStar, FiUser } from 'react-icons/fi'
+import PageViewTracker from '@/components/tracking/page-view-tracker'
+import HowItWorksCta from '@/components/tracking/how-it-works-cta'
+import { EVENTS } from '@/lib/tracking/events'
 
 export const metadata = {
   title: 'How It Works',
@@ -49,6 +51,7 @@ export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-[#fffefa] text-[#171417]">
       <Header />
+      <PageViewTracker eventName={EVENTS.PAGE_VIEWED_HOW_IT_WORKS} properties={{ page_type: 'how_it_works' }} />
 
       <main>
         <section className="relative overflow-hidden border-b border-[#eadfea] px-5 py-16 sm:px-8 sm:py-24 lg:py-28">
@@ -65,12 +68,13 @@ export default function HowItWorksPage() {
             <p className="mx-auto mt-7 max-w-2xl font-lato text-sm leading-6 text-[#655c65] sm:text-base sm:leading-7">
               A few thoughtful questions help us organise a large skincare catalogue around you—not the other way around.
             </p>
-            <Link
+            <HowItWorksCta
               href="/#match-my-skin"
+              position="hero"
               className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#171417] px-6 py-3.5 font-lato text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[#a15091]"
             >
               Find my match <FiArrowRight size={16} />
-            </Link>
+            </HowItWorksCta>
           </div>
         </section>
 
@@ -130,12 +134,13 @@ export default function HowItWorksPage() {
           <div className="mx-auto max-w-2xl">
             <h2 className="font-cormorant text-4xl leading-none sm:text-5xl">Ready to meet your matches?</h2>
             <p className="mt-5 font-lato text-sm leading-6 text-[#706770]">Create your skin profile for free and explore products scored for you.</p>
-            <Link
+            <HowItWorksCta
               href="/#match-my-skin"
+              position="closing"
               className="mt-7 inline-flex items-center gap-3 rounded-full border border-[#171417] px-6 py-3.5 font-lato text-xs font-bold uppercase tracking-[0.14em] transition hover:bg-[#171417] hover:text-white"
             >
               Take the skin quiz <FiArrowRight size={16} />
-            </Link>
+            </HowItWorksCta>
           </div>
         </section>
       </main>

@@ -33,9 +33,9 @@ export async function GET(request) {
 
     if (error) throw error;
 
-    const products = (data || [])
-      .map((row) => findProduct(row.product_uid))
-      .filter(Boolean);
+    const products = (await Promise.all(
+      (data || []).map((row) => findProduct(row.product_uid)),
+    )).filter(Boolean);
 
     return Response.json({ ok: true, products });
   } catch (error) {
@@ -61,7 +61,7 @@ export async function POST(request) {
   }
 
   const productUid = cleanProductUid(body?.productUid);
-  if (!productUid || !findProduct(productUid)) {
+  if (!productUid || !(await findProduct(productUid))) {
     return Response.json({ error: "A valid productUid is required" }, { status: 400 });
   }
 

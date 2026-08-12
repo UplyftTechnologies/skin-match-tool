@@ -120,16 +120,18 @@ function ProductCard({ product }) {
     function handleSaveMatch(event) {
         event.stopPropagation()
         if (!toggleWishlist(savedProduct)) return
+        const eventProps = {
+            productId: savedProduct.product_uid,
+            productName: savedProduct.product_name,
+            brand: savedProduct.brand_name,
+            price: savedProduct.selling_price || savedProduct.mrp,
+            source: 'home_products',
+        }
         trackingService.trackEvent(
             wishlisted ? EVENTS.CLICKED_REMOVE_FROM_WISHLIST : EVENTS.CLICKED_ADD_TO_WISHLIST,
-            {
-                productId: savedProduct.product_uid,
-                productName: savedProduct.product_name,
-                brand: savedProduct.brand_name,
-                price: savedProduct.selling_price || savedProduct.mrp,
-                source: 'home_products',
-            },
+            eventProps,
         )
+        trackingService.trackEvent(EVENTS.CLICKED_SAVE_MY_MATCH, eventProps)
     }
 
     function trackVisit() {
@@ -230,7 +232,7 @@ export default function Products() {
     const router = useRouter()
 
     const handleViewAll = () => {
-        trackingService.trackEvent('clicked_view_all_products', {
+        trackingService.trackEvent(EVENTS.CLICKED_VIEW_ALL_PRODUCTS, {
             source: 'home_products',
             view: activeView,
         })

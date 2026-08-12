@@ -9,6 +9,8 @@ import 'swiper/css'
 import 'swiper/css/free-mode'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import RequireQuizModal from '@/components/RequireQuizModal'
+import { trackingService } from '@/lib/tracking/trackingClient'
+import { EVENTS } from '@/lib/tracking/events'
 import Face from '@/assets/images/face.webp'
 import Body from '@/assets/images/body.webp'
 import lips from '@/assets/images/lips.webp'
@@ -40,12 +42,18 @@ export default function SearchByCategory() {
 
     // Browsing by category still routes to the results page, but a category
     // tile is only actionable once the skin quiz has been completed.
-    const handleCategoryClick = (filters) => {
+    const handleCategoryClick = (category) => {
+        trackingService.trackEvent(EVENTS.CLICKED_SEARCH_BY_CATEGORY, {
+            category: category.name,
+            filters: category.filters,
+            section: 'search_by_category',
+        })
+
         if (!quizAnswers) {
             setShowQuizModal(true)
             return
         }
-        router.push(categoryHref(filters))
+        router.push(categoryHref(category.filters))
     }
 
     return (
@@ -73,7 +81,7 @@ export default function SearchByCategory() {
                         <SwiperSlide key={cat.id} className="!w-auto">
                             <button
                                 type="button"
-                                onClick={() => handleCategoryClick(cat.filters)}
+                                onClick={() => handleCategoryClick(cat)}
                                 className="flex flex-col items-center gap-3 cursor-pointer"
                                 aria-label={`View ${cat.name} products`}
                             >

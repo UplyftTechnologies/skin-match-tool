@@ -7,6 +7,8 @@ import { useScoredProducts } from "@/hooks/use-scored-products";
 import { scoredProductPath } from "@/lib/site";
 import SaveProductButton from "@/components/save-product-button";
 import ScoreBadge from "@/components/score-badge";
+import { trackingService } from "@/lib/tracking/trackingClient";
+import { EVENTS } from "@/lib/tracking/events";
 
 function formatPrice(value) {
   const number = Number(String(value || "").replace(/[^\d.]/g, ""));
@@ -39,6 +41,16 @@ function SimilarProductCard({ product, score }) {
       <Link
         className="block h-full rounded-2xl border border-slate-100 bg-white p-3 transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e08a7d]"
         href={scoredProductPath(product.product_uid, score)}
+        onClick={() =>
+          trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
+            productId: product.product_uid,
+            productName: product.product_name,
+            brand: product.brand_name,
+            price: product.sp || product.mrp,
+            score,
+            section: "similar_products",
+          })
+        }
       >
         <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-slate-50">
           {Number.isFinite(score) ? <ScoreBadge score={score} /> : null}

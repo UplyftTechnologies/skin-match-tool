@@ -38,7 +38,7 @@ function IconButton({ children, ...props }) {
   );
 }
 
-export default function Header() {
+export default function Header({ className = "" }) {
   const [userSession, setUserSession] = useState(null);
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const { wishlistIds } = useWishlist();
@@ -68,7 +68,7 @@ export default function Header() {
     "User";
 
   return (
-    <div className="sticky top-0 z-[999] w-full max-w-none !mt-0 bg-[#faf7f2] border-b border-gray-100">
+    <div className={`sticky top-0 z-[999] w-full max-w-none !mt-0 bg-[#faf7f2] border-b border-gray-100 ${className}`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-6 py-2">
         <Logo
           dark={false}
@@ -83,25 +83,25 @@ export default function Header() {
         />
 
         <div className="flex items-center gap-1">
-          <Link
-            href="/wishlist"
-            aria-label="View wishlist"
-            className="relative"
-            onClick={() =>
-              trackingService.trackEvent(EVENTS.CLICKED_WISHLIST_ICON, {
-                wishlist_count: wishlistIds.length,
-              })
-            }
-          >
-            <IconButton>
-              <BiHeart size={18} />
-            </IconButton>
-            {wishlistIds.length > 0 && (
+          {wishlistIds.length > 0 && (
+            <Link
+              href="/wishlist"
+              aria-label="View wishlist"
+              className="relative"
+              onClick={() =>
+                trackingService.trackEvent(EVENTS.CLICKED_WISHLIST_ICON, {
+                  wishlist_count: wishlistIds.length,
+                })
+              }
+            >
+              <IconButton>
+                <BiHeart size={18} />
+              </IconButton>
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
                 {wishlistIds.length}
               </span>
-            )}
-          </Link>
+            </Link>
+          )}
 
           {/* Profile icon only appears once the user is logged in. */}
           {sessionLoaded && userSession && (

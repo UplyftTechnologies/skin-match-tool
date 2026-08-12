@@ -53,7 +53,7 @@ export async function GET(request) {
     return NextResponse.json({ error: "A product uid is required." }, { status: 400 });
   }
 
-  const product = findProduct(uid);
+  const product = await findProduct(uid);
   if (!product) {
     return NextResponse.json({ error: "Product not found." }, { status: 404 });
   }

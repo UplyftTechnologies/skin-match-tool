@@ -3,9 +3,9 @@ import { COVERAGE_MODES } from "@/lib/profiles";
 
 export const runtime = "nodejs";
 
-export function GET() {
+export async function GET() {
   try {
-    return Response.json(optionsPayload(COVERAGE_MODES));
+    return Response.json(await optionsPayload(COVERAGE_MODES));
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

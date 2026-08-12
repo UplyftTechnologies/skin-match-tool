@@ -131,9 +131,13 @@ export default function MatchMySkin() {
     const toggleCondition = (item) => {
         if (gender === 'Male' && maleRestrictedConditions.includes(item)) return
 
+        // Track before the state update, not inside the updater callback —
+        // React 18/19 Strict Mode double-invokes functional setState updaters
+        // in development, which was firing this analytics call twice per click.
+        trackOption('special_conditions', item)
+
         setConditions((prev) => {
             const isSelected = prev.includes(item)
-            trackOption('special_conditions', item)
             if (isSelected) return prev.filter((condition) => condition !== item)
             if (item === 'None') return ['None']
             return [...prev.filter((condition) => condition !== 'None'), item]
@@ -172,15 +176,10 @@ export default function MatchMySkin() {
     }
 
     const handleConcernSelect = (item) => {
-        setSelectedConcerns((current) => {
-            if (current.includes(item)) {
-                trackOption('concern', item)
-                return []
-            }
+        // Same fix as toggleCondition above — track once, outside the updater.
+        trackOption('concern', item)
 
-            trackOption('concern', item)
-            return [item]
-        })
+        setSelectedConcerns((current) => (current.includes(item) ? [] : [item]))
     }
 
     const handleConcernAreaSelect = (area) => {

@@ -90,16 +90,18 @@ function ProductCard({ product }) {
     function handleSaveMatch(event) {
         event.stopPropagation()
         if (!toggleWishlist(savedProduct)) return
+        const eventProps = {
+            productId: savedProduct.product_uid,
+            productName: savedProduct.product_name,
+            brand: savedProduct.brand_name,
+            price: savedProduct.selling_price || savedProduct.mrp,
+            source: 'all_products',
+        }
         trackingService.trackEvent(
             wishlisted ? EVENTS.CLICKED_REMOVE_FROM_WISHLIST : EVENTS.CLICKED_ADD_TO_WISHLIST,
-            {
-                productId: savedProduct.product_uid,
-                productName: savedProduct.product_name,
-                brand: savedProduct.brand_name,
-                price: savedProduct.selling_price || savedProduct.mrp,
-                source: 'all_products',
-            },
+            eventProps,
         )
+        trackingService.trackEvent(EVENTS.CLICKED_SAVE_MY_MATCH, eventProps)
     }
 
     function trackVisit() {
@@ -301,7 +303,7 @@ function FilterPanel({
     )
 }
 
-function SortPanel({ open, onClose, selectedSort, onSelectSort }) {
+function SortPanel({ open, onClose, onApply, selectedSort, onSelectSort }) {
     if (!open) return null
 
     return (
@@ -334,7 +336,7 @@ function SortPanel({ open, onClose, selectedSort, onSelectSort }) {
 
                 <div className="px-5 py-4 border-t border-gray-100">
                     <button
-                        onClick={onClose}
+                        onClick={onApply}
                         className="w-full text-sm font-medium text-white bg-[#f3a99a] rounded-full py-3 hover:bg-[#e08a7d] transition-colors"
                     >
                         Apply
@@ -406,6 +408,20 @@ function ProductsPageContent() {
     const currentSortLabel = sortOptions.find((s) => s.value === selectedSort)?.label
     const appliedFilterCount = Object.values(appliedFilters)
         .reduce((total, values) => total + values.length, 0)
+
+    // Fires whenever the incoming URL changes — this is what actually catches
+    // filters carried over from a home page card (Search by Product/Category/
+    // K-Beauty/Indian Rockstar), since those land here via query params.
+    useEffect(() => {
+        trackingService.trackPageLoad(EVENTS.PAGE_VIEWED_ALL_PRODUCTS, {
+            page_type: 'all_products',
+            type: initialTypes,
+            category: initialCategories,
+            brand: initialBrands,
+            filters_applied_from_url: Boolean(initialTypes.length || initialCategories.length || initialBrands.length),
+        })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [routeStateKey])
 
     // Supabase retailer-product loading is intentionally paused. The new design
     // currently uses the same scored CSV catalog as Match Studio.
@@ -498,12 +514,31 @@ function ProductsPageContent() {
     }
 
     const resetFilters = () => {
+        trackingService.trackEvent(EVENTS.CLICKED_RESET_FILTERS, {
+            section: 'all_products',
+        })
+
         setDraftFilters(Object.fromEntries(
             Object.keys(emptyFilters).map((key) => [key, []]),
         ))
     }
 
+    const applySort = () => {
+        trackingService.trackEvent(EVENTS.CLICKED_SORT_OPTION, {
+            sort: selectedSort,
+            section: 'all_products',
+        })
+
+        setSortOpen(false)
+    }
+
     const applyFilters = () => {
+        trackingService.trackEvent(EVENTS.CLICKED_FILTER_OPTION, {
+            filters: draftFilters,
+            filterCount: Object.values(draftFilters).reduce((total, values) => total + values.length, 0),
+            section: 'all_products',
+        })
+
         setAppliedFilters(Object.fromEntries(
             Object.entries(draftFilters).map(([key, values]) => [key, [...values]]),
         ))
@@ -541,6 +576,7 @@ function ProductsPageContent() {
             <SortPanel
                 open={sortOpen}
                 onClose={() => setSortOpen(false)}
+                onApply={applySort}
                 selectedSort={selectedSort}
                 onSelectSort={(sort) => {
                     setSelectedSort(sort)

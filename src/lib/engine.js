@@ -418,9 +418,10 @@ function sortProducts(a, b) {
   return left === right ? 0 : left < right ? -1 : 1;
 }
 
-export function recommend(input = {}, requestedLimit = 500) {
+export async function recommend(input = {}, requestedLimit = 500) {
   const [profile, profileAdjustments] = sanitizeProfile(input);
-  const sorted = loadProducts().map((product) => {
+  const catalog = await loadProducts();
+  const sorted = catalog.map((product) => {
     const scored = scoreProduct(product, profile);
     if (profileAdjustments.length) scored.warnings = [...profileAdjustments, ...scored.warnings];
     return scored;
@@ -440,8 +441,8 @@ export function recommend(input = {}, requestedLimit = 500) {
   };
 }
 
-export function routine(profile, limit = 1000) {
-  const response = recommend(profile, limit);
+export async function routine(profile, limit = 1000) {
+  const response = await recommend(profile, limit);
   return {
     profile: response.profile,
     input_profile: response.input_profile,
@@ -453,10 +454,10 @@ export function routine(profile, limit = 1000) {
   };
 }
 
-export function health() {
-  const products = loadProducts();
+export async function health() {
+  const products = await loadProducts();
   return {
-    data_source: "data/products.csv",
+    data_source: "supabase:roopsee_products",
     catalog_products: products.length,
     score_rows: products.length,
     score_rows_by_sheet: { "Face and body": products.length },
@@ -480,9 +481,9 @@ function coverageStatus(profile, summary) {
   return "Coverage gap";
 }
 
-export function coverage(profiles, topN = 12) {
-  const rows = profiles.map((profile, index) => {
-    const response = recommend(profile, 1000);
+export async function coverage(profiles, topN = 12) {
+  const rows = await Promise.all(profiles.map(async (profile, index) => {
+    const response = await recommend(profile, 1000);
     const counts = thresholdCounts(response.products);
     return {
       profile_id: `profile_${String(index + 1).padStart(3, "0")}`,
@@ -502,18 +503,19 @@ export function coverage(profiles, topN = 12) {
       top_products: response.products.slice(0, topN),
       target_sheets: response.target_sheets,
     };
-  });
+  }));
   const statusCounts = {};
   for (const row of rows) statusCounts[row.status] = (statusCounts[row.status] || 0) + 1;
+  const [products, healthSummary] = await Promise.all([loadProducts(), health()]);
   return {
     profile_count: rows.length,
     status_counts: statusCounts,
-    catalog_products: loadProducts().length,
-    catalog_missing_score_count: health().catalog_missing_score_count,
+    catalog_products: products.length,
+    catalog_missing_score_count: healthSummary.catalog_missing_score_count,
     rows,
   };
 }
 
-export function optionsPayload(coverageModes) {
-  return { quiz_options: QUIZ_OPTIONS, coverage_modes: coverageModes, health: health() };
+export async function optionsPayload(coverageModes) {
+  return { quiz_options: QUIZ_OPTIONS, coverage_modes: coverageModes, health: await health() };
 }

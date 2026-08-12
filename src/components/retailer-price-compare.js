@@ -80,6 +80,7 @@ function BuyButton({ offer, productName, primary, compact }) {
     function handleBuy() {
         trackingService.trackEvent(EVENTS.CLICKED_BUY_FROM_RETAILER, {
             site: offer.site,
+            retailer: siteName(offer.site),
             productName,
             retailerProductName: offer.product_name,
             price: offer.price,
@@ -142,7 +143,21 @@ function OfferModal({ offer, offers, productName, onClose }) {
 
     const mrp = Number(offer.mrp)
     const showMrp = Number.isFinite(mrp) && mrp > offer.price
-    const features = [...(offer.key_ingredients || []), ...(offer.key_features || [])].slice(0, 6)
+    // Retailers mix two very different shapes under key_features/key_ingredients:
+    // short tags ("Hydrating") and, on Amazon in particular, full bullet
+    // paragraphs ("REDUCES ACNE & BLACKHEADS - ..."). A paragraph inside a
+    // rounded-full pill renders as an oversized stadium shape, so long items
+    // get their own bullet list instead of the tag row.
+    const rawFeatures = [...(offer.key_ingredients || []), ...(offer.key_features || [])].filter(Boolean)
+    const tagFeatures = rawFeatures.filter((item) => item.length <= 40).slice(0, 6)
+    const bulletFeatures = rawFeatures.filter((item) => item.length > 40).slice(0, 6)
+
+    // Amazon rows commonly duplicate the bullet paragraphs verbatim inside
+    // `description` (joined with newlines, which collapse in HTML into one
+    // run-on wall of text) — skip it rather than repeat the bullets above.
+    const normalizedDescription = (offer.description || '').replace(/\s+/g, ' ').trim()
+    const normalizedBullets = bulletFeatures.map((item) => item.replace(/\s+/g, ' ').trim()).join(' ')
+    const descriptionDuplicatesBullets = bulletFeatures.length > 0 && normalizedDescription === normalizedBullets
 
     return (
         <div
@@ -219,9 +234,9 @@ function OfferModal({ offer, offers, productName, onClose }) {
                             ) : null}
                         </div>
 
-                        {features.length ? (
+                        {tagFeatures.length ? (
                             <div className="mt-4 flex flex-wrap gap-2">
-                                {features.map((item) => (
+                                {tagFeatures.map((item) => (
                                     <span
                                         key={item}
                                         className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[12px] font-semibold text-slate-600"
@@ -234,7 +249,25 @@ function OfferModal({ offer, offers, productName, onClose }) {
                     </div>
                 </div>
 
-                {offer.description ? (
+                {bulletFeatures.length ? (
+                    <ul className="mt-5 space-y-2.5">
+                        {bulletFeatures.map((item) => {
+                            const match = item.match(/^([^-:]{2,60}?)\s*[-:]\s*(.*)$/s)
+                            return (
+                                <li key={item} className="flex gap-2 text-[12.5px] leading-relaxed text-slate-600">
+                                    <span aria-hidden="true" className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#f3a99a]" />
+                                    <span className="break-words">
+                                        {match ? (
+                                            <><strong className="font-semibold text-slate-800">{match[1]}.</strong> {match[2]}</>
+                                        ) : item}
+                                    </span>
+                                </li>
+                            )
+                        })}
+                    </ul>
+                ) : null}
+
+                {offer.description && !descriptionDuplicatesBullets ? (
                     <p className="mt-5 break-words text-[13.5px] leading-relaxed text-slate-600">
                         {offer.description.length > 600
                             ? `${offer.description.slice(0, 600).trim()}…`
@@ -314,6 +347,7 @@ export default function RetailerPriceCompare({ productUid, productName, catalogP
         setActiveOffer(offer)
         trackingService.trackEvent(EVENTS.CLICKED_RETAILER_OFFER, {
             site: offer.site,
+            retailer: siteName(offer.site),
             productName,
             price: offer.price,
         })
@@ -376,11 +410,11 @@ export default function RetailerPriceCompare({ productUid, productName, catalogP
                 </button>
             </div>
 
-            <ul className="mt-3 divide-y divide-slate-100">
+            <ul className="mt-3 p-1 divide-y divide-slate-100">
 
                 {displayRows.map((row) => (
                     row.site === 'roopsee' ? (
-                        <li className="flex items-center gap-2 rounded-lg bg-rose-50/70 px-2 py-2 sm:gap-3" key="roopsee">
+                        <li className="flex items-center gap-2 rounded- bg-rose-50/70 px-1 py-2 sm:gap-3" key="roopsee">
                             <span className="flex min-w-0 flex-1 items-center justify-between gap-3">
                                 <span className="min-w-0">
                                     <RetailerLogo site="roopsee" height={36} />
@@ -396,7 +430,7 @@ export default function RetailerPriceCompare({ productUid, productName, catalogP
                             <BuyButton compact offer={row} productName={productName} />
                         </li>
                     ) : (
-                        <li className="flex items-center gap-2 py-2 sm:gap-3" key={row.site}>
+                        <li className="flex items-center gap-2 px-1 py-2 sm:gap-3" key={row.site}>
                             <button
                                 type="button"
                                 onClick={() => openOffer(row)}

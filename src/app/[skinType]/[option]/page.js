@@ -30,7 +30,7 @@ export default async function SkinTypeOptionPage({ params }) {
   const guide = getSkinTypeOptionGuide(skinType, option);
   if (!guide) notFound();
 
-  const response = recommend(guide.profile, 12);
+  const response = await recommend(guide.profile, 12);
   const canonical = absoluteUrl(`/${skinType}/${option}`);
   const structuredData = [
     {

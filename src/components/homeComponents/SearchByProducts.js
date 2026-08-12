@@ -9,6 +9,8 @@ import 'swiper/css'
 import 'swiper/css/free-mode'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import RequireQuizModal from '@/components/RequireQuizModal'
+import { trackingService } from '@/lib/tracking/trackingClient'
+import { EVENTS } from '@/lib/tracking/events'
 import P1 from '@/assets/Shopbyproducts/p1.png'
 import P2 from '@/assets/Shopbyproducts/p2.png'
 import P3 from '@/assets/Shopbyproducts/p3.png'
@@ -40,12 +42,18 @@ export default function SearchByProducts() {
     const quizAnswers = useQuizAnswers()
     const [showQuizModal, setShowQuizModal] = useState(false)
 
-    const handleProductClick = (type) => {
+    const handleProductClick = (product) => {
+        trackingService.trackEvent(EVENTS.CLICKED_SEARCH_BY_PRODUCT_TYPE, {
+            productType: product.type,
+            productName: product.name,
+            section: 'search_by_products',
+        })
+
         if (!quizAnswers) {
             setShowQuizModal(true)
             return
         }
-        router.push(productTypeHref(type))
+        router.push(productTypeHref(product.type))
     }
 
     return (
@@ -72,7 +80,7 @@ export default function SearchByProducts() {
                         <SwiperSlide key={product.id} className="!w-auto">
                             <button
                                 type="button"
-                                onClick={() => handleProductClick(product.type)}
+                                onClick={() => handleProductClick(product)}
                                 className="flex flex-col items-center gap-3 cursor-pointer"
                                 aria-label={`Shop ${product.name}`}
                             >

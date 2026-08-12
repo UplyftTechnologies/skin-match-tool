@@ -16,17 +16,17 @@ function limitRows(payload, rowLimit) {
   return payload;
 }
 
-function responseFor({ mode = "all_pnc", count = 72, topN = 5, rowLimit = 0, profiles }) {
-  const payload = coverage(profiles || profilesForMode(mode, count), topN);
+async function responseFor({ mode = "all_pnc", count = 72, topN = 5, rowLimit = 0, profiles }) {
+  const payload = await coverage(profiles || profilesForMode(mode, count), topN);
   payload.mode = mode;
   payload.mode_meta = COVERAGE_MODES[mode] || COVERAGE_MODES.all_pnc;
   return limitRows(payload, rowLimit);
 }
 
-export function GET(request) {
+export async function GET(request) {
   try {
     const params = new URL(request.url).searchParams;
-    return Response.json(responseFor({
+    return Response.json(await responseFor({
       mode: params.get("mode") || "all_pnc",
       count: Number(params.get("count")) || 72,
       topN: Number(params.get("top_n")) || 5,
@@ -40,7 +40,7 @@ export function GET(request) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    return Response.json(responseFor({
+    return Response.json(await responseFor({
       mode: body.mode || "all_pnc",
       count: Number(body.count) || 72,
       topN: Number(body.top_n) || 5,

@@ -6,8 +6,8 @@ import { recommend } from "@/lib/engine";
 import { absoluteUrl, SITE_NAME, SITE_URL } from "@/lib/site";
 import FooterPage from "./footer/page";
 
-export default function Home() {
-  const initialData = recommend(DEFAULT_PROFILE, 500);
+export default async function Home() {
+  const initialData = await recommend(DEFAULT_PROFILE, 500);
   const structuredData = [
     {
       "@context": "https://schema.org",

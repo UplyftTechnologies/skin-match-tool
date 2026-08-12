@@ -14,6 +14,7 @@ export default function SaveProductButton({
   unsavedClassName,
   mobile = false,
   label = "Save Product",
+  trackSaveMyMatch = false,
 }) {
   const { isWishlisted, toggleWishlist } = useWishlist();
   const wishlisted = isWishlisted(product.product_uid);
@@ -30,6 +31,18 @@ export default function SaveProductButton({
         source: "product_details_page",
       }
     );
+    // A few callers render this as the page's headline "Save my match" CTA —
+    // track that distinctly so it can be measured on its own, separate from
+    // every other add/remove-wishlist tap across the app.
+    if (trackSaveMyMatch) {
+      trackingService.trackEvent(EVENTS.CLICKED_SAVE_MY_MATCH, {
+        productId: product.product_uid,
+        productName: product.product_name,
+        brand: product.brand_name,
+        price: product.selling_price || product.mrp,
+        source: "product_details_page",
+      });
+    }
   }
 
   // Callers that only pass `className` keep a single fixed look; passing

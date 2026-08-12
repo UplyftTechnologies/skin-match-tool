@@ -23,6 +23,7 @@ import ProductScoreBadge from "@/components/product-score-badge";
 import RetailerPriceCompare from "@/components/retailer-price-compare";
 import SimilarProducts from "@/components/similar-products";
 import MobileProductDetails from "@/components/mobile-product-details";
+import ProductViewTracker from "@/components/tracking/product-view-tracker";
 
 export const dynamicParams = false;
 
@@ -43,13 +44,14 @@ function numericValue(raw) {
   return Number.isFinite(number) && number > 0 ? number : null;
 }
 
-export function generateStaticParams() {
-  return loadProducts().map((product) => ({ uid: product.product_uid }));
+export async function generateStaticParams() {
+  const products = await loadProducts();
+  return products.map((product) => ({ uid: product.product_uid }));
 }
 
 export async function generateMetadata({ params }) {
   const { uid } = await params;
-  const product = findProduct(uid);
+  const product = await findProduct(uid);
   if (!product) return {};
   const canonical = productPath(product.product_uid);
   const description = descriptionFor(product);
@@ -102,7 +104,7 @@ function SectionHeading({ index, icon: Icon, title }) {
 
 export default async function ProductPage({ params }) {
   const { uid } = await params;
-  const product = findProduct(uid);
+  const product = await findProduct(uid);
   if (!product) notFound();
 
   const price = priceAmount(product);
@@ -111,7 +113,6 @@ export default async function ProductPage({ params }) {
   const hasDiscount = mrpValue && spValue && mrpValue > spValue;
   const percentOff = hasDiscount ? Math.round(((mrpValue - spValue) / mrpValue) * 100) : null;
 
-  // Shape the product to match what ProductCard / WishlistContext expect
   const wishlistProduct = {
     product_uid: product.product_uid,
     product_name: product.product_name,
@@ -174,7 +175,8 @@ export default async function ProductPage({ params }) {
 
   return (
     <div className="rps-pdp min-h-screen bg-[#FAF9F6] pb-10 text-slate-800">
-      <div className="hidden sm:block"><Header /></div>
+      <ProductViewTracker product={product} />
+      <Header className="hidden sm:block" />
       <script
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
         type="application/ld+json"
@@ -208,6 +210,7 @@ export default async function ProductPage({ params }) {
               <SaveProductButton
                 product={wishlistProduct}
                 label="Save my match"
+                trackSaveMyMatch
                 unsavedClassName="inline-flex w-full items-center justify-center gap-2 rounded-full
                 border border-[#f3a99a] bg-white
                  px-7 py-2 text-[10px] font-semibold tracking-wide text-[#d77465] transition-all
