@@ -1,0 +1,1948 @@
+{
+  "csv_total": 384,
+  "retailer_total": 12196,
+  "exact_matches": 0,
+  "fuzzy_matches": 2,
+  "total_matched": 2,
+  "unmatched_csv": 382,
+  "brands_in_csv": 47,
+  "brands_in_retailer": 834,
+  "brands_shared": 2,
+  "exact_match_pairs": [],
+  "fuzzy_match_pairs": [
+    {
+      "csv_product_uid": "Roopsee-F-MO-01",
+      "csv_product_name": "Re'equil Ceramide & Hyaluronic Acid Moisturiser",
+      "csv_brand": "Re'equil",
+      "retailer_id": 30546,
+      "retailer_site": "amazon",
+      "retailer_brand": "RE' EQUIL",
+      "retailer_product_name": "RE' EQUIL Ceramide & Hyaluronic Acid Moisturiser | Moisturizer For Face | Barrier Repair Cream | Long Lasting Hydration | Suitable For Normal To Dry Skin | 100G",
+      "score": 1,
+      "match_type": "same_brand"
+    },
+    {
+      "csv_product_uid": "Roopsee-F-SU-05",
+      "csv_product_name": "Re'equil Ultra Matte Dry Touch Sunscreen SPF 50 PA++++",
+      "csv_brand": "Re'equil",
+      "retailer_id": 30547,
+      "retailer_site": "amazon",
+      "retailer_brand": "RE' EQUIL",
+      "retailer_product_name": "Re' Equil Ultra Matte Dry Touch Sunscreen Gel Spf 50 Pa++++, Water Resistant With Zinc Oxide And Titanium Dioxide 20G",
+      "score": 1,
+      "match_type": "same_brand"
+    }
+  ],
+  "unmatched_csv_products": [
+    {
+      "product_uid": "Roopsee-F-CL-18",
+      "product_name": "Minimalist 5% Aquaporin Booster Face Wash With Hyaluronic Acid",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-40",
+      "product_name": "Minimalist 0.6% Retinol Face Serum",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-19",
+      "product_name": "Minimalist 0.3% Ceramide Barrier Repair Moisturizing Cream For Oily Skin",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-09",
+      "product_name": "Minimalist 2% Salicylic Acid + LHA Body Wash",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-05",
+      "product_name": "Minimalist Niacinamide 5% Body Lotion",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-09",
+      "product_name": "Minimalist 8% Glycolic Acid Toner",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-06",
+      "product_name": "Minimalist SPF 30 Body Lotion",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-19",
+      "product_name": "The Derma Co Niacinamide Gentle Skin Cleanser",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-41",
+      "product_name": "The Derma Co 2% Salicylic Acid Face Serum for Active Acne",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-42",
+      "product_name": "The Derma Co C-Cinamide Radiance Serum with 10% Vitamin C & 5% Niacinamide",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-10",
+      "product_name": "The Derma Co 1% Salicylic Acid Daily Exfoliating Body Wash with Salicylic Acid, Glycolic Acid & Pentavitin",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-20",
+      "product_name": "The Derma Co 3% AHA BHA Foaming Daily Face Wash with Mandelic Acid, Glycolic Acid & Salicylic Acid",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-21",
+      "product_name": "Deconstruct Hyaluronic Acid Hydrating Face Wash - 0.5% Amino Acids + 0.1% Hyaluronic Acid",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-43",
+      "product_name": "Deconstruct Oil Control Serum - 3% Niacinamide + 2% Salicylic Acid",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-44",
+      "product_name": "Deconstruct Dark Spot Clearing Serum - 5% Niacinamide + 2% Alpha Arbutin",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-45",
+      "product_name": "Deconstruct 10% Vitamin C Serum for Glowing Skin with Liposomal Technology",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-46",
+      "product_name": "Deconstruct Brightening Niacinamide Serum - 10% Niacinamide + 0.3% Alpha Arbutin",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-20",
+      "product_name": "Deconstruct Oil-Free Moisturizer for Oily Skin - 3% NMF Complex + 0.2% Panthenol",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-17",
+      "product_name": "Deconstruct Gel Sunscreen for Oily Skin - SPF 50 PA++++",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-47",
+      "product_name": "Deconstruct Vitamin C + Ferulic Acid Serum - 10% Liposomal Vitamin C + 0.5% Ferulic Acid",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-48",
+      "product_name": "Deconstruct 2% Hyaluronic Acid Serum with 1% Niacinamide",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-49",
+      "product_name": "Deconstruct Retinol & Peptide Serum for Anti-aging - 0.2% Retinol + 1% Peptide",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-21",
+      "product_name": "Deconstruct Brightening Moisturizer - 3% Vitamin C + 1% Kojic Acid Dipalmitate",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-18",
+      "product_name": "Deconstruct Invisible Cooling Sunscreen SPF 50 PA++++",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-22",
+      "product_name": "Chemist at Play 2% Salicylic Acid Face Wash for Acne & Oil Control",
+      "brand_name": "Chemist at Play"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-23",
+      "product_name": "Chemist at Play Gentle & Hydrating Face Cleanser (Rice Water + Hyaluronic Acid)",
+      "brand_name": "Chemist at Play"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-50",
+      "product_name": "Chemist at Play 10% Vitamin C Face Serum with 2% Glucosamine for Glowing Skin",
+      "brand_name": "Chemist at Play"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-11",
+      "product_name": "Chemist at Play Brightening Body Wash with Vitamin C & Niacinamide",
+      "brand_name": "Chemist at Play"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-07",
+      "product_name": "Chemist at Play 10% Magnesium Body Lotion with Lavender Oil & Aloe Vera",
+      "brand_name": "Chemist at Play"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-08",
+      "product_name": "Chemist at Play 5% AHA Body Lotion with Niacinamide & Shea Butter",
+      "brand_name": "Chemist at Play"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-22",
+      "product_name": "Deconstruct Skin Soothe Moisturizer - 1% Ceramide + 0.2% Bisabolol",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-19",
+      "product_name": "Deconstruct Fluid Brightening Sunscreen SPF 50 PA++++ - 5% Niacinamide",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-TR-01",
+      "product_name": "Deconstruct Hydrocolloid Acne Pimple Patch with 2% Salicylic Acid & 0.2% Tea Tree Oil",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-12",
+      "product_name": "Deconstruct Salicylic Acid Body Wash - 1% Salicylic Acid + 2% Glycolic Acid",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-09",
+      "product_name": "Deconstruct Detan Body Sunscreen Lotion - 4% Niacinamide + 1% Kojic Acid + SPF 50 PA++++",
+      "brand_name": "Deconstruct"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-24",
+      "product_name": "Dot & Key Cica + Salicylic Acid Blemish Clearing Face Wash",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-25",
+      "product_name": "Dot & Key Barrier Repair + Hydrating Gentle Face Wash",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-26",
+      "product_name": "Dot & Key Watermelon Super Glow Gel Face Wash with Vitamin C & Cucumber",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-51",
+      "product_name": "Dot & Key 10% Vitamin C + E Super Bright Face Serum with 5% Niacinamide",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-23",
+      "product_name": "Dot & Key Cica + Niacinamide Oil-Free Ultra Light Water Gel Moisturizer",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-20",
+      "product_name": "Dot & Key Watermelon Cooling Aqua-Gel Sunscreen SPF 50+ PA++++",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-21",
+      "product_name": "Dot & Key Cica + Niacinamide Mattifying Light Gel Cream Sunscreen SPF 50+ PA++++",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-22",
+      "product_name": "Dot & Key Vitamin C + E Super Bright Sunscreen SPF 50+ PA++++",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-23",
+      "product_name": "Dot & Key Strawberry Dew Tinted Sunscreen SPF 50+ PA++++",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-24",
+      "product_name": "Dot & Key 72HR Hydrating Gel Moisturizer + Probiotics",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-25",
+      "product_name": "Dot & Key Retinol + Ceramide Night Repair Cream (Night Reset)",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-52",
+      "product_name": "Dot & Key 10% Niacinamide + Cica Face Serum (Cica + 2% Salicylic Skin Clearing)",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-53",
+      "product_name": "Dot & Key 10% Niacinamide + Strawberry Bright Brightening Face Serum",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-54",
+      "product_name": "Dot & Key 12% Barrier Boost Serum (Hyaluronic + Ceramides + Niacinamide)",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-18",
+      "product_name": "Dot & Key Vitamin C Pink Clay Mask",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-55",
+      "product_name": "Dot & Key Pomegranate + 0.9% Retinol Serum with Collagen",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-56",
+      "product_name": "Dot & Key 2% Salicylic Acid + Cica Anti-Acne Face Serum with Zinc",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-10",
+      "product_name": "Dot & Key Vitamin C + E Super Bright Body Lotion with Blood Orange & Niacinamide",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-11",
+      "product_name": "Dot & Key Watermelon Cooling Sunscreen Body Spray SPF 50+ PA+++",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-24",
+      "product_name": "Dot & Key Daily Glow Sunscreen SPF 50",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-26",
+      "product_name": "Dot & Key Barrier Repair Intense Moisturizer with Ceramides",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-27",
+      "product_name": "Dot & Key Blueberry Hydrate Barrier Repair Oil-Free Moisturizer",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-25",
+      "product_name": "Dot & Key Dragon Fruit Bounce Sunscreen SPF 50+ PA++++",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-26",
+      "product_name": "Dot & Key Mineral Sunscreen SPF 50",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-27",
+      "product_name": "Dot & Key Deep Pore Clean Foaming Face Wash",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-28",
+      "product_name": "Dot & Key Multi Peptide Pomegranate Moisturizer with Ceramides SPF 30",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-10",
+      "product_name": "Dot & Key Blueberry Hydrate Barrier Repair Milky Toner Essence",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-27",
+      "product_name": "Aqualogica Hydrate+ Dewy Sunscreen SPF 50+ PA++++ with Coconut Water & Hyaluronic Acid",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-57",
+      "product_name": "Aqualogica Glow+ Concentrate Face Serum",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-58",
+      "product_name": "Aqualogica Radiance+ Concentrate Face Serum with Watermelon & Niacinamide",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-29",
+      "product_name": "Aqualogica Glow+ Hydra Gel Moisturizer with Vitamin C & Papaya",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-30",
+      "product_name": "Aqualogica Hydrate+ Jello Moisturizer with Coconut Water & Hyaluronic Acid",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-31",
+      "product_name": "Aqualogica 5 Barrier+ Repair Moisturizer with Avocado & 5 Essential Ceramides",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-28",
+      "product_name": "Aqualogica Glow+ Smoothie Face Wash with Papaya & Vitamin C",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-29",
+      "product_name": "Aqualogica Hydrate+ Smoothie Face Wash with Coconut Water & Hyaluronic Acid",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-30",
+      "product_name": "Aqualogica Radiance+ Smoothie Face Wash with Watermelon & Niacinamide",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-31",
+      "product_name": "Aqualogica 5 Barrier+ Repair Gentle Cleanser with Avocado & 5 Essential Ceramides",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-11",
+      "product_name": "Aqualogica Hydrate+ Refresh Toning Mist with Coconut Water & Hyaluronic Acid",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-32",
+      "product_name": "Aqualogica Glow+ Oil Free Moisturizer with Papaya & Vitamin C",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-33",
+      "product_name": "Aqualogica Radiance+ JellO Moisturizer",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-28",
+      "product_name": "Aqualogica Radiance+ Water Light Fluid Sunscreen",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-34",
+      "product_name": "Aqualogica Glow+ JellO Moisturizer",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-35",
+      "product_name": "Aqualogica Glow+ Mousse Night Gel",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-36",
+      "product_name": "Aqualogica Radiance+ Oil Free Moisturizer with Watermelon & Niacinamide",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-37",
+      "product_name": "Aqualogica Glow+ Milk Fluid Moisturizer with Vitamin C & Papaya",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-38",
+      "product_name": "Aqualogica 5 Barrier+ Milk Fluid Moisturizer",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-12",
+      "product_name": "Aqualogica Radiance+ Silky Body Lotion with Watermelon & Niacinamide",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-59",
+      "product_name": "Aqualogica Glow+ 30X Vitamin C Hydrating Essence Serum",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-29",
+      "product_name": "Aqualogica Detan+ Dewy Gel Sunscreen SPF 50+ PA++++ with Kojic-Hyaluron Complex & Wild Berries",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-30",
+      "product_name": "Aqualogica Bright+ Makeup-Set Sunscreen Mist SPF 50+ PA++++",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-31",
+      "product_name": "Aqualogica 5 Barrier+ Repair Sunscreen SPF 50+ PA++++ with Avocado & 5 Essential Ceramides",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-32",
+      "product_name": "Dr. Sheth's Ceramide & Vitamin C Sunscreen SPF 50+ PA++++",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-33",
+      "product_name": "Dr. Sheth's Haldi & Hyaluronic Acid Sunscreen SPF 50+ PA++++",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-34",
+      "product_name": "Dr. Sheth's Centella & Niacinamide Oil & Acne Control Sunscreen SPF 50+ PA++++",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-32",
+      "product_name": "Dr. Sheth's Ceramide & Vitamin C Face Wash",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-33",
+      "product_name": "Dr. Sheth's Neem & Salicylic Acid Foaming Face Wash",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-34",
+      "product_name": "Dr. Sheth's Kesar & Kojic Acid Face Wash",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-60",
+      "product_name": "Dr. Sheth's Non-Irritating Ceramide & 15% Vitamin C Ampoule Serum",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-61",
+      "product_name": "Dr. Sheth's Centella & 10% Niacinamide Ampoule Serum",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-62",
+      "product_name": "Dr. Sheth's Kesar & 2% Kojic Acid Ampoule Serum",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-39",
+      "product_name": "Dr. Sheth's Ceramide & Vitamin C Oil-Free Moisturizer",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-40",
+      "product_name": "Dr. Sheth's Ceramide & Vitamin C Daily Brightening & Repair Face Cream",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-41",
+      "product_name": "Dr. Sheth's Centella & Niacinamide Moisturizing Cream",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-42",
+      "product_name": "Dr. Sheth's Kesar & Kojic Acid Oil-Free Moisturizer",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-63",
+      "product_name": "Dr. Sheth's Neem & 2% Salicylic Acid Ampoule Serum",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-64",
+      "product_name": "Dr. Sheth's Ceramide Barrier Repair Serum",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-43",
+      "product_name": "Dr. Sheth's Cica & Ceramide Oil-Free Moisturizer",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-19",
+      "product_name": "Dr. Sheth's Haldi & Hyaluronic Acid Sleeping Mask",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-13",
+      "product_name": "Dr. Sheth's Ceramide Body Lotion",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-14",
+      "product_name": "Dot & Key Vitamin C + E Super Bright Body Lotion with Blood Orange & Niacinamide",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-13",
+      "product_name": "Dr. Sheth's Ceramide Body Wash",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-14",
+      "product_name": "Dr. Sheth's Vitamin C Body Wash",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-35",
+      "product_name": "Dr. Sheth's Ceramide & Vitamin C Oil-Free Sunscreen SPF 50+ PA++++",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-35",
+      "product_name": "Dr. Sheth's Oats & Ceramide Sensitive Skin Cleanser",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-44",
+      "product_name": "Dr. Sheth's Gulab & Glycolic Acid Oil-Free Moisturizer",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-36",
+      "product_name": "Dr. Sheth's Oats & Ceramide Sunscreen for Sensitive Skin SPF 50+ PA++++",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-37",
+      "product_name": "Dr. Sheth's Kesar & Kojic Acid Sunscreen SPF 50+ PA++++",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-45",
+      "product_name": "Dr. Sheth's Ceramide & Vitamin C Brightening Oil-Free Moisturizer",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-46",
+      "product_name": "Dr. Sheth's Kesar & Kojic Daily Pigmentation Correction Cream",
+      "brand_name": "Dr. Sheth's"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-15",
+      "product_name": "Fixderma FCL Oatsilk Body Lotion",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-47",
+      "product_name": "Fixderma Fidelia Moisturizing Cream",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-48",
+      "product_name": "Fixderma Cleovera Cica Cream",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-65",
+      "product_name": "Fixderma Reticuram Retinol Serum",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-38",
+      "product_name": "Fixderma Shadow SPF 30+ Sunscreen Cream",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-39",
+      "product_name": "Fixderma Shadow Kids SPF 30+ Lotion",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-40",
+      "product_name": "Fixderma Shadow Sunscreen Lotion SPF 80+",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-TR-02",
+      "product_name": "Fixderma Salyzap Acne Spot Corrector Gel",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-B-BS-01",
+      "product_name": "Fixderma Salyzap Spray for Body Acne",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-16",
+      "product_name": "Fixderma Moisturizing Lotion",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-49",
+      "product_name": "Fixderma Face 21 Cream",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-36",
+      "product_name": "Fixderma Dewrav Gentle & Hydrating Face Wash",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-37",
+      "product_name": "Fixderma Vitamin C Face Wash for Oily Skin",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-50",
+      "product_name": "Fixderma Dewrav Brightening & Oil Free Face Moisturizer",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-51",
+      "product_name": "Fixderma Brightening Gel Cream",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-52",
+      "product_name": "Fixderma Epifager Ultra Cream",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-41",
+      "product_name": "Fixderma Brightening Sunscreen SPF 50+",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-17",
+      "product_name": "Fixderma Ceramide Body Lotion",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-18",
+      "product_name": "Fixderma Brightening Body Lotion",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-19",
+      "product_name": "Fixderma Dewrav Deep Exfoliating Body Lotion",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-20",
+      "product_name": "Fixderma Teenilicious Bum Body Cream",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-B-TR-01",
+      "product_name": "Fixderma Underarm Roll-On",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-21",
+      "product_name": "Fixderma Teenilicious Body Lotion Gold Sparkle",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-22",
+      "product_name": "Fixderma Fidelia Hydrating Body Lotion",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-23",
+      "product_name": "Fixderma Fidelia Nourishing Body Lotion",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-42",
+      "product_name": "Fixderma Shadow SPF 50+ Tinted Sunscreen",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-43",
+      "product_name": "Fixderma Acne Safe Sunscreen SPF 50+",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-38",
+      "product_name": "Fixderma Strawberry Face Wash",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-39",
+      "product_name": "Fixderma Skarfix-TX Face Cleanser",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-40",
+      "product_name": "Fixderma C Scape Cleanser with Vitamin C",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-53",
+      "product_name": "Fixderma Dewrav Moisturizing Cream For Dry To Very Dry Skin",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-54",
+      "product_name": "Fixderma Brightening Moisture Gel",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-66",
+      "product_name": "Fixderma 17% Vitamin C Face Serum",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-55",
+      "product_name": "Fixderma Skarfix-TX Cream",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-44",
+      "product_name": "Fixderma Brightening Sunscreen Fluid SPF 50+",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-45",
+      "product_name": "Fixderma Shadow Dewy SPF 50 Sunscreen Spray",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-56",
+      "product_name": "Fixderma Cleovera Cream for Sensitive Skin",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-12",
+      "product_name": "Anua Heartleaf 77% Soothing Toner",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-57",
+      "product_name": "Anua Heartleaf 70 Intense Calming Cream",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-41",
+      "product_name": "Anua Heartleaf Quercetinol Pore Deep Cleansing Foam",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-67",
+      "product_name": "Anua Heartleaf 80% Moisture Soothing Ampoule",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-68",
+      "product_name": "Anua Niacinamide 10% + TXA 4% Serum",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-69",
+      "product_name": "Anua Peach 70 Niacin Serum",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-58",
+      "product_name": "Anua Peach 77 Niacin Enriched Cream",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-13",
+      "product_name": "Anua Rice 70 Glow Milky Toner",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-46",
+      "product_name": "Anua Heartleaf Silky Moisture Sun Cream SPF 50+ PA++++",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-14",
+      "product_name": "Anua Peach 77 Niacin Conditioning Milk",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-20",
+      "product_name": "Anua Heartleaf LHA Moisture Peeling Gel",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-42",
+      "product_name": "Anua Heartleaf Pore Control Cleansing Oil",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-47",
+      "product_name": "Anua Zero-Cast Moisturizing Finish Sunscreen SPF50+ PA++++",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-59",
+      "product_name": "Anua 3 Ceramide Panthenol Moisture Barrier Cream with Hyaluronic Acid, Barrier Care & 48H Hydration",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-70",
+      "product_name": "Anua 7 Rice Ceramide Hydrating Barrier Serum",
+      "brand_name": "Anua"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-43",
+      "product_name": "The Face Shop Rice Water Bright Cleansing Foam",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-44",
+      "product_name": "The Face Shop Rice Water Bright Light Cleansing Oil",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-15",
+      "product_name": "The Face Shop Rice Ceramide Moisturizing Emulsion",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-60",
+      "product_name": "The Face Shop Rice Ceramide Moisturizing Cream",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-48",
+      "product_name": "The Face Shop Natural Sun Eco Super Perfect Sun Cream SPF 50+ PA++++",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-61",
+      "product_name": "The Face Shop Jeju Aloe Fresh Soothing Gel",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-49",
+      "product_name": "The Face Shop Natural Sun Eco No Shine Hydrating Sun Cream SPF 50+ PA++++",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-50",
+      "product_name": "The Face Shop Rice Water Bright Moisture Sunscreen SPF50+ PA++++",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-16",
+      "product_name": "The Face Shop Ceramide & Rice Face Toner - Korean Beauty Skincare for Brightness & Minimizes Pores",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-71",
+      "product_name": "The Face Shop Collagen & Pomegranate Serum - Best Anti Aging Korean Serum with Panthenol",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-62",
+      "product_name": "The Face Shop Collagen & Pomegranate Moisturizer Anti Aging Korean Beauty Day & Night Cream",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-72",
+      "product_name": "The Face Shop White Seed Brightening Korean Serum With Niacinamide & Hyaluronic Acid for Dark Spots",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-21",
+      "product_name": "The Face Shop Smart Peeling White Jewel Perle - Brightening For Tan Removal",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-45",
+      "product_name": "Innisfree Green Tea Amino Hydrating Cleansing Foam",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-63",
+      "product_name": "Innisfree Green Tea Seed Hyaluronic Cream",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-73",
+      "product_name": "Innisfree Retinol Cica Repair Ampoule",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-74",
+      "product_name": "Innisfree Vitamin C Green Tea Enzyme Brightening Serum",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-46",
+      "product_name": "Innisfree Volcanic BHA Pore Cleansing Foam",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-17",
+      "product_name": "Innisfree Bija Trouble Skin Toner",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-64",
+      "product_name": "Innisfree Bija Trouble Lotion",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-75",
+      "product_name": "Innisfree Black Tea Youth Enhancing Ampoule",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-65",
+      "product_name": "Innisfree Black Tea Youth Enhancing Cream",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-66",
+      "product_name": "Innisfree Cherry Blossom Glow Jelly Cream",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-67",
+      "product_name": "Innisfree Cherry Blossom Glow Tone-Up Cream",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-68",
+      "product_name": "Innisfree Aloe Revital Soothing Gel",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-52",
+      "product_name": "Innisfree Tone Up No Sebum Sunscreen EX SPF 50+ PA++++ For Oil Control - Matte Finish",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-76",
+      "product_name": "Celimax The Real Noni Energy Ampoule",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-18",
+      "product_name": "Celimax The Real Noni Moisture Balancing Toner",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-69",
+      "product_name": "Celimax The Real Noni Hydra Firming Lotion",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-70",
+      "product_name": "Celimax Dual Barrier Skin Wearable Cream",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-77",
+      "product_name": "Celimax Dual Barrier Boosting Serum",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-19",
+      "product_name": "Celimax Ji Woo Gae Heartleaf BHA Peeling Pad",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-20",
+      "product_name": "Celimax Ji Woo Gae Cica BHA Blemish Toner",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-47",
+      "product_name": "Celimax Derma Nature Fresh Blackhead Jojoba Cleansing Oil",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-71",
+      "product_name": "Celimax The Real Noni Energy Repair Cream",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-53",
+      "product_name": "Celimax Dual Barrier Watery Sun Cream SPF 50+ PA++++",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-48",
+      "product_name": "Celimax Dual Barrier Mild Gel Cleanser",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-49",
+      "product_name": "Celimax Ji Woo Gae One Step Mild Cleansing Pad",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-78",
+      "product_name": "Celimax Pore + Dark Spot Brightening Serum",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-21",
+      "product_name": "Celimax Pore + Dark Spot Brightening Pad",
+      "brand_name": "Celimax"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-72",
+      "product_name": "Pilgrim Squalane Glow Moisturizer",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-50",
+      "product_name": "Pilgrim Squalane Foaming Face Wash",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-79",
+      "product_name": "Pilgrim 2% Salicylic Acid + 3% Niacinamide Clarifying Serum",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-80",
+      "product_name": "Pilgrim 10% Niacinamide Brightening Serum",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-81",
+      "product_name": "Pilgrim Alpha Arbutin & Vitamin C Brightening Serum",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-82",
+      "product_name": "Pilgrim 2% Hyaluronic Acid Hydration Serum",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-73",
+      "product_name": "Pilgrim 1% Retinol Night Cream",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-74",
+      "product_name": "Pilgrim Red Vine Face Cream SPF 30",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-22",
+      "product_name": "Pilgrim White Lotus Natural Face Mist & Toner",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-83",
+      "product_name": "Pilgrim 15% Vitamin C Brightening Serum",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-22",
+      "product_name": "Pilgrim AHA BHA Peeling Solution",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-23",
+      "product_name": "Pilgrim Squalane Sleeping Mask",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-51",
+      "product_name": "Pilgrim Australian Tea Tree Face Wash",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-75",
+      "product_name": "Pilgrim Ceramide Barrier Repair Cream",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-76",
+      "product_name": "Pilgrim 2% Kojic Acid Brightening Cream",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-55",
+      "product_name": "Pilgrim Glow Sunscreen Serum SPF 50+ PA++++",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-24",
+      "product_name": "Laneige Water Sleeping Mask EX",
+      "brand_name": "Laneige"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-23",
+      "product_name": "Laneige Cream Skin Cerapeptide Refiner",
+      "brand_name": "Laneige"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-77",
+      "product_name": "Laneige Water Bank Blue Hyaluronic Cream Moisturizer",
+      "brand_name": "Laneige"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-84",
+      "product_name": "Laneige Water Bank Blue Hyaluronic Serum",
+      "brand_name": "Laneige"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-52",
+      "product_name": "Laneige Water Bank Gentle Gel Cleanser",
+      "brand_name": "Laneige"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-25",
+      "product_name": "Laneige Bouncy & Firm Sleeping Mask",
+      "brand_name": "Laneige"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-85",
+      "product_name": "WishCare Super Bright C16 10% Vitamin C Serum",
+      "brand_name": "WishCare"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-56",
+      "product_name": "WishCare Niacinamide Oil Balance Fluid Sunscreen SPF 50 PA++++",
+      "brand_name": "WishCare"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-24",
+      "product_name": "WishCare 10% AHA + 1% BHA Body Lotion",
+      "brand_name": "WishCare"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-53",
+      "product_name": "Plum Green Tea Pore Cleansing Face Wash",
+      "brand_name": "Plum"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-78",
+      "product_name": "Plum Green Tea Oil-Free Moisturizer",
+      "brand_name": "Plum"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-79",
+      "product_name": "Plum Green Tea Renewed Clarity Night Gel",
+      "brand_name": "Plum"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-86",
+      "product_name": "Plum 15% Vitamin C Face Serum",
+      "brand_name": "Plum"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-24",
+      "product_name": "Plum 3% Niacinamide Toner",
+      "brand_name": "Plum"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-57",
+      "product_name": "Plum Rice Water & Niacinamide Sunscreen SPF 50 PA++++",
+      "brand_name": "Plum"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-80",
+      "product_name": "Plum E-Luminence Deep Moisturizing Creme",
+      "brand_name": "Plum"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-81",
+      "product_name": "Plum Saffron & Kumkumadi Oil Glow Bright Moisturizer with SPF 35",
+      "brand_name": "Plum"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-87",
+      "product_name": "Plum 1% Retinol Face Serum",
+      "brand_name": "Plum"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-82",
+      "product_name": "Plum 5% Niacinamide Moisturizer",
+      "brand_name": "Plum"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-25",
+      "product_name": "Plum Bulgarian Valley Rose Water Toner",
+      "brand_name": "Plum"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-54",
+      "product_name": "Simple Moisturising Facial Wash",
+      "brand_name": "Simple"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-83",
+      "product_name": "Simple Kind To Skin Hydrating Light Moisturiser",
+      "brand_name": "Simple"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-55",
+      "product_name": "Simple Micellar Cleansing Water",
+      "brand_name": "Simple"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-56",
+      "product_name": "Simple Water Boost Micellar Gel Wash",
+      "brand_name": "Simple"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-84",
+      "product_name": "Simple Water Boost Hydrating Gel Cream",
+      "brand_name": "Simple"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-85",
+      "product_name": "Bioderma Atoderm Intensive Ultra Soothing Baume-Ceramides & Canola Oil-Eczema Prone Skin",
+      "brand_name": "Bioderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-86",
+      "product_name": "Bioderma Atoderm Creme Ultra-Nourising Moisturising Cream Boosts Hyaluronic Acid, Ceramides",
+      "brand_name": "Bioderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-87",
+      "product_name": "Bioderma Atoderm Intensive Gel Creme Moisturizer - Dry to Very Dry Skin",
+      "brand_name": "Bioderma"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-88",
+      "product_name": "Physiogel Daily Moisture Therapy Cream",
+      "brand_name": "Physiogel"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-89",
+      "product_name": "Venusia Max Intensive Moisturizing Cream",
+      "brand_name": "Dr. Reddy's Laboratories"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-25",
+      "product_name": "Aveeno Daily Moisturizing Lotion",
+      "brand_name": "Johnson & Johnson"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-57",
+      "product_name": "OOTD Papaya Enzyme Gentle Cleanser [150g]",
+      "brand_name": "OOTD"
+    },
+    {
+      "product_uid": "Roopsee-RX-SE-01",
+      "product_name": "Kojivit plus",
+      "brand_name": "Micro Labs Limited"
+    },
+    {
+      "product_uid": "Roopsee-RX-SE-02",
+      "product_name": "Demelan cream",
+      "brand_name": "Glenmark Pharmaceuticals Ltd"
+    },
+    {
+      "product_uid": "Roopsee-RX-SE-03",
+      "product_name": "Biluma Advance Skin Brightening Lotion",
+      "brand_name": "Encube Ethicals"
+    },
+    {
+      "product_uid": "Roopsee-RX-SE-04",
+      "product_name": "Aziderm 20%",
+      "brand_name": "Micro Labs Limited"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-88",
+      "product_name": "Eucerin anti pigment dual serum",
+      "brand_name": "Eucerin"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-89",
+      "product_name": "The derma co 10% Cica-Glow Face Serum with Tranexamic Acid & Kojic Acid - 30ml",
+      "brand_name": "The derma co"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-90",
+      "product_name": "The derma co 3% Kojic Acid Dark Spot Corrector Gel with Azelaic & Tranexamic Acid - 30g",
+      "brand_name": "The derma co"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-26",
+      "product_name": "Cosrx BHA Blackhead Power Liquid (Pack Size:100ml)",
+      "brand_name": "Cosrx"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-91",
+      "product_name": "OOTD Intensive Moisture Face Serum [50ml]",
+      "brand_name": "OOTD"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-92",
+      "product_name": "OOTD Overnight Exfoliating Face Serum [50ml]",
+      "brand_name": "OOTD"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-27",
+      "product_name": "OOTD Glycolic Exfoliating Toner [250ml]",
+      "brand_name": "OOTD"
+    },
+    {
+      "product_uid": "Roopsee-RX-CL-01",
+      "product_name": "Benzac ac wash",
+      "brand_name": "Galderma"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-93",
+      "product_name": "OOTD Wrinkle Lift Retinol Serum [50ml]",
+      "brand_name": "OOTD"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-26",
+      "product_name": "OOTD Cica Soothing Mask [25*10ea]",
+      "brand_name": "OOTD"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-01",
+      "product_name": "Be Bodywise 5 Lactic Acid Body Lotion - For 24H Moisturization, Improved Skin Texture, Smooth Skin",
+      "brand_name": "Be Bodywise"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-03",
+      "product_name": "Chemist At Play AHA Body Lotion With Niacinamide Shea Butter Moisturizer For All Skin Types",
+      "brand_name": "Chemist At Play"
+    },
+    {
+      "product_uid": "Roopsee-B-LO-04",
+      "product_name": "Chemist at Play Bright Boost SPF Body Lotion, SPF 50+ PA++++, 24 hours moisturization",
+      "brand_name": "Chemist At Play"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-01",
+      "product_name": "The Sass Bar Daybreak Brightening Bodywash with Niacinamide +Vitamin C for Dull Skin",
+      "brand_name": "The Sass Bar"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-02",
+      "product_name": "The Sass Bar Aurora Cooling Bodywash Cleanser with 2 Salicyclic Acid + Kaolin Clay For Oily Skin",
+      "brand_name": "The Sass Bar"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-03",
+      "product_name": "The Sass Bar Dusk Exfoliating Bodywash with Lactic Acid + Centella for Sensitive Skin",
+      "brand_name": "The Sass Bar"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-04",
+      "product_name": "The Sass Bar Dawn Refill",
+      "brand_name": "The Sass Bar"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-05",
+      "product_name": "Be Bodywise 1 Salicylic Acid Body Wash",
+      "brand_name": "Be Bodywise"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-06",
+      "product_name": "Be Bodywise Hyaluronic Acid Body Wash For Dry Skin - With 3 Essential Ceramides & Aloe Vera Extract",
+      "brand_name": "Be Bodywise"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-07",
+      "product_name": "Fixderma Salyzap 2 Salicylic Acid Body Wash Acne Control Back Acne Body Wash for Women & Men",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-B-WA-08",
+      "product_name": "Chemist At Play Exfoliating Body Wash with 4 Lactic Acid & Salicylic Acid, Prevents Body Acne",
+      "brand_name": "Chemist At Play"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-01",
+      "product_name": "CeraVe Hydrating Cleanser",
+      "brand_name": "CeraVe"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-02",
+      "product_name": "Cetaphil Gentle Skin Cleanser",
+      "brand_name": "Cetaphil"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-03",
+      "product_name": "Cetaphil Hydrating Foaming Cream Cleanser For Men, for Dry to Normal Skin, Sensitive Skin",
+      "brand_name": "Cetaphil"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-04",
+      "product_name": "COSRX Low pH Good Morning Gel Face Cleanser",
+      "brand_name": "COSRX"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-05",
+      "product_name": "COSRX Salicylic Acid Daily Gentle Face Cleanser",
+      "brand_name": "COSRX"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-06",
+      "product_name": "Minimalist 2 Salicylic Acid + LHA Face Cleanser With Zinc For Reducing Sebum & Acne",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-08",
+      "product_name": "Derma co. 2 Salicylic Acid Gel Face Wash with Salicylic Acid & Witch Hazel - 1ml",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-09",
+      "product_name": "Foxtale Oil & Acne Control Face Wash",
+      "brand_name": "Foxtale"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-10",
+      "product_name": "Simple Kind To Skin Refreshing Facial Wash",
+      "brand_name": "Simple"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-11",
+      "product_name": "The Derma Co 1 Salicylic Acid Face Wash for Active Acne with Salicylic Acid and Witch Hazel",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-12",
+      "product_name": "CeraVe Foaming Cleanser Face Was For Oily SkinWith Hyaluronic Acid, Ceramides & Niacinamide",
+      "brand_name": "CeraVe"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-13",
+      "product_name": "Cetaphil Oily Skin Cleanser",
+      "brand_name": "Cetaphil"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-15",
+      "product_name": "The Derma Co 1 Kojic Acid Face Wash",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-16",
+      "product_name": "Foxtale Hydrating Cleanser",
+      "brand_name": "Foxtale"
+    },
+    {
+      "product_uid": "Roopsee-F-CL-17",
+      "product_name": "Minimalist Oat Extract 6 Gentle Cleanser",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-01",
+      "product_name": "Dot & Key Anti-Acne Salicylic Green Clay Face Mask",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-02",
+      "product_name": "Dot & Key Mango Detan Clay Mask With Alpha-Arbutin & Niacinamide",
+      "brand_name": "Dot & Key"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-03",
+      "product_name": "SKIN1004 Madagascar Centella Watergel Sheet Ampoule Mask",
+      "brand_name": "SKIN1004"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-04",
+      "product_name": "The Ordinary Salicylic Acid 2 Masque",
+      "brand_name": "The Ordinary"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-05",
+      "product_name": "The Derma Co 2 Salicylic Acid Clay Face Mask",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-06",
+      "product_name": "Innisfree Super Volcanic Pore Clay Mask",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-07",
+      "product_name": "SKIN1004 Madagascar Centella Hyalu-Cica Sleeping Pack",
+      "brand_name": "SKIN1004"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-08",
+      "product_name": "The Face Shop Real Nature Rice Face Mask",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-09",
+      "product_name": "TONYMOLY Korean I'm Red Wine Face Sheet Mask for Pore Care & Brighter, Youthful Complexion",
+      "brand_name": "TONYMOLY"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-10",
+      "product_name": "The Face Shop Real Nature Aloe Face Mask",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-11",
+      "product_name": "The Face Shop Real Nature Honey Miel Face Mask",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-12",
+      "product_name": "The Face Shop Real Nature Green Tea Face Mask",
+      "brand_name": "The Face Shop"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-13",
+      "product_name": "Foxtale Essentials De - Tanning Sheet Mask Vitamin C & Papaya",
+      "brand_name": "Foxtale"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-15",
+      "product_name": "Foxtale Essentials Nourishing Sheet Masks",
+      "brand_name": "Foxtale"
+    },
+    {
+      "product_uid": "Roopsee-F-MA-16",
+      "product_name": "Foxtale De-Tan Skin Radiance Mask",
+      "brand_name": "Foxtale"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-02",
+      "product_name": "Re'equil Oil Free Moisturiser",
+      "brand_name": "Re'equil"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-03",
+      "product_name": "Clinique Moisture Surge 1H Auto-Replenishing Hydrator",
+      "brand_name": "Clinique"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-04",
+      "product_name": "COSRX Oil-Free Ultra Moisturizing Lotion",
+      "brand_name": "COSRX"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-06",
+      "product_name": "CeraVe Moisturising Lotion for Normal to Dry Skin with Ceramides & Hyaluronic Acid",
+      "brand_name": "CeraVe"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-07",
+      "product_name": "CeraVe Moisturizer cream for Dry Skin, Barrier Repair Cream with Ceramides, Dermatologist Recommended",
+      "brand_name": "CeraVe"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-08",
+      "product_name": "Cetaphil Moisturising Cream, for Dry to Very Dry Sensitive Skin",
+      "brand_name": "Cetaphil"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-09",
+      "product_name": "Cetaphil DAM Daily Advance Ultra Hydrating Lotion, with Shea Butter and Nianicinamide, for Sensitive Skin",
+      "brand_name": "Cetaphil"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-10",
+      "product_name": "The Derma Co 4 Ceramide Complex + HA Intense Moisturizer",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-11",
+      "product_name": "Foxtale Ceramide Supercream",
+      "brand_name": "Foxtale"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-13",
+      "product_name": "Minimalist Marula Oil 5 Moisturizer",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-14",
+      "product_name": "COSRX Advanced Snail 92 All In One Cream",
+      "brand_name": "COSRX"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-16",
+      "product_name": "Innisfree Green Tea Hyaluronic Lotion",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-17",
+      "product_name": "Beauty of Joseon Dynasty Cream",
+      "brand_name": "Beauty of Joseon"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-18",
+      "product_name": "Sebamed Clear Face Care Gel",
+      "brand_name": "Sebamed"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-01",
+      "product_name": "AXIS-Y Dark Spot Correcting Glow Serum",
+      "brand_name": "AXIS-Y"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-02",
+      "product_name": "Hyphen Anti Acne 10 Azelaic Acid 2 Salicylic Acid Face Serum",
+      "brand_name": "Hyphen"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-03",
+      "product_name": "Minimalist 05 Niacinamide Face Serum",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-04",
+      "product_name": "Minimalist 10 Niacinamide Face Serum With Matmarine + Zinc For Reducing Oil & Blemishes",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-05",
+      "product_name": "Minimalist 2 Alpha Arbutin Face Serum With Butylresorcinol & Ferulic Acid",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-06",
+      "product_name": "Minimalist 2 Salicylic Acid Face Serum For Comedones & Whiteheads",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-07",
+      "product_name": "Minimalist 3% Tranexamic Acid Face Serum For Melasma, Acne Scars & Hyperpigmentation",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-08",
+      "product_name": "Minimalist Retinol 0.3 Face Serum",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-09",
+      "product_name": "Pilgrim Natural Vitamin C Serum 20 with Hyaluronic Acid & Kakadu Plum",
+      "brand_name": "Pilgrim"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-10",
+      "product_name": "SOME BY MI AHA-BHA-PHA 30 Days Miracle Serum",
+      "brand_name": "SOME BY MI"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-11",
+      "product_name": "The Derma Co 2 Kojic Acid Face Serum",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-12",
+      "product_name": "The Derma Co 2 Salicylic Acid Serum",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-14",
+      "product_name": "SKIN1004 Madagascar Centella Asiatica Tone Brightening Capsule Ampoule Serum",
+      "brand_name": "SKIN1004"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-15",
+      "product_name": "The Ordinary Alpha Arbutin 2 + HA",
+      "brand_name": "The Ordinary"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-16",
+      "product_name": "The Ordinary Retinol 0.5 In Squalane",
+      "brand_name": "The Ordinary"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-17",
+      "product_name": "The Ordinary Salicylic Acid 2 Solution",
+      "brand_name": "The Ordinary"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-18",
+      "product_name": "Minimalist 16 Vitamin C Face Serum – Brightening & Glow-Boosting Formula with Vitamin E, Ferulic Acid & Fullerenes, Antioxidant Boost for Radiant Skin (20 ml)",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-19",
+      "product_name": "Minimalist 10 Vitamin C Face Serum",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-20",
+      "product_name": "Minimalist Multi-Peptide Night Face Serum",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-21",
+      "product_name": "Minimalist 2 Hyaluronic Acid Serum",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-22",
+      "product_name": "Minimalist 1 Retinal + Adapalenate +Squalene+ Bakuchiol Oil",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-23",
+      "product_name": "Minimalist Granactive Retinoid 2 Serum",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-24",
+      "product_name": "The Derma Co 10 Niacinamide Serum",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-25",
+      "product_name": "The Derma Co 10 Vitamin C Face Serum",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-26",
+      "product_name": "Foxtale C10 Vitamin C- Glutathione Brightening Face Serum",
+      "brand_name": "Foxtale"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-27",
+      "product_name": "Foxtale 12 Niacinamide Oil Control Serum",
+      "brand_name": "Foxtale"
+    },
+    {
+      "product_uid": "Roopsee-F-MO-05",
+      "product_name": "COSRX The Retinol 1 Anti-Ageing Night Cream",
+      "brand_name": "COSRX"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-29",
+      "product_name": "COSRX Advanced Snail 96 Mucin Power Essence",
+      "brand_name": "COSRX"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-30",
+      "product_name": "COSRX The 6 Peptide Skin Booster Serum",
+      "brand_name": "COSRX"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-31",
+      "product_name": "SKIN1004 Madagascar Centella Tea-Trica Relief Ampoule",
+      "brand_name": "SKIN1004"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-32",
+      "product_name": "SKIN1004 Madagascar Centella Poremizing Fresh Ampoule",
+      "brand_name": "SKIN1004"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-33",
+      "product_name": "Beauty of Joseon Glow Deep Serum Rice + Alpha-Arbutin",
+      "brand_name": "Beauty of Joseon"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-34",
+      "product_name": "Beauty of Joseon Glow Serum Propolis + Niacinamide",
+      "brand_name": "Beauty of Joseon"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-35",
+      "product_name": "Beauty of Joseon Revive Serum Ginseng + Snail Mucin",
+      "brand_name": "Beauty of Joseon"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-36",
+      "product_name": "Innisfree Green Tea Seed Hyaluronic Serum",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-01",
+      "product_name": "Beauty of Joseon Relief Sun Rice + Probiotics SPF50+ PA++++",
+      "brand_name": "Beauty of Joseon"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-02",
+      "product_name": "Brinton Healthcare UV Doux Face & Body Sunscreen Gel SPF 50 PA+++",
+      "brand_name": "Brinton Healthcare"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-03",
+      "product_name": "La Roche-Posay Anthelios UVMune 4 SPF50+ for sensitive skin",
+      "brand_name": "La Roche-Posay"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-04",
+      "product_name": "Minimalist SPF 50 PA++++ Sunscreen With Niacinamide",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-06",
+      "product_name": "SKIN1004 Madagascar Centella Hyalu-Cica Water-Fit Sun Serum SPF50+ PA++++",
+      "brand_name": "SKIN1004"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-07",
+      "product_name": "The Derma Co 1 Hyaluronic Sunscreen Aqua Gel SPF 50 PA++++ Normal to Oily",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-08",
+      "product_name": "Foxtale Dewy Sunscreen SPF 50 PA++++",
+      "brand_name": "Foxtale"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-09",
+      "product_name": "Cetaphil Sun SPF 50+ Very High Protection Mineral Base for All Skin Types, Sensitive Skin",
+      "brand_name": "Cetaphil"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-10",
+      "product_name": "Beauty of Joseon Relief Sun Aqua-Fresh Rice + B5 SPF50+ PA++++",
+      "brand_name": "Beauty of Joseon"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-11",
+      "product_name": "The Derma Co 1 Hyaluronic Tinted Sunscreen Gel SPF 60 PA++++",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-12",
+      "product_name": "Minimalist Light Fluid SPF 50 PA++++ Sunscreen",
+      "brand_name": "Minimalist"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-13",
+      "product_name": "Aqualogica Glow+ Dewy Sunscreen SPF 50+ PA++++",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-14",
+      "product_name": "Neutrogena Ultra Sheer Dry Touch Sunblock SPF 50+",
+      "brand_name": "Nutrogena"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-15",
+      "product_name": "Aqualogica Radiance+ Dewy Sunscreen SPF 50+ PA++++",
+      "brand_name": "Aqualogica"
+    },
+    {
+      "product_uid": "Roopsee-F-SU-16",
+      "product_name": "Fixderma Shadow Sunscreen SPF 50+ Gel",
+      "brand_name": "Fixderma"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-01",
+      "product_name": "Foxtale Exfoliating Facial Toner with 5 Lactic Acid & Niacinamide",
+      "brand_name": "Foxtale"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-02",
+      "product_name": "SKIN1004 Madagascar Centella Toning Toner",
+      "brand_name": "SKIN1004"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-03",
+      "product_name": "The Derma Co 2 Salicylic BHA Hydrating Toner",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-04",
+      "product_name": "Paula's Choice 2 BHA Liquid Exfoliant",
+      "brand_name": "Paula's Choice"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-05",
+      "product_name": "Beauty of Joseon Glow Replenishing Rice Milk Toner",
+      "brand_name": "Beauty of Joseon"
+    },
+    {
+      "product_uid": "Roopsee-F-TO-06",
+      "product_name": "Innisfree Green Tea Hyaluronic Skin",
+      "brand_name": "Innisfree"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-37",
+      "product_name": "The Derma Co Tran-Zelaic Pigmentation Corrector Serum",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-38",
+      "product_name": "The Derma Co Nia-Zelaic Oil Control Face Serum",
+      "brand_name": "The Derma Co"
+    },
+    {
+      "product_uid": "Roopsee-F-SE-39",
+      "product_name": "Fixderma Skarfix Tx Serum 3 Tranexamic Acid + 2 Alpha Arbutin + 4 Kojic Acid",
+      "brand_name": "Fixderma"
+    }
+  ]
+}

@@ -4,6 +4,15 @@ import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { WishlistProvider } from "@/context/WishlistContext";
 import SiteExitTracker from "@/components/tracking/site-exit-tracker";
 import ScrollRestoreGuard from "@/components/scroll-restore-guard";
+import ScrollTracker from "@/components/tracking/scroll-tracker";
+import QuizRehydrator from "@/components/tracking/quiz-rehydrator";
+import { Cormorant_Garamond, Lato } from 'next/font/google'
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
@@ -68,12 +77,28 @@ export const metadata = {
   category: "beauty",
 };
 
+
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  style: ['normal', 'italic'],
+  variable: '--font-cormorant',
+})
+
+const lato = Lato({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-lato',
+})
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={`${cormorant.variable} ${lato.variable}`}>
+      <body suppressHydrationWarning>
         <ScrollRestoreGuard />
         <SiteExitTracker />
+        <ScrollTracker />
+        <QuizRehydrator />
         <WishlistProvider>
           {children}
         </WishlistProvider>
@@ -101,13 +126,48 @@ export default function RootLayout({ children }) {
 
         {process.env.NODE_ENV === "production" &&
           process.env.NEXT_PUBLIC_CLARITY_ID ? (
-          <Script id="microsoft-clarity" strategy="lazyOnload">
+          <Script id="microsoft-clarity" strategy="afterInteractive">
             {`
       (function(c,l,a,r,i,t,y){
           c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+          l.querySelectorAll('link[rel="stylesheet"]').forEach(function(link) {
+              link.setAttribute('data-clarity-unmask', 'true');
+          });
           t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
           y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
       })(window, document, "clarity", "script", "${process.env.NEXT_PUBLIC_CLARITY_ID}");
+
+      (function() {
+          function createId() {
+              return typeof crypto !== 'undefined' && crypto.randomUUID
+                  ? crypto.randomUUID()
+                  : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(char) {
+                      var random = Math.random() * 16 | 0;
+                      var value = char === 'x' ? random : (random & 3 | 8);
+                      return value.toString(16);
+                  });
+          }
+
+          try {
+              var visitorId = localStorage.getItem('app_visitor_id');
+              var sessionId = sessionStorage.getItem('app_session_id');
+
+              if (!visitorId) {
+                  visitorId = createId();
+                  localStorage.setItem('app_visitor_id', visitorId);
+              }
+              if (!sessionId) {
+                  sessionId = createId();
+                  sessionStorage.setItem('app_session_id', sessionId);
+              }
+
+              window.clarity('identify', visitorId, sessionId, window.location.pathname);
+              window.clarity('set', 'visitor_id', visitorId);
+              window.clarity('set', 'session_id', sessionId);
+          } catch (error) {
+              console.warn('[clarity] Identity setup failed:', error);
+          }
+      })();
     `}
           </Script>
         ) : null}

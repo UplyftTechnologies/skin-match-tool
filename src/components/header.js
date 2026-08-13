@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { BiHeart } from "react-icons/bi";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { supabase } from "@/lib/supabase/client";
@@ -15,7 +15,7 @@ export const Logo = ({ dark, onClick }) => (
     onClick={onClick}
     style={{
       fontSize: 26,
-      fontWeight: 700,
+      fontWeight: 600,
       color: dark ? "#000000" : "#111",
       cursor: "pointer",
       userSelect: "none",
@@ -27,12 +27,23 @@ export const Logo = ({ dark, onClick }) => (
   </div>
 );
 
-export default function Header() {
+function IconButton({ children, ...props }) {
+  return (
+    <button
+      {...props}
+      className="w-[30px] h-[30px] flex items-center justify-center rounded-full border border-gray-300 text-gray-800 hover:bg-gray-100 transition-colors duration-200"
+    >
+      {children}
+    </button>
+  );
+}
+
+export default function Header({ className = "" }) {
   const [userSession, setUserSession] = useState(null);
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const { wishlistIds } = useWishlist();
   const router = useRouter();
-  const pathname = usePathname(); // NEW
+  const pathname = usePathname();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -80,57 +91,75 @@ export default function Header() {
   }
 
   return (
-    <>
-      <style>{`
-        .navbar-logo-slot {
-          display: flex;
-          align-items: center;
-          justify-self: start;
-          min-width: 0;
-          flex-shrink: 0;
-        }
-      `}</style>
+    <div className={`sticky top-0 z-[999] w-full max-w-none !mt-0 bg-[#faf7f2] border-b border-gray-100 ${className}`}>
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-6 py-2">
+        <Logo
+          dark={false}
+          onClick={() => {
+            trackingService.trackEvent(EVENTS.CLICKED_LOGO, {
+              clickedFrom: "navbar_logo",
+              path: "/",
+              userName: phone,
+            });
+            router.push("/");
+          }}
+        />
 
-      <header className="lg:px-6 mx-auto sticky top-0 z-[999]">
-        <div className="user-greeting-bar">
-          <div className="navbar-logo-slot">
-            <Logo dark={false} onClick={handleLogoClick} />
-          </div>
+        <div className="flex items-center gap-1">
+          {wishlistIds.length > 0 && (
+            <Link
+              href="/wishlist"
+              aria-label="View wishlist"
+              className="relative"
+              onClick={() =>
+                trackingService.trackEvent(EVENTS.CLICKED_WISHLIST_ICON, {
+                  wishlist_count: wishlistIds.length,
+                })
+              }
+            >
+              <IconButton>
+                <BiHeart size={18} />
+              </IconButton>
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
+                {wishlistIds.length}
+              </span>
+            </Link>
+          )}
 
-          <div className="flex items-center gap-2 lg:gap-3">
-            {userSession ? (
-              <>
-                {wishlistIds.length > 0 && (
-                  <Link
-                    href="/wishlist"
-                    aria-label="View wishlist"
-                    className="relative flex items-center"
-                    onClick={() =>
-                      trackingService.trackEvent(EVENTS.CLICKED_WISHLIST_ICON, {
-                        wishlist_count: wishlistIds.length,
-                      })
-                    }
-                  >
-                    <BiHeart className="text-gray-800" size={22} />
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
-                      {wishlistIds.length}
-                    </span>
-                  </Link>
-                )}
+          {/* Profile icon only appears once the user is logged in. */}
+          {sessionLoaded && userSession && (
+            <Link
+              href="/profile"
+              aria-label="My profile"
+              className="flex items-center justify-center h-8 w-9 lg:w-auto lg:gap-2 lg:pl-1 lg:pr-3
+              rounded-  border-gray- text-gray-600 hover:bg-gray-100 transition-colors duration-200"
+              onClick={() => trackingService.trackEvent(EVENTS.CLICKED_PROFILE_ICON)}
+            >
+              <IoPersonCircleOutline size={30} />
+              <span className="hidden lg:inline text-sm font-medium">My Profile</span>
+            </Link>
+          )}
 
-                <Link
-                  href="/profile"
-                  aria-label="View your skin profile"
-                  className="flex items-center text-gray-800"
-                  onClick={() => trackingService.trackEvent(EVENTS.CLICKED_PROFILE_ICON)}
-                >
-                  <IoPersonCircleOutline size={24} />
-                </Link>
-              </>
-            ) : null}
-          </div>
+          {/* Guests get a way to log in on their own, instead of only being
+              prompted when a gated action (view all / save match) blocks them. */}
+          {sessionLoaded && !userSession && (
+            <button
+              type="button"
+              onClick={() => {
+                trackingService.trackEvent(EVENTS.CLICKED_LOGIN, {
+                  source: "header",
+                  path: pathname || "/",
+                });
+                router.push(`/login?redirect=${encodeURIComponent(pathname || "/")}`);
+              }}
+              className="ml-1 flex h-9 items-center justify-center rounded-full border border-gray-300 px-3
+              text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+            >
+              Login
+            </button>
+          )}
         </div>
-      </header>
-    </>
+      </div>
+    </div>
   );
 }

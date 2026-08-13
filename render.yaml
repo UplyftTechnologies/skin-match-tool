@@ -1,17 +1,31 @@
 services:
   - type: web
-    name: roopsee-match-studio
+    # Must match the service name in the Render dashboard, otherwise applying
+    # this blueprint creates a second service alongside the running one.
+    name: skin-match-tool
     runtime: node
-    plan: free
+    plan: starter
     buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
+      # The only hostname that actually resolves. This feeds metadataBase,
+      # every canonical tag, the sitemap and all JSON-LD urls, so it has to be
+      # the live origin.
       - key: NEXT_PUBLIC_SITE_URL
-        value: https://matchmyskin.roopsee.com/
+        value: https://matchmyskin.roopsee.com
       - key: TELEGRAM_EVENT_BOT_TOKEN
         sync: false
       - key: TELEGRAM_EVENT_CHAT_ID
         sync: false
-      
+      - key: NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        sync: false
+      # Shared with the GitHub Actions workflow that sweeps due reminders —
+      # see .github/workflows/wishlist-reminders.yml
+      - key: CRON_SECRET
+        sync: false

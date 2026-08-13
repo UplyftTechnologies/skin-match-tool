@@ -26,7 +26,7 @@ function scoreRange(score) {
 const SCORE_RANGE_COLORS = {
   "90_100": "#197A4D",
   "80_89": "#22c55e",
-  "70_79": "#84cc16",
+  "70_79": "#E6C157",
   "60_69": "#f97316",
   "50_59": "#f43f5e",
   below50: "#dc2626",

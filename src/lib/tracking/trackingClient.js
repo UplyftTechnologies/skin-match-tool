@@ -11,6 +11,7 @@ import {
   setLoggedInUser,
 } from './identity.js';
 import { supabase } from '../supabase/client.js';
+import { EVENTS } from './events.js';
 
 // Hard ceiling on how long location lookup may delay an event.
 const LOCATION_BUDGET_MS = 4000;
@@ -37,6 +38,10 @@ class TrackingService {
     this.locationPromise = null;
 
     this._exitFired = false;
+
+    // See the guard in trackEvent() below.
+    this._lastEventKey = null;
+    this._lastEventAt = 0;
   }
 
   /** Call once, e.g. in a top-level ClientProviders component. Currently a
@@ -242,6 +247,23 @@ class TrackingService {
       return;
     }
 
+    // React 18/19 Strict Mode (on by default in Next.js dev) intentionally
+    // mounts, cleans up, then re-mounts every component once — which double-
+    // fires any bare `useEffect(() => trackPageLoad(...), [])` used for
+    // page-view tracking. That's development-only noise, not a real second
+    // user action, so an identical (event, properties) pair reported again
+    // within a second is dropped instead of double-reported.
+    const dedupeKey = `${eventName}:${JSON.stringify(properties)}`;
+    const now = Date.now();
+    if (this._lastEventKey === dedupeKey && now - this._lastEventAt < 1000) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`⏭️ Skipped duplicate event within 1s: ${eventName}`);
+      }
+      return;
+    }
+    this._lastEventKey = dedupeKey;
+    this._lastEventAt = now;
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user;
@@ -282,7 +304,7 @@ class TrackingService {
         visitorId: this.getVisitorId(),
         sessionId: this.getSessionId(),
         timestamp: new Date().toISOString(),
-        url: window.location.href,
+        url: this.getSafeUrl(),
         enrich_failed: true,
       };
     }
@@ -384,6 +406,16 @@ class TrackingService {
 
         const { phone, ...safeProperties } = properties;
 
+        if (properties.visitorId) {
+          window.clarity(
+            'identify',
+            properties.visitorId,
+            properties.sessionId || undefined,
+            window.location.pathname,
+            properties.userName || undefined
+          );
+        }
+
         if (properties.userId) {
           window.clarity('set', 'user_id', properties.userId);
         }
@@ -454,6 +486,18 @@ class TrackingService {
   // HELPER FUNCTIONS
   // ==========================================
 
+  // Drops the URL hash before it goes anywhere (Telegram, Supabase,
+  // analytics). Supabase's OAuth redirect (e.g. /auth/callback) puts
+  // access_token/refresh_token in the hash — window.location.href would
+  // leak them straight into event logs otherwise.
+  getSafeUrl() {
+    try {
+      return `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    } catch {
+      return '';
+    }
+  }
+
   enrichProperties(properties, location = {}) {
     const userId = properties.userId || this.getUserId();
     const userName = properties.userName || this.getUserName();
@@ -481,8 +525,8 @@ class TrackingService {
       timestamp: new Date().toISOString(),
       time_ist: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
 
-      url: window.location.href,
-      page: window.location.href,
+      url: this.getSafeUrl(),
+      page: this.getSafeUrl(),
       user_agent: navigator.userAgent,
       referrer: document.referrer,
       screen_resolution: `${window.innerWidth}x${window.innerHeight}`,
@@ -588,6 +632,11 @@ class TrackingService {
     return this.trackEvent(eventName, { page_type: 'page_view' });
   }
 
+  trackScroll(pageName) {
+    const eventName = `scrolled_${pageName.toLowerCase().replace(/\//g, '_').replace(/\s+/g, '_')}`;
+    return this.trackEvent(eventName, { page_type: 'page_scroll' });
+  }
+
   trackClick(actionName, properties = {}) {
     return this.trackEvent(`clicked_${actionName.toLowerCase().replace(/\s+/g, '_')}`, {
       event_type: 'click',
@@ -630,7 +679,7 @@ class TrackingService {
     if (this._exitFired) return;
     this._exitFired = true;
 
-    const eventName = `left_site_${pageName.toLowerCase().replace(/\//g, '_').replace(/\s+/g, '_')}`;
+    const eventName = `${EVENTS.LEFT_SITE}_${pageName.toLowerCase().replace(/\//g, '_').replace(/\s+/g, '_')}`;
 
     const location = this.locationData || {};
 

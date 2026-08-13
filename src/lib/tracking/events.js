@@ -4,7 +4,8 @@ export const EVENTS = {
   QUIZ_UPDATED: 'quiz_updated',
   QUIZ_COMPLETED: 'quiz_completed',
   CLICKED_QUIZ_OPTION: 'clicked_quiz_option',
-  LOGIN_POPUP_SHOWN: 'login_popup_shown',
+  CLICKED_LOGIN: 'clicked_login',
+  PAGE_VIEWED_LOGIN: 'page_viewed_login',
   CLICKED_SEND_OTP: 'clicked_send_otp',
   CLICKED_RESEND_OTP: 'clicked_resend_otp',
   CLICKED_LOGO: 'clicked_logo',
@@ -12,11 +13,19 @@ export const EVENTS = {
   PAGE_VIEWED_SKIN_MATCH_TOOL: 'page_viewed_skin_match_tool',
   LOGIN_SUCCESSFUL: 'login_successful',
   EXISTING_USER_LOGIN: 'existing_user_login',
+  GOOGLE_LOGIN_FAILED: 'google_login_failed',
+  CLICKED_COMPLETE_PROFILE: 'clicked_complete_profile',
+  PROFILE_SYNC_FAILED: 'profile_sync_failed',
   CLICKED_PRODUCT_CARD: 'clicked_product_card',
   CLICKED_FILTER_OPTION: 'clicked_filter_option',
+  CLICKED_RESET_FILTERS: 'clicked_reset_filters',
+  CLICKED_SORT_OPTION: 'clicked_sort_option',
   CLICKED_LOAD_MORE: 'clicked_load_more',
   SEARCH_PERFORMED: 'search_performed',
   LEFT_SITE: 'left_site',
+
+  // All products / listing page events
+  PAGE_VIEWED_ALL_PRODUCTS: 'page_viewed_all_products',
 
   // Wishlist events
   CLICKED_ADD_TO_WISHLIST: 'clicked_add_to_wishlist',
@@ -33,5 +42,20 @@ export const EVENTS = {
   // Profile page events
   CLICKED_EDIT_PROFILE: 'clicked_edit_profile',
   CLICKED_LOGOUT: 'clicked_logout',
+
+  // Retailer price comparison events
+  CLICKED_RETAILER_OFFER: 'clicked_retailer_offer',
+  CLICKED_BUY_FROM_RETAILER: 'clicked_buy_from_retailer',
+
+  // Home page carousels
+  CLICKED_SEARCH_BY_PRODUCT_TYPE: 'clicked_search_by_product_type',
+  CLICKED_SEARCH_BY_CATEGORY: 'clicked_search_by_category',
+  CLICKED_SEARCH_K_BEAUTY_BRAND: 'clicked_search_k_beauty_brand',
+  CLICKED_INDIAN_ROCKSTAR_PRODUCT_TYPE: 'clicked_indian_rockstar_product_type',
+  CLICKED_VIEW_ALL_PRODUCTS: 'clicked_view_all_products',
+
+  // How it works page
+  PAGE_VIEWED_HOW_IT_WORKS: 'page_viewed_how_it_works',
+  CLICKED_HOW_IT_WORKS_CTA: 'clicked_how_it_works_cta',
 
 };

@@ -2,30 +2,73 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { triggerWishlistReminder } from "@/lib/push/wishlist-reminder";
+import { supabase } from "@/lib/supabase/client";
 
 const WishlistContext = createContext(null);
 const STORAGE_KEY = "wishlist_products";
 
 export function WishlistProvider({ children }) {
+    const router = useRouter();
+    const pathname = usePathname();
     const [wishlistItems, setWishlistItems] = useState([]); // array of full product objects
     const [hydrated, setHydrated] = useState(false);
+    const [userSession, setUserSession] = useState(null);
 
     useEffect(() => {
-        try {
-            const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-            setWishlistItems(stored);
-        } catch {
-            setWishlistItems([]);
-        } finally {
-            setHydrated(true);
-        }
+        let active = true;
+
+        const applySession = async (session) => {
+            if (!active) return;
+            setUserSession(session);
+
+            if (!session) {
+                localStorage.removeItem(STORAGE_KEY);
+                setWishlistItems([]);
+                setHydrated(true);
+                return;
+            }
+
+            // Local storage paints instantly while the DB fetch (source of
+            // truth, so wishlist survives logout/login) is in flight.
+            try {
+                setWishlistItems(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
+            } catch {
+                setWishlistItems([]);
+            }
+
+            try {
+                const response = await fetch("/api/wishlist", {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                });
+                const payload = await response.json().catch(() => ({}));
+                if (active && response.ok && Array.isArray(payload.products)) {
+                    setWishlistItems(payload.products);
+                }
+            } catch (error) {
+                console.warn("[wishlist] Failed to fetch saved wishlist:", error);
+            } finally {
+                if (active) setHydrated(true);
+            }
+        };
+
+        supabase.auth.getSession().then(({ data: { session } }) => applySession(session));
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            applySession(session);
+        });
+
+        return () => {
+            active = false;
+            subscription.unsubscribe();
+        };
     }, []);
 
     useEffect(() => {
-        if (hydrated) {
+        if (hydrated && userSession) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(wishlistItems));
         }
-    }, [wishlistItems, hydrated]);
+    }, [wishlistItems, hydrated, userSession]);
 
     const wishlistIds = wishlistItems.map((item) => item.product_uid);
 
@@ -33,16 +76,41 @@ export function WishlistProvider({ children }) {
         return wishlistIds.includes(productUid);
     }
 
+    function syncToServer(productUid, isAdding) {
+        if (!userSession?.access_token) return;
+
+        fetch("/api/wishlist", {
+            method: isAdding ? "POST" : "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${userSession.access_token}`,
+            },
+            body: JSON.stringify({ productUid }),
+        }).catch((error) => {
+            console.warn("[wishlist] Failed to sync change to server:", error);
+        });
+    }
+
     function toggleWishlist(product) {
+        if (!userSession) {
+            const redirect = pathname && pathname !== "/login" ? pathname : "/";
+            router.push(`/login?redirect=${encodeURIComponent(redirect)}`);
+            return false;
+        }
+
+        const isAdding = !wishlistIds.includes(product.product_uid);
         setWishlistItems((current) =>
             current.some((item) => item.product_uid === product.product_uid)
                 ? current.filter((item) => item.product_uid !== product.product_uid)
                 : [...current, product]
         );
+        syncToServer(product.product_uid, isAdding);
+        return true;
     }
 
     function removeFromWishlist(productUid) {
         setWishlistItems((current) => current.filter((item) => item.product_uid !== productUid));
+        syncToServer(productUid, false);
     }
     function clearWishlist() {
         setWishlistItems([]);

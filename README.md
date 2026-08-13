@@ -106,7 +106,7 @@ Public answer-focused skincare guides are available under:
 
 The generated sitemap contains the homepage, six guides, and all catalog products. Product, organization, application, item-list and FAQ structured data are included where applicable.
 
-After deployment, add `https://matchmyskin.roopsee.com//sitemap.xml` to Google Search Console and Bing Webmaster Tools.
+After deployment, add `https://matchmyskin.roopsee.com/sitemap.xml` to Google Search Console and Bing Webmaster Tools.
 
 ## Event tracking
 

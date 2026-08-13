@@ -85,6 +85,36 @@ async function nextQuizNumber(userId, guestSessionId) {
   return Number(data?.[0]?.quiz_number || 0) + 1;
 }
 
+export async function GET(request) {
+  const user = await authenticatedUser(request);
+  if (!user) {
+    return Response.json({ error: "Authentication is required" }, { status: 401 });
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("quiz_results")
+      .select("answers, quiz_number, completed_at")
+      .eq("user_id", user.id)
+      .order("quiz_number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    return Response.json({ ok: true, result: data || null });
+  } catch (error) {
+    console.error("[api/quiz-results] Latest quiz result fetch failed:", error);
+    return Response.json(
+      {
+        error: "Unable to fetch quiz result",
+        code: error?.code || "QUIZ_RESULT_FETCH_FAILED",
+      },
+      { status: 500 },
+    );
+  }
+}
+
 export async function POST(request) {
   let body;
   try {

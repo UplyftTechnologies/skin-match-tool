@@ -58,7 +58,7 @@ function rangeLabel(key) {
 
 function formatPrice(product) {
   const value = product.selling_price || product.mrp;
-  return value ? `Rs. ${value}` : "Price unavailable";
+  return value ? `Rs. ${Math.ceil(value)}` : "Price unavailable";
 }
 
 function ProductImage({ product }) {
@@ -83,7 +83,7 @@ export default function ProductCard({ product, onVisit }) {
   function handleToggle(event) {
     event.preventDefault();
     event.stopPropagation();
-    toggleWishlist(product);
+    if (!toggleWishlist(product)) return;
 
     trackingService.trackEvent(
       wishlisted ? EVENTS.CLICKED_REMOVE_FROM_WISHLIST : EVENTS.CLICKED_ADD_TO_WISHLIST,
@@ -143,7 +143,7 @@ export default function ProductCard({ product, onVisit }) {
             {product.mrp &&
               product.selling_price &&
               product.mrp !== product.selling_price ? (
-              <del>Rs. {product.mrp}</del>
+              <del>Rs. {Math.ceil(product.mrp)}</del>
             ) : null}
           </div>
 

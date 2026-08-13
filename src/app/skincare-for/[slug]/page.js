@@ -46,7 +46,7 @@ function GuideProductCard({ product }) {
           ? <img alt={product.product_name} loading="lazy" src={product.image} />
           : <div className="image-fallback">R</div>}
         <div className={`score-badge ${product.score >= 80 ? "score-good" : product.score >= 60 ? "score-present" : "score-weak"}`}>
-          <div>{product.score}<small>Match</small></div>
+          <div>{Math.max(0, product.score)}<small>Match</small></div>
         </div>
       </div>
       <div className="product-body">
@@ -55,7 +55,7 @@ function GuideProductCard({ product }) {
           <p className="product-meta">{product.brand_name} · {product.category} · {product.product_type}</p>
         </div>
         <div className="price-row">
-          <span>{price ? `Rs. ${price}` : "Price unavailable"}</span>
+          <span>{price ? `Rs. ${Math.ceil(price)}` : "Price unavailable"}</span>
         </div>
         <p className="product-copy">{product.match_label}. {product.hero_ingredient || "See the product page for ingredient information."}</p>
         <div className="tagline">
@@ -73,7 +73,7 @@ export default async function SkinGuidePage({ params }) {
   const guide = getSkinGuide(slug);
   if (!guide) notFound();
 
-  const response = recommend(guide.profile, 12);
+  const response = await recommend(guide.profile, 12);
   const canonical = absoluteUrl(`/skincare-for/${guide.slug}`);
   const structuredData = [
     {
@@ -127,7 +127,7 @@ export default async function SkinGuidePage({ params }) {
         <p>{guide.answer}</p>
       </header>
 
-      <main>
+      <main className="guide-layout">
         <aside className="panel profile-panel">
           <div className="section-title">Profile used for these matches</div>
           <ul className="component-list">
@@ -168,7 +168,7 @@ export default async function SkinGuidePage({ params }) {
         </section>
       </main>
 
-      <main>
+      <main className="guide-layout">
         <aside className="panel profile-panel">
           <div className="studio-title">
             <h2>How matching works</h2>
