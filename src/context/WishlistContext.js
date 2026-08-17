@@ -105,6 +105,14 @@ export function WishlistProvider({ children }) {
                 : [...current, product]
         );
         syncToServer(product.product_uid, isAdding);
+
+        // Ask for push permission and schedule the 15-minute "cart is waiting"
+        // reminder. Called straight from the click handler so the user-gesture
+        // context browsers require for the permission prompt is still active.
+        if (isAdding) {
+            triggerWishlistReminder(product);
+        }
+
         return true;
     }
 

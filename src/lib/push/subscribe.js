@@ -16,6 +16,18 @@ export function pushSupported() {
         && Boolean(VAPID_PUBLIC_KEY)
 }
 
+/** Names the missing precondition, so a silent no-prompt is diagnosable. */
+function unsupportedReason() {
+    if (typeof window === 'undefined') return 'not running in a browser'
+    if (!('serviceWorker' in navigator)) return 'no serviceWorker support'
+    if (!('PushManager' in window)) return 'no PushManager support'
+    // NEXT_PUBLIC_* is inlined at BUILD time. If it was absent when the bundle
+    // was built, it is undefined here no matter what the host env now says —
+    // and the permission prompt never appears. Redeploy after setting it.
+    if (!VAPID_PUBLIC_KEY) return 'NEXT_PUBLIC_VAPID_PUBLIC_KEY missing from the build'
+    return null
+}
+
 /**
  * Ensures the browser has an active push subscription and that the server
  * knows about it. Safe to call repeatedly — it's a no-op once subscribed.
@@ -23,18 +35,35 @@ export function pushSupported() {
  * require that to show the permission prompt.
  */
 export async function ensurePushSubscribed(visitorId) {
-    if (!pushSupported() || !visitorId) return false
-    if (Notification.permission === 'denied') return false
+    const reason = unsupportedReason()
+    if (reason) {
+        console.warn(`[push] skipped: ${reason}`)
+        return false
+    }
+    if (!visitorId) {
+        console.warn('[push] skipped: no visitorId')
+        return false
+    }
+    if (Notification.permission === 'denied') {
+        console.warn('[push] skipped: notifications are blocked for this origin')
+        return false
+    }
 
     try {
-        const registration = await navigator.serviceWorker.register('/sw.js')
-
+        // Ask BEFORE registering the service worker. Awaiting the registration
+        // first consumes the transient user activation, which Safari requires in
+        // order to show the prompt at all; it also avoids registering a worker
+        // for someone who then declines.
         let permission = Notification.permission
         if (permission === 'default') {
             permission = await Notification.requestPermission()
         }
-        if (permission !== 'granted') return false
+        if (permission !== 'granted') {
+            console.warn(`[push] permission not granted: ${permission}`)
+            return false
+        }
 
+        const registration = await navigator.serviceWorker.register('/sw.js')
         let subscription = await registration.pushManager.getSubscription()
         if (!subscription) {
             subscription = await registration.pushManager.subscribe({
