@@ -115,11 +115,23 @@ async function sendToSubscription(subscription, payload) {
     );
     return { ok: true };
   } catch (error) {
-    const expired = error.statusCode === 404 || error.statusCode === 410;
+    const statusCode = error?.statusCode;
+    const expired = statusCode === 404 || statusCode === 410;
+
+    // The push service's own status and body are the ONLY things that separate
+    // a VAPID key mismatch (403) from an expired endpoint (410) from a bad JWT
+    // (401). Swallowing them left every failure looking identical.
+    console.error("[api/cron/send-wishlist-reminders] push send failed", {
+      statusCode,
+      body: error?.body,
+      message: error?.message,
+      endpoint: String(subscription.endpoint || "").slice(0, 60),
+    });
+
     if (expired) {
       await supabaseAdmin.from("push_subscriptions").update({ disabled: true }).eq("id", subscription.id);
     }
-    return { ok: false, expired, statusCode: error.statusCode };
+    return { ok: false, expired, statusCode };
   }
 }
 
@@ -173,9 +185,16 @@ async function handleCronRequest(request) {
           .eq("id", reminder.id);
       } else {
         failed += 1;
+        // Stamp the push service's status codes onto the row, so the table
+        // itself says 403 (key mismatch) vs 410 (expired) vs 401 (bad JWT)
+        // instead of an undiagnosable "delivery_failed".
+        const codes = [...new Set(results.map((r) => r.statusCode).filter(Boolean))];
         await supabaseAdmin
           .from("wishlist_reminders")
-          .update({ status: "failed", failure_reason: "delivery_failed" })
+          .update({
+            status: "failed",
+            failure_reason: codes.length ? `delivery_failed_${codes.join("_")}` : "delivery_failed",
+          })
           .eq("id", reminder.id);
       }
     }
