@@ -16,6 +16,69 @@ function generateDeterministicPassword(phone, serviceKey) {
     .digest('hex');
 }
 
+function matchesPhone(user, cleanTargetPhone, syntheticEmail) {
+  const digits = (value) => (value ? String(value).replace(/\D/g, '') : '');
+  return (
+    digits(user.phone) === cleanTargetPhone ||
+    (user.email && user.email === syntheticEmail) ||
+    digits(user.user_metadata?.phone_no) === cleanTargetPhone ||
+    digits(user.user_metadata?.phone) === cleanTargetPhone
+  );
+}
+
+/**
+ * Resolves the existing auth.users row for a phone number, or null.
+ *
+ * Tries public.users first (one indexed query), then falls back to scanning
+ * auth.users. That scan MUST paginate: supabaseAdmin.auth.admin.listUsers()
+ * sends an empty per_page, so GoTrue applies its default of 50 and silently
+ * returns only the first page. Calling it unpaginated made every returning user
+ * past the 50th invisible here — the lookup missed them, createUser then
+ * correctly reported "already exists", and the request died as a 500.
+ */
+async function findExistingAuthUser({ formattedPhone, cleanTargetPhone, syntheticEmail }) {
+  // 1. public.users carries phone_no for everyone this route has ever created.
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .in('phone_no', [formattedPhone, cleanTargetPhone])
+      .limit(1);
+
+    if (error) {
+      console.warn('[verify-otp] public.users phone lookup failed:', error.message);
+    } else if (data?.[0]?.id) {
+      const { data: byId, error: byIdErr } = await supabaseAdmin.auth.admin.getUserById(data[0].id);
+      if (!byIdErr && byId?.user) return byId.user;
+      // Orphaned public.users row (auth user deleted) — fall through to the scan.
+    }
+  } catch (err) {
+    console.warn('[verify-otp] public.users phone lookup threw:', err.message);
+  }
+
+  // 2. Paginated scan of auth.users, for users predating the public.users
+  //    mirror or created by another flow.
+  const perPage = 1000;
+  const maxPages = 100; // hard stop so a bad cursor can't spin forever
+
+  for (let page = 1; page <= maxPages; page += 1) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+
+    if (error) {
+      console.warn(`[verify-otp] listUsers page ${page} failed:`, error.message);
+      return null;
+    }
+
+    const users = data?.users || [];
+    const match = users.find((u) => matchesPhone(u, cleanTargetPhone, syntheticEmail));
+    if (match) return match;
+    if (users.length < perPage) return null; // last page reached
+  }
+
+  console.warn('[verify-otp] listUsers scan hit the page cap without a match');
+  return null;
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -108,26 +171,19 @@ export async function POST(request) {
     // Step 3: Supabase Sync - Lookup auth.users
     const cleanTargetPhone = formattedPhone.replace(/\D/g, '');
     const syntheticEmail = `${cleanTargetPhone}@phone.roopsee.internal`;
+    const lookupArgs = { formattedPhone, cleanTargetPhone, syntheticEmail };
     let existingAuthUser = null;
     let authUserId = null;
 
     try {
-      const { data: listUsers } = await supabaseAdmin.auth.admin.listUsers();
-      if (listUsers?.users) {
-        existingAuthUser = listUsers.users.find(
-          (u) => (u.phone && u.phone.replace(/\D/g, '') === cleanTargetPhone) ||
-                 (u.email && u.email === syntheticEmail) ||
-                 (u.user_metadata?.phone_no && u.user_metadata.phone_no.replace(/\D/g, '') === cleanTargetPhone) ||
-                 (u.user_metadata?.phone && u.user_metadata.phone.replace(/\D/g, '') === cleanTargetPhone)
-        );
-      }
+      existingAuthUser = await findExistingAuthUser(lookupArgs);
     } catch (err) {
-      console.warn('Error listing auth.users:', err.message);
+      console.warn('Error resolving existing auth user:', err.message);
     }
 
     if (existingAuthUser) {
       authUserId = existingAuthUser.id;
-      await supabaseAdmin.auth.admin.updateUserById(authUserId, {
+      const { error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(authUserId, {
         password,
         phone: formattedPhone,
         phone_confirm: true,
@@ -137,6 +193,24 @@ export async function POST(request) {
           phone_verified: true,
         },
       });
+
+      // The deterministic password must land, or the sign-in below fails with a
+      // misleading "invalid credentials". Retry without the phone fields, which
+      // are what fail when phone auth is disabled on the project.
+      if (updateErr) {
+        console.warn('[verify-otp] updateUserById failed, retrying without phone:', updateErr.message);
+        const { error: retryErr } = await supabaseAdmin.auth.admin.updateUserById(authUserId, {
+          password,
+          email_confirm: true,
+        });
+        if (retryErr) {
+          console.error('[verify-otp] could not reset password for existing user:', retryErr.message);
+          return NextResponse.json(
+            { success: false, error: `Could not update existing account: ${retryErr.message}` },
+            { status: 500 }
+          );
+        }
+      }
     } else {
       // Create new user in auth.users (with phone + synthetic email fallback)
       const createPayload = {
@@ -162,18 +236,36 @@ export async function POST(request) {
 
       if (createRes.error) {
         if (createRes.error.message?.toLowerCase()?.includes('already exists') || createRes.error.status === 422) {
-          const { data: listUsers } = await supabaseAdmin.auth.admin.listUsers();
-          const matched = listUsers?.users?.find(
-            (u) => (u.phone && u.phone.replace(/\D/g, '') === cleanTargetPhone) || (u.email && u.email === syntheticEmail)
-          );
+          // Same paginated resolver — the old inline listUsers() call here read
+          // only the first 50 users, so this branch reported a bogus conflict.
+          const matched = await findExistingAuthUser(lookupArgs);
+
           if (matched) {
             authUserId = matched.id;
-            await supabaseAdmin.auth.admin.updateUserById(authUserId, {
+            const { error: pwErr } = await supabaseAdmin.auth.admin.updateUserById(authUserId, {
               password,
             });
+            if (pwErr) {
+              console.error('[verify-otp] password reset failed for conflicting user:', pwErr.message);
+              return NextResponse.json(
+                { success: false, error: `Could not update existing account: ${pwErr.message}` },
+                { status: 500 }
+              );
+            }
           } else {
+            // Genuinely unresolvable. Surface the underlying cause -- the usual
+            // remaining case is a soft-deleted user still holding the unique
+            // email/phone index while being excluded from listUsers.
+            console.error(
+              '[verify-otp] auth user reported as existing but not findable.',
+              { phone: formattedPhone, syntheticEmail, createError: createRes.error.message }
+            );
             return NextResponse.json(
-              { success: false, error: 'User conflicts in auth database' },
+              {
+                success: false,
+                error: 'This number is already registered but its account could not be loaded. Please contact support.',
+                detail: createRes.error.message,
+              },
               { status: 500 }
             );
           }
@@ -188,17 +280,22 @@ export async function POST(request) {
       }
     }
 
-    // Check public.users
+    // Check public.users. supabase-js resolves with { error } rather than
+    // throwing, so the error has to be read explicitly -- a try/catch alone
+    // silently treats a failed query as "no row", i.e. a brand new user.
     let existingPublicUser = null;
     try {
-      const { data } = await supabaseAdmin
+      const { data, error } = await supabaseAdmin
         .from('users')
         .select('*')
         .eq('id', authUserId)
         .maybeSingle();
+      if (error) {
+        console.warn('Could not query public.users table:', error.message);
+      }
       existingPublicUser = data;
     } catch (err) {
-      console.warn('Could not query public.users table:', err.message);
+      console.warn('public.users query threw:', err.message);
     }
 
     const isNewUser = !existingPublicUser;
@@ -206,7 +303,7 @@ export async function POST(request) {
     // Upsert into public.users
     try {
       const now = new Date().toISOString();
-      await supabaseAdmin.from('users').upsert(
+      const { error: upsertErr } = await supabaseAdmin.from('users').upsert(
         {
           id: authUserId,
           phone_no: formattedPhone,
@@ -216,8 +313,13 @@ export async function POST(request) {
         },
         { onConflict: 'id' }
       );
+      // Not fatal to the login, but it must be visible: this row is what the
+      // phone lookup above depends on for the next sign-in.
+      if (upsertErr) {
+        console.error('Failed upserting to public.users table:', upsertErr.message);
+      }
     } catch (dbErr) {
-      console.warn('Warning: Failed upserting to public.users table:', dbErr.message);
+      console.error('public.users upsert threw:', dbErr.message);
     }
 
     // Step 4: Mint Supabase Session (Try phone first, then synthetic email fallback)

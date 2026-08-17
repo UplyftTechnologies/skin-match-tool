@@ -19,9 +19,34 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
 
   const otpInputsRef = useRef([])
   const verifyingRef = useRef(false)
+  // Latches once a session has been established. MSG91 can invoke both its
+  // global success callback and the local verify callback for the same OTP, so
+  // without this the second one re-runs the backend verify and fires onSuccess
+  // (and setSession) twice.
+  const succeededRef = useRef(false)
+  const tokenTimeoutRef = useRef(null)
+  const resendTimeoutRef = useRef(null)
+
+  // The widget's global success handler is registered once, so anything it
+  // closes over is frozen at that render. Mirror the values it needs in refs.
+  const phoneRef = useRef('')
+  const onSuccessRef = useRef(onSuccess)
 
   const widgetId = process.env.NEXT_PUBLIC_MSG91_WIDGET_ID
   const tokenAuth = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH
+
+  useEffect(() => {
+    phoneRef.current = phone
+  }, [phone])
+
+  useEffect(() => {
+    onSuccessRef.current = onSuccess
+  }, [onSuccess])
+
+  useEffect(() => () => {
+    clearTimeout(tokenTimeoutRef.current)
+    clearTimeout(resendTimeoutRef.current)
+  }, [])
 
   useEffect(() => {
     if (step !== 2 || resendTimer <= 0) return
@@ -30,6 +55,15 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     }, 1000)
     return () => clearTimeout(timer)
   }, [step, resendTimer])
+
+  // MSG91 sometimes passes the widget id (a 24-char hex string) to the failure
+  // callback instead of a real message. Filter that out, but always return
+  // something printable so a failure can never be silent.
+  const widgetErrorMessage = (errorRes, fallback) => {
+    const msg = typeof errorRes === 'string' ? errorRes : errorRes?.message
+    if (msg && msg !== widgetId && !/^[a-f0-9]{24}$/i.test(msg)) return msg
+    return fallback
+  }
 
   const extractToken = (data) => {
     if (!data) return null
@@ -51,8 +85,9 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
   }
 
   const handleVerifyWithBackend = async (token) => {
-    if (!token || verifyingRef.current) return
+    if (!token || verifyingRef.current || succeededRef.current) return
     verifyingRef.current = true
+    clearTimeout(tokenTimeoutRef.current)
     setLoading(true)
     setError('')
 
@@ -81,13 +116,14 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
       }
 
       if (backendData.token && backendData.refresh_token) {
+        const phoneNumber = backendData.user?.phone || phoneRef.current
         trackingService.trackEvent(EVENTS.OTP_VERIFIED, {
-          phone_number: backendData.user?.phone || phone,
+          phone_number: phoneNumber,
         })
         trackingService.trackEvent(
           backendData.is_new_user ? EVENTS.ACCOUNT_CREATED : EVENTS.EXISTING_USER_LOGIN,
           {
-            phone_number: backendData.user?.phone || phone,
+            phone_number: phoneNumber,
             userId: backendData.user?.id,
           },
         )
@@ -97,9 +133,12 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         })
       }
 
+      // Latch before handing control away, and deliberately leave verifyingRef
+      // set: a late duplicate callback must not be able to re-enter. Both are
+      // cleared by handleSendOtp / resetToPhoneStep when a new attempt starts.
+      succeededRef.current = true
       setLoading(false)
-      verifyingRef.current = false
-      onSuccess?.(backendData.user)
+      onSuccessRef.current?.(backendData.user)
     } catch (err) {
       console.error('[OTP Catch Error]:', err)
       setLoading(false)
@@ -110,7 +149,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
 
   const triggerVerify = (otpCode) => {
     const code = otpCode || otp.join('')
-    if (code.length !== 6) {
+    if (!/^\d{6}$/.test(code)) {
       setError('Please enter complete 6-digit OTP.')
       return
     }
@@ -132,23 +171,26 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         const token = extractToken(res)
         if (token) {
           handleVerifyWithBackend(token)
-        } else {
-          setTimeout(() => {
-            if (verifyingRef.current === false && loading) {
-              setLoading(false)
-              setError('OTP verified, but access token was not returned. Please try resending.')
-            }
-          }, 2500)
+          return
         }
+        // No token in the local response. The widget's global success callback
+        // may still deliver one, so wait briefly before giving up. This has to
+        // test refs, not `loading`: that would be the value captured before the
+        // setLoading(true) above, so it always read false and this branch never
+        // fired, leaving the spinner stuck forever.
+        clearTimeout(tokenTimeoutRef.current)
+        tokenTimeoutRef.current = setTimeout(() => {
+          if (verifyingRef.current || succeededRef.current) return
+          setLoading(false)
+          setError('OTP verified, but access token was not returned. Please try resending.')
+        }, 2500)
       },
       (err) => {
+        // A failure fired after the global callback already got a token is
+        // noise -- don't clobber a verification that is under way.
+        if (verifyingRef.current || succeededRef.current) return
         setLoading(false)
-        const msg = typeof err === 'string' ? err : err?.message
-        if (msg && msg !== widgetId && !/^[a-f0-9]{24}$/i.test(msg)) {
-          setError(msg || 'Invalid OTP code.')
-        } else {
-          setError('Invalid OTP code.')
-        }
+        setError(widgetErrorMessage(err, 'Invalid OTP code.'))
       },
     )
   }
@@ -227,7 +269,6 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     } else {
       initWidget()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, widgetId, tokenAuth])
 
   const handleSendOtp = async (e) => {
@@ -236,6 +277,8 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     setResending(false)
     setResendCount(0)
     verifyingRef.current = false
+    succeededRef.current = false
+    clearTimeout(tokenTimeoutRef.current)
 
     const cleanPhone = phone.replace(/\D/g, '')
     if (cleanPhone.length !== 10) {
@@ -252,10 +295,13 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
 
     setLoading(true)
 
+    let sent = false
+
     try {
       sendOtpFunc(
         `91${cleanPhone}`,
         () => {
+          sent = true
           setLoading(false)
           setError('')
           setStep(2)
@@ -268,16 +314,19 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
           })
         },
         (errorRes) => {
+          // MSG91 can fire failure *after* a successful send; ignore that so a
+          // working flow isn't overwritten with an error.
+          if (sent) return
           setLoading(false)
-          const msg = typeof errorRes === 'string' ? errorRes : errorRes?.message
-          if (msg && msg !== widgetId && !/^[a-f0-9]{24}$/i.test(msg)) {
-            setError(msg)
-          }
+          // Always surface something: previously an error object without a
+          // string `.message` set no error at all, so the button just un-span
+          // and the user got no feedback whatsoever.
+          setError(widgetErrorMessage(errorRes, 'Could not send OTP. Please try again.'))
         },
       )
     } catch (err) {
       setLoading(false)
-      setError(err.message || 'An error occurred sending OTP.')
+      setError(err?.message || 'An error occurred sending OTP.')
     }
   }
 
@@ -286,39 +335,44 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     setError('')
     setOtp(['', '', '', '', '', ''])
     setResending(true)
-    setResendCount((prev) => prev + 1)
 
     trackingService.trackEvent(EVENTS.CLICKED_RESEND_OTP, { phone_number: phone })
 
     const cleanPhone = phone.replace(/\D/g, '')
     const sendOtpFunc = window.sendOtp || window.sendOTP
 
-    let callbackCalled = false
+    let settled = false
 
     const handleSuccess = () => {
-      callbackCalled = true
+      if (settled) return
+      settled = true
+      clearTimeout(resendTimeoutRef.current)
       setResending(false)
       setError('')
       setResendTimer(30)
+      // Counted only on a confirmed resend, so a failed attempt doesn't burn
+      // one of the two the user is allowed.
+      setResendCount((prev) => prev + 1)
       setTimeout(() => otpInputsRef.current[0]?.focus(), 100)
     }
 
     const handleError = (errorRes) => {
-      callbackCalled = true
+      if (settled) return
+      settled = true
+      clearTimeout(resendTimeoutRef.current)
       setResending(false)
+      setError(widgetErrorMessage(errorRes, 'Failed to resend OTP.'))
       const msg = typeof errorRes === 'string' ? errorRes : errorRes?.message
-      if (msg && msg !== widgetId && !/^[a-f0-9]{24}$/i.test(msg)) {
-        setError(msg || 'Failed to resend OTP.')
-      }
-      if (msg && (msg.toLowerCase().includes('limit') || msg.toLowerCase().includes('max') || msg.toLowerCase().includes('exceed'))) {
+      if (msg && /limit|max|exceed/i.test(msg)) {
         setResendCount(2)
       }
     }
 
-    setTimeout(() => {
-      if (!callbackCalled) {
-        setResending(false)
-      }
+    // Safety net for a widget that never calls back at all: re-enable the
+    // button without claiming success or failure, since we can't tell which.
+    clearTimeout(resendTimeoutRef.current)
+    resendTimeoutRef.current = setTimeout(() => {
+      if (!settled) setResending(false)
     }, 4000)
 
     try {
@@ -344,7 +398,10 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
   }
 
   const handleOtpChange = (index, value) => {
-    if (isNaN(value)) return
+    // isNaN('') and isNaN(' ') are both false, so the old check let a space
+    // through as a digit and auto-submitted a code containing whitespace.
+    // Empty still has to pass -- clearing a box depends on it.
+    if (value !== '' && !/^\d+$/.test(value)) return
     const newOtp = [...otp]
     newOtp[index] = value.substring(value.length - 1)
     setOtp(newOtp)
@@ -388,11 +445,15 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
   const resetToPhoneStep = () => {
     setStep(1)
     setError('')
+    setLoading(false)
     setResending(false)
     setResendTimer(30)
     setResendCount(0)
     setOtp(['', '', '', '', '', ''])
     verifyingRef.current = false
+    succeededRef.current = false
+    clearTimeout(tokenTimeoutRef.current)
+    clearTimeout(resendTimeoutRef.current)
   }
 
   return {

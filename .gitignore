@@ -18,6 +18,10 @@ data/*.csv
 !data/products.csv
 !outputs/Roopsee_Full_Profile_Coverage_Final.xlsx
 
+# Local 3D model experiments -- not part of the app. Remove this line to start
+# tracking them.
+3d-model/
+
 # Local environment files.
 .env
 .env.local
