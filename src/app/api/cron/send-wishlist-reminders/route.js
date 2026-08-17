@@ -3,24 +3,57 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// A sweep of up to BATCH_LIMIT reminders does several sequential writes each,
+// which can exceed Vercel's 10s default for a serverless function.
+export const maxDuration = 60;
 
 const BATCH_LIMIT = 100;
 
-const vapidConfigured = Boolean(
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY,
-);
+/**
+ * Driven by the Vercel Cron entry in vercel.json. Vercel calls the production
+ * deployment on schedule and attaches `Authorization: Bearer $CRON_SECRET`
+ * automatically — but only when CRON_SECRET is set on the project, otherwise it
+ * sends no auth header at all and every run 401s here.
+ *
+ * Configured lazily rather than at module scope so a missing key reports which
+ * variable is absent, and so setting one takes effect on the next cold start.
+ */
+let vapidReady = false;
 
-if (vapidConfigured) {
+function vapidPublicKey() {
+  // Prefer the server-only variable. NEXT_PUBLIC_* values are inlined into the
+  // bundle AT BUILD TIME, so relying on the public one alone means adding it in
+  // the Vercel dashboard has no effect until you redeploy — which reads exactly
+  // like "push silently stopped working after deployment".
+  return process.env.VAPID_PUBLIC_KEY || process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
+}
+
+function missingVapidVars() {
+  const missing = [];
+  if (!vapidPublicKey()) missing.push("VAPID_PUBLIC_KEY (or NEXT_PUBLIC_VAPID_PUBLIC_KEY)");
+  if (!process.env.VAPID_PRIVATE_KEY) missing.push("VAPID_PRIVATE_KEY");
+  return missing;
+}
+
+function ensureVapid() {
+  if (vapidReady) return true;
+  if (missingVapidVars().length) return false;
+
   webpush.setVapidDetails(
     process.env.VAPID_SUBJECT || "mailto:support@roopsee.com",
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    vapidPublicKey(),
     process.env.VAPID_PRIVATE_KEY,
   );
+  vapidReady = true;
+  return true;
 }
 
 function authorized(request) {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return false;
+  if (!secret) {
+    console.error("[api/cron/send-wishlist-reminders] CRON_SECRET is not set — every run will 401");
+    return false;
+  }
 
   const authorization = request.headers.get("authorization") || "";
   const bearerToken = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
@@ -94,8 +127,13 @@ async function handleCronRequest(request) {
   if (!authorized(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (!vapidConfigured) {
-    return Response.json({ error: "VAPID keys are not configured" }, { status: 500 });
+  if (!ensureVapid()) {
+    const missing = missingVapidVars();
+    console.error("[api/cron/send-wishlist-reminders] missing VAPID config:", missing.join(", "));
+    return Response.json(
+      { error: "VAPID keys are not configured", missing },
+      { status: 500 },
+    );
   }
 
   try {
