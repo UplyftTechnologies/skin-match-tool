@@ -21,6 +21,7 @@ const OFFER_FIELDS = [
   "in_stock",
   "product_url",
   "image_url",
+  "image_urls",
   "description",
   "ingredients",
   "how_to_use",

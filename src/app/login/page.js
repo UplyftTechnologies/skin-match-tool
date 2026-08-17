@@ -272,7 +272,7 @@ function LoginPageContent() {
                   ref={(el) => (otpInputsRef.current[idx] = el)}
                   type="text"
                   inputMode="numeric"
-                  maxLength="1"
+                  maxLength="6"
                   autoComplete={idx === 0 ? 'one-time-code' : 'off'}
                   name={idx === 0 ? 'otp' : undefined}
                   value={digit}

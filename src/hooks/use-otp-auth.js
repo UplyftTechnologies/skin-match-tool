@@ -19,6 +19,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
 
   const otpInputsRef = useRef([])
   const verifyingRef = useRef(false)
+  const webOtpListenRef = useRef(null)
 
   const widgetId = process.env.NEXT_PUBLIC_MSG91_WIDGET_ID
   const tokenAuth = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH
@@ -157,7 +158,34 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     if (step !== 2) return
     if (typeof window === 'undefined' || !('OTPCredential' in window)) return
 
+    // navigator.credentials.get() shows a native, user-interactive "Allow
+    // Chrome to read the message" prompt the instant it's called, and stays
+    // pending until the person actually taps it — which can take several
+    // seconds. React Strict Mode's dev-only synchronous mount→cleanup→
+    // remount was aborting this a moment after starting it and starting a
+    // second one, leaving that already-open prompt bound to the discarded
+    // first request — so tapping "Allow" resolved nothing. Reuse a listen
+    // that's still alive across that phantom remount instead of restarting
+    // it, and only actually cancel it (after a tick, so a same-tick remount
+    // can reclaim it) on a real step change or unmount.
+    function scheduleCancel() {
+      const listen = webOtpListenRef.current
+      if (!listen) return
+      listen.cancelTimer = setTimeout(() => {
+        if (webOtpListenRef.current === listen) {
+          webOtpListenRef.current = null
+          listen.controller.abort()
+        }
+      }, 0)
+    }
+
+    if (webOtpListenRef.current) {
+      clearTimeout(webOtpListenRef.current.cancelTimer)
+      return scheduleCancel
+    }
+
     const ac = new AbortController()
+    webOtpListenRef.current = { controller: ac, cancelTimer: null }
 
     navigator.credentials
       .get({
@@ -165,6 +193,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         signal: ac.signal,
       })
       .then((otpCredential) => {
+        webOtpListenRef.current = null
         if (otpCredential?.code) {
           const digits = otpCredential.code.replace(/\D/g, '').slice(0, 6).split('')
           if (digits.length === 6) {
@@ -176,12 +205,13 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         }
       })
       .catch((err) => {
+        webOtpListenRef.current = null
         if (err?.name !== 'AbortError') {
           console.log('[WebOTP]:', err)
         }
       })
 
-    return () => ac.abort()
+    return scheduleCancel
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])
 
@@ -344,16 +374,39 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
   }
 
   const handleOtpChange = (index, value) => {
-    if (isNaN(value)) return
+    const digitsOnly = value.replace(/\D/g, '')
+
+    // Keyboard autofill (iOS/Android "from Messages" suggestion) drops the
+    // whole code into whichever box is focused via a normal input event, not
+    // a paste event — so it never reaches handlePaste below. Spread it across
+    // the remaining boxes instead of keeping only the last digit.
+    if (digitsOnly.length > 1) {
+      const newOtp = [...otp]
+      let cursor = index
+      for (const digit of digitsOnly) {
+        if (cursor > 5) break
+        newOtp[cursor] = digit
+        cursor += 1
+      }
+      setOtp(newOtp)
+      otpInputsRef.current[Math.min(cursor, 5)]?.focus()
+
+      const fullCode = newOtp.join('')
+      if (fullCode.length === 6) {
+        triggerVerify(fullCode)
+      }
+      return
+    }
+
     const newOtp = [...otp]
-    newOtp[index] = value.substring(value.length - 1)
+    newOtp[index] = digitsOnly
     setOtp(newOtp)
 
-    if (value && index < 5) {
+    if (digitsOnly && index < 5) {
       otpInputsRef.current[index + 1]?.focus()
     }
 
-    if (value && index === 5) {
+    if (digitsOnly && index === 5) {
       const fullCode = newOtp.join('')
       if (fullCode.length === 6) {
         triggerVerify(fullCode)
