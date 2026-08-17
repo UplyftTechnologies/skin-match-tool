@@ -17,7 +17,7 @@ export const metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
   alternates: {
-    canonical: "https://matchmyskin.roopsee.com",  
+    canonical: "https://roopsee.com",  
   },
   title: {
     default: "Match My Skin | Roopsee",

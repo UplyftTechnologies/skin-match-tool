@@ -195,6 +195,19 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     )
   }
 
+  // WebOTP auto-read. Requirements that are NOT satisfiable from here:
+  //   * Chromium on Android only -- iOS Safari and every desktop browser lack
+  //     the API entirely, so `OTPCredential in window` is false and this is a
+  //     no-op. Those platforms fall back to keyboard autofill via the inputs'
+  //     autocomplete="one-time-code".
+  //   * A secure context in a top-level frame (not an iframe).
+  //   * The SMS body MUST end with a line of exactly `@<host> #<code>`, where
+  //     the host matches this page's origin. Without that binding line the
+  //     promise below simply never resolves. That lives in the MSG91 template.
+  //
+  // `resendCount` is in the deps so a resend re-arms the listener: without it
+  // credentials.get() had already settled for the first SMS and auto-read was
+  // dead for every subsequent code.
   useEffect(() => {
     if (step !== 2) return
     if (typeof window === 'undefined' || !('OTPCredential' in window)) return
@@ -225,7 +238,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
 
     return () => ac.abort()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step])
+  }, [step, resendCount])
 
   useEffect(() => {
     if (typeof window === 'undefined' || !active) return
@@ -402,19 +415,36 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     // through as a digit and auto-submitted a code containing whitespace.
     // Empty still has to pass -- clearing a box depends on it.
     if (value !== '' && !/^\d+$/.test(value)) return
-    const newOtp = [...otp]
-    newOtp[index] = value.substring(value.length - 1)
-    setOtp(newOtp)
 
-    if (value && index < 5) {
-      otpInputsRef.current[index + 1]?.focus()
+    const newOtp = [...otp]
+
+    if (value.length > 1) {
+      // Browser autofill (Chrome's one-time-code suggestion, iOS's keyboard
+      // suggestion, or a paste onto a single box) delivers the WHOLE code to
+      // one input, bypassing maxLength. The old `value.substring(length - 1)`
+      // kept only the last character, so an auto-read 6-digit code landed as a
+      // single digit. Spread it across the boxes instead. Typed input can never
+      // reach here: maxLength="1" caps it at one character.
+      const digits = value.replace(/\D/g, '').slice(0, 6 - index).split('')
+      digits.forEach((digit, offset) => {
+        newOtp[index + offset] = digit
+      })
+      setOtp(newOtp)
+      otpInputsRef.current[Math.min(index + digits.length, 5)]?.focus()
+    } else {
+      newOtp[index] = value
+      setOtp(newOtp)
+      if (value && index < 5) {
+        otpInputsRef.current[index + 1]?.focus()
+      }
     }
 
-    if (value && index === 5) {
-      const fullCode = newOtp.join('')
-      if (fullCode.length === 6) {
-        triggerVerify(fullCode)
-      }
+    // Submit as soon as all six boxes hold a digit, wherever the fill started.
+    // Keying off `index === 5` alone missed autofill, which completes the code
+    // from box 0.
+    const fullCode = newOtp.join('')
+    if (/^\d{6}$/.test(fullCode)) {
+      triggerVerify(fullCode)
     }
   }
 
