@@ -16,6 +16,8 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
   const [resendTimer, setResendTimer] = useState(30)
   const [resending, setResending] = useState(false)
   const [resendCount, setResendCount] = useState(0)
+  // Bumped once per confirmed SMS, to re-arm the WebOTP listener.
+  const [smsNonce, setSmsNonce] = useState(0)
 
   const otpInputsRef = useRef([])
   const verifyingRef = useRef(false)
@@ -205,14 +207,17 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
   //     the host matches this page's origin. Without that binding line the
   //     promise below simply never resolves. That lives in the MSG91 template.
   //
-  // `resendCount` is in the deps so a resend re-arms the listener: without it
-  // credentials.get() had already settled for the first SMS and auto-read was
-  // dead for every subsequent code.
+  // `smsNonce` re-arms the listener after each confirmed send. credentials.get()
+  // settles once, so without this auto-read was dead for every code after the
+  // first. It is a dedicated counter rather than `resendCount` so that
+  // unrelated state (a rate-limit clamp, a reset) can't tear down a live
+  // request mid-prompt.
   useEffect(() => {
     if (step !== 2) return
     if (typeof window === 'undefined' || !('OTPCredential' in window)) return
 
     const ac = new AbortController()
+    let cancelled = false
 
     navigator.credentials
       .get({
@@ -220,25 +225,49 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         signal: ac.signal,
       })
       .then((otpCredential) => {
-        if (otpCredential?.code) {
-          const digits = otpCredential.code.replace(/\D/g, '').slice(0, 6).split('')
-          if (digits.length === 6) {
-            const newOtp = ['', '', '', '', '', '']
-            digits.forEach((d, i) => { newOtp[i] = d })
-            setOtp(newOtp)
-            triggerVerify(digits.join(''))
-          }
+        if (cancelled) return
+
+        const raw = String(otpCredential?.code ?? '')
+        const digits = raw.replace(/\D/g, '').slice(0, 6)
+        console.log('[WebOTP] credential received:', JSON.stringify(raw), '->', digits)
+
+        if (!digits) {
+          console.warn('[WebOTP] credential carried no digits — check the "#code" part of the SMS template')
+          return
+        }
+
+        // Insert whatever arrived. The old code required exactly six digits and
+        // did nothing otherwise, so a short or padded code vanished with no
+        // error and no filled boxes.
+        const next = ['', '', '', '', '', '']
+        digits.split('').forEach((digit, i) => { next[i] = digit })
+        setOtp(next)
+        otpInputsRef.current[Math.min(digits.length, 5)]?.focus()
+
+        if (digits.length === 6) {
+          triggerVerify(digits)
+        } else {
+          console.warn(`[WebOTP] expected 6 digits, got ${digits.length} — filled but not submitted`)
         }
       })
       .catch((err) => {
-        if (err?.name !== 'AbortError') {
-          console.log('[WebOTP]:', err)
+        // AbortError used to be swallowed entirely, which hid the most likely
+        // failure: the request being torn down (remount / step change) while
+        // the user was still looking at Chrome's "Allow" prompt. Tapping Allow
+        // then resolves nothing, so no digits ever appear.
+        if (err?.name === 'AbortError') {
+          console.warn('[WebOTP] request aborted before the code was delivered')
+          return
         }
+        console.warn('[WebOTP] failed:', err?.name, err?.message)
       })
 
-    return () => ac.abort()
+    return () => {
+      cancelled = true
+      ac.abort()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, resendCount])
+  }, [step, smsNonce])
 
   useEffect(() => {
     if (typeof window === 'undefined' || !active) return
@@ -321,6 +350,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
           setResendTimer(30)
           setResendCount(0)
           setOtp(['', '', '', '', '', ''])
+          setSmsNonce((prev) => prev + 1)
           setTimeout(() => otpInputsRef.current[0]?.focus(), 100)
           trackingService.trackEvent(EVENTS.CLICKED_SEND_OTP, {
             phone_number: cleanPhone,
@@ -363,6 +393,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
       setResending(false)
       setError('')
       setResendTimer(30)
+      setSmsNonce((prev) => prev + 1)
       // Counted only on a confirmed resend, so a failed attempt doesn't burn
       // one of the two the user is allowed.
       setResendCount((prev) => prev + 1)
