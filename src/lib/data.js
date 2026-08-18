@@ -13,33 +13,37 @@ export function normKey(value) {
   return cleanText(value).toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
-function firstImage(value) {
+function allImages(value) {
+  let candidates = [];
+
   if (Array.isArray(value)) {
-    for (const item of value) {
-      const candidate = cleanText(item);
-      if (/^https?:\/\/\S+/.test(candidate)) return candidate;
+    candidates = value.map(cleanText);
+  } else {
+    const raw = cleanText(value);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) candidates = parsed.map(cleanText);
+      } catch {
+        // The catalog also stores comma- and space-separated URL lists.
+      }
+      if (!candidates.length) {
+        // Some rows glue multiple URLs together with no delimiter at all, so a
+        // greedy \S+ swallows all of them into one broken URL. Stop each match
+        // right before the next "http(s)://" starts instead.
+        const urls = raw.match(/https?:\/\/(?:(?!https?:\/\/)\S)+/g);
+        candidates = urls?.length ? urls.map((url) => url.replace(/,$/, "")) : raw.split(",");
+      }
     }
-    return "";
   }
 
-  const raw = cleanText(value);
-  if (!raw) return "";
-  let candidate = "";
-  try {
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length) candidate = cleanText(parsed[0]);
-  } catch {
-    // The catalog also stores comma- and space-separated URL lists.
-  }
-  if (!candidate) {
-    // Some rows glue multiple URLs together with no delimiter at all, so a
-    // greedy \S+ swallows all of them into one broken URL. Stop each match
-    // right before the next "http(s)://" starts instead.
-    const urls = raw.match(/https?:\/\/(?:(?!https?:\/\/)\S)+/g);
-    candidate = urls?.[0]?.replace(/,$/, "") || raw.split(",")[0].trim();
-  }
   // Guard against junk like a bare "https://" with no host, which crashes next/image's URL parsing.
-  return /^https?:\/\/\S+/.test(candidate) ? candidate : "";
+  const valid = candidates.map((item) => item.trim()).filter((item) => /^https?:\/\/\S+/.test(item));
+  return [...new Set(valid)];
+}
+
+function firstImage(value) {
+  return allImages(value)[0] || "";
 }
 
 function joinList(value) {
@@ -134,6 +138,7 @@ function mapRow(row, index) {
     product_description: cleanText(row.product_description),
     ingredients: cleanText(row.ingredients),
     image: firstImage(row.images),
+    images: allImages(row.images),
     database_id: cleanText(row.id),
     scores,
   };

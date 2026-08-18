@@ -18,7 +18,7 @@ import { SKIN_GUIDES } from "@/lib/seo-pages";
 import { absoluteUrl, productPath } from "@/lib/site";
 import SaveProductButton from "@/components/save-product-button";
 import Header from "@/components/header";
-import ProductImage from "@/components/product-image";
+import ProductGallery from "@/components/product-gallery";
 import ProductScoreBadge from "@/components/product-score-badge";
 import RetailerPriceCompare from "@/components/retailer-price-compare";
 import SimilarProducts from "@/components/similar-products";
@@ -202,8 +202,10 @@ export default async function ProductPage({ params }) {
         <div className="mt-0 grid gap-0 sm:mt-6 sm:gap-7 lg:mt-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-12 lg:items-start">
           {/* Image column */}
           <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
-            <div className="pdp-product-image relative aspect-[1.42] w-full overflow-hidden bg-white p-0 sm:aspect-square sm:rounded-3xl sm:border sm:border-slate-100 sm:p-6 sm:shadow-sm">
-              <ProductImage alt={product.product_name} src={product.image} />
+            <ProductGallery
+              alt={product.product_name}
+              images={product.images?.length ? product.images : [product.image].filter(Boolean)}
+            >
               <ProductScoreBadge />
               <SaveProductButton
                 product={wishlistProduct}
@@ -211,8 +213,8 @@ export default async function ProductPage({ params }) {
                 trackSaveMyMatch
                 className="pdp-heart-btn flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#d77465] shadow-sm transition hover:bg-white"
               />
-            </div>
-            <div className="mt-3 sm:mt-6">
+            </ProductGallery>
+            {/* <div className="mt-3 sm:mt-6">
               <a
                 href="#buy-options"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full
@@ -225,7 +227,7 @@ export default async function ProductPage({ params }) {
               >
                 Buy Now
               </a>
-            </div>
+            </div> */}
 
             <div className="mt-3 hidden rounded-3xl border border-slate-100
              bg-gradient-to-b from-rose-50/50 to-white p-6 lg:block">
