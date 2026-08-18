@@ -12,7 +12,6 @@ export const EVENTS = {
   OTP_VERIFIED: 'otp_verified',
   PAGE_VIEWED_SKIN_MATCH_TOOL: 'page_viewed_skin_match_tool',
   LOGIN_SUCCESSFUL: 'login_successful',
-  ACCOUNT_CREATED: 'account_created',
   EXISTING_USER_LOGIN: 'existing_user_login',
   GOOGLE_LOGIN_FAILED: 'google_login_failed',
   CLICKED_COMPLETE_PROFILE: 'clicked_complete_profile',
