@@ -105,7 +105,6 @@ function LoginPageContent() {
     handleSendOtp,
     handleResend,
     handleOtpChange,
-    handleKeyDown,
     handlePaste,
     triggerVerify,
     resetToPhoneStep,
@@ -265,24 +264,21 @@ function LoginPageContent() {
             <p className="text-center text-sm text-gray-600 mb-3">
               We sent a 6-digit code to +91 {phone}
             </p>
-            <div className="grid grid-cols-6 gap-1.5 sm:gap-2" onPaste={handlePaste}>
-              {otp.map((digit, idx) => (
-                <input
-                  key={idx}
-                  ref={(el) => (otpInputsRef.current[idx] = el)}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength="6"
-                  autoComplete={idx === 0 ? 'one-time-code' : 'off'}
-                  name={idx === 0 ? 'otp' : undefined}
-                  value={digit}
-                  onChange={(e) => handleOtpChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(idx, e)}
-                  disabled={loading}
-                  className="h-11 min-w-0 w-full rounded-lg border border-[#c9dedc] text-center text-lg font-semibold text-gray-900 transition-colors focus:border-[#7fb3ab] focus:outline-none disabled:bg-gray-50 disabled:text-gray-400"
-                />
-              ))}
-            </div>
+            <input
+              ref={(el) => (otpInputsRef.current[0] = el)}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength="6"
+              autoComplete="one-time-code"
+              name="otp"
+              aria-label="6-digit verification code"
+              value={otp.join('')}
+              onChange={(e) => handleOtpChange(0, e.target.value)}
+              onPaste={handlePaste}
+              disabled={loading}
+              className="h-12 w-full rounded-lg border border-[#c9dedc] px-4 text-center text-xl font-semibold tracking-[0.55em] text-gray-900 transition-colors focus:border-[#7fb3ab] focus:outline-none disabled:bg-gray-50 disabled:text-gray-400"
+            />
 
             <div className="mt-3 flex items-center justify-between text-xs">
               {resendCount >= 2 ? (

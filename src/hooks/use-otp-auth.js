@@ -204,7 +204,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
             // MSG91 verification in the same tick disables the controlled inputs
             // immediately, which can make a successful autofill appear to have
             // failed. The existing form button remains responsible for verifying.
-            setTimeout(() => otpInputsRef.current[5]?.focus(), 0)
+            setTimeout(() => otpInputsRef.current[0]?.focus(), 0)
           }
         }
       })
@@ -216,7 +216,6 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
       })
 
     return scheduleCancel
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])
 
   useEffect(() => {
@@ -393,12 +392,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         cursor += 1
       }
       setOtp(newOtp)
-      otpInputsRef.current[Math.min(cursor, 5)]?.focus()
-
-      const fullCode = newOtp.join('')
-      if (fullCode.length === 6) {
-        triggerVerify(fullCode)
-      }
+      otpInputsRef.current[0]?.focus()
       return
     }
 
@@ -434,11 +428,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         newOtp[i] = digit
       })
       setOtp(newOtp)
-      const nextFocus = Math.min(digits.length, 5)
-      otpInputsRef.current[nextFocus]?.focus()
-      if (digits.length === 6) {
-        triggerVerify(digits.join(''))
-      }
+      otpInputsRef.current[0]?.focus()
     }
   }
 
