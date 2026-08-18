@@ -16,6 +16,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
   const [resendTimer, setResendTimer] = useState(30)
   const [resending, setResending] = useState(false)
   const [resendCount, setResendCount] = useState(0)
+  const [webOtpStatus, setWebOtpStatus] = useState('idle')
 
   const otpInputsRef = useRef([])
   const verifyingRef = useRef(false)
@@ -155,11 +156,15 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
   }
 
   const startEarlyWebOtpListener = () => {
-    if (typeof window === 'undefined' || !('OTPCredential' in window)) return
+    if (typeof window === 'undefined' || !('OTPCredential' in window)) {
+      setWebOtpStatus('unsupported')
+      return
+    }
     if (webOtpListenRef.current) return
 
     const controller = new AbortController()
     webOtpListenRef.current = { controller, cancelTimer: null }
+    setWebOtpStatus('listening')
 
     navigator.credentials
       .get({
@@ -171,14 +176,20 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         const code = credential?.code?.replace(/\D/g, '').slice(0, 6)
         if (code?.length === 6) {
           setOtp(code.split(''))
+          setWebOtpStatus('received')
           setTimeout(() => otpInputsRef.current[0]?.focus(), 0)
+        } else {
+          setWebOtpStatus('empty-credential')
         }
       })
       .catch((err) => {
         webOtpListenRef.current = null
         if (err?.name !== 'AbortError') {
+          setWebOtpStatus(`error:${err?.name || 'unknown'}`)
           console.error('[WebOTP]:', err)
           setError(`OTP autofill failed: ${err?.message || err?.name || 'Unknown browser error'}`)
+        } else {
+          setWebOtpStatus('aborted')
         }
       })
   }
@@ -484,6 +495,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     resendTimer,
     resending,
     resendCount,
+    webOtpStatus,
     otpInputsRef,
     handleSendOtp,
     handleResend,

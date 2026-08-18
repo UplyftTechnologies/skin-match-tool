@@ -101,6 +101,7 @@ function LoginPageContent() {
     resendTimer,
     resending,
     resendCount,
+    webOtpStatus,
     otpInputsRef,
     handleSendOtp,
     handleResend,
@@ -263,6 +264,9 @@ function LoginPageContent() {
           <form onSubmit={(e) => { e.preventDefault(); triggerVerify() }} className="mt-5 sm:mt-6">
             <p className="text-center text-sm text-gray-600 mb-3">
               We sent a 6-digit code to +91 {phone}
+            </p>
+            <p className="mb-2 text-center text-[11px] text-gray-500" aria-live="polite">
+              Autofill status: {webOtpStatus}
             </p>
             <input
               ref={(el) => (otpInputsRef.current[0] = el)}
