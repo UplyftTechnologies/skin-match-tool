@@ -21,11 +21,25 @@ const BATCH_LIMIT = 100;
 let vapidReady = false;
 
 function vapidPublicKey() {
-  // Prefer the server-only variable. NEXT_PUBLIC_* values are inlined into the
-  // bundle AT BUILD TIME, so relying on the public one alone means adding it in
-  // the Vercel dashboard has no effect until you redeploy — which reads exactly
-  // like "push silently stopped working after deployment".
-  return process.env.VAPID_PUBLIC_KEY || process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
+  // The BROWSER subscribes with NEXT_PUBLIC_VAPID_PUBLIC_KEY (see
+  // src/lib/push/subscribe.js). The push service binds every subscription to
+  // that exact key and rejects anything signed with a different one as
+  // 403 VapidPkHashMismatch — so the client's value MUST win here.
+  // VAPID_PUBLIC_KEY is only a fallback for when the public var was absent from
+  // the build. Both are trimmed: a trailing newline from a dashboard paste is
+  // enough to break the match.
+  const clientKey = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "").trim();
+  const serverKey = (process.env.VAPID_PUBLIC_KEY || "").trim();
+
+  if (clientKey && serverKey && clientKey !== serverKey) {
+    console.error(
+      "[api/cron/send-wishlist-reminders] VAPID_PUBLIC_KEY differs from " +
+        "NEXT_PUBLIC_VAPID_PUBLIC_KEY. Signing with the public one, because that " +
+        "is what existing subscriptions were created against. Make them identical.",
+    );
+  }
+
+  return clientKey || serverKey;
 }
 
 function missingVapidVars() {
@@ -42,7 +56,7 @@ function ensureVapid() {
   webpush.setVapidDetails(
     process.env.VAPID_SUBJECT || "mailto:support@roopsee.com",
     vapidPublicKey(),
-    process.env.VAPID_PRIVATE_KEY,
+    process.env.VAPID_PRIVATE_KEY.trim(),
   );
   vapidReady = true;
   return true;
