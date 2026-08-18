@@ -21,6 +21,10 @@ function LoginPageContent() {
   const redirectTo = searchParams.get('redirect') || '/'
 
   const avatarInputRef = useRef(null)
+  // Auto-OTP is Android-only and console logs are unreachable on a phone, so
+  // ?otpdebug=1 prints the WebOTP listener's state on screen instead.
+  const showOtpDebug = searchParams.has('otpdebug')
+
   const [avatarPreview, setAvatarPreview] = useState(null)
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarError, setAvatarError] = useState('')
@@ -101,14 +105,14 @@ function LoginPageContent() {
     resendTimer,
     resending,
     resendCount,
-    otpInputsRef,
+    inputRef: otpInputRef,
     handleSendOtp,
     handleResend,
     handleOtpChange,
-    handleKeyDown,
     handlePaste,
     triggerVerify,
     resetToPhoneStep,
+    webotpStatus,
   } = useOtpAuth({
     active: true,
     onSuccess: async () => {
@@ -265,23 +269,50 @@ function LoginPageContent() {
             <p className="text-center text-sm text-gray-600 mb-3">
               We sent a 6-digit code to +91 {phone}
             </p>
-            <div className="grid grid-cols-6 gap-1.5 sm:gap-2" onPaste={handlePaste}>
-              {otp.map((digit, idx) => (
-                <input
-                  key={idx}
-                  ref={(el) => (otpInputsRef.current[idx] = el)}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength="1"
-                  autoComplete={idx === 0 ? 'one-time-code' : 'off'}
-                  name={idx === 0 ? 'otp' : undefined}
-                  value={digit}
-                  onChange={(e) => handleOtpChange(idx, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(idx, e)}
-                  disabled={loading}
-                  className="h-11 min-w-0 w-full rounded-lg border border-[#c9dedc] text-center text-lg font-semibold text-gray-900 transition-colors focus:border-[#7fb3ab] focus:outline-none disabled:bg-gray-50 disabled:text-gray-400"
-                />
-              ))}
+            {showOtpDebug && (
+              <p className="mb-2 break-all rounded bg-gray-100 p-2 text-[11px] leading-snug text-gray-600">
+                WebOTP: {webotpStatus}
+              </p>
+            )}
+            {/* One real input behind six display cells. Split per-digit inputs
+                break iOS QuickType autofill, so the field the browser fills is
+                a single one; the cells are presentation only. The input is
+                transparent rather than opacity-0 or hidden, because autofill
+                skips fields it considers invisible. */}
+            <div
+              className="relative"
+              onClick={() => otpInputRef.current?.focus()}
+            >
+              <input
+                ref={otpInputRef}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                enterKeyHint="done"
+                name="one-time-code"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={otp}
+                onChange={handleOtpChange}
+                onPaste={handlePaste}
+                disabled={loading}
+                aria-label="Enter the 6-digit code"
+                className="absolute inset-0 z-10 w-full bg-transparent text-center tracking-[2.6em] text-transparent caret-transparent outline-none disabled:cursor-wait"
+              />
+              <div className="grid grid-cols-6 gap-1.5 sm:gap-2" aria-hidden="true">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex h-11 min-w-0 w-full items-center justify-center rounded-lg border text-lg font-semibold text-gray-900 transition-colors ${
+                      otp.length === idx
+                        ? 'border-[#7fb3ab]'
+                        : 'border-[#c9dedc]'
+                    } ${loading ? 'bg-gray-50 text-gray-400' : ''}`}
+                  >
+                    {otp[idx] || ''}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="mt-3 flex items-center justify-between text-xs">
@@ -310,7 +341,7 @@ function LoginPageContent() {
 
             <button
               type="submit"
-              disabled={loading || otp.join('').length < 6}
+              disabled={loading || otp.length < 6}
               className="mt-5 w-full rounded-[10px] border border-[#e08a7d] py-2.5 font-lato text-sm capitalize tracking-widest text-[#ff7e67] transition-colors duration-300 hover:bg-[#d17a6d] hover:text-white disabled:cursor-wait disabled:opacity-60"
             >
               {loading ? 'Verifying…' : 'Verify & Continue'}

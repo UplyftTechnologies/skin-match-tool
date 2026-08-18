@@ -1,95 +1,123 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { trackingService } from '@/lib/tracking/trackingClient.js'
 import { EVENTS } from '@/lib/tracking/events.js'
 
+const OTP_LENGTH = 6
+// How long to wait for the widget's verify callback before releasing the lock.
+const VERIFY_WATCHDOG_MS = 10000
+// Grace period for a token to arrive via the widget's global success hook
+// after a local verify returned none.
+const TOKEN_GRACE_MS = 2500
+
 // Shared MSG91-backed phone/OTP flow. `active` controls when the widget
 // script loads (mirrors a modal's isOpen, or true for an always-visible page).
+//
+// `otp` is a single string, not six characters. That is load-bearing: split
+// per-digit inputs break iOS QuickType autofill outright, and force every fill
+// route to reimplement digit distribution. One field, one funnel (fillOtp).
 export function useOtpAuth({ active = true, onSuccess } = {}) {
   const [step, setStep] = useState(1) // 1: Phone, 2: OTP
   const [phone, setPhone] = useState('')
-  const [otp, setOtp] = useState(['', '', '', '', '', ''])
+  const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [resendTimer, setResendTimer] = useState(30)
   const [resending, setResending] = useState(false)
   const [resendCount, setResendCount] = useState(0)
-  // Bumped once per confirmed SMS, to re-arm the WebOTP listener.
-  const [smsNonce, setSmsNonce] = useState(0)
+  // Last asynchronous thing the WebOTP listener reported. Console logs are
+  // unreachable on a phone without USB debugging, so this is surfaced in the UI
+  // behind ?otpdebug=1. Resting states are derived near the return.
+  const [webotpEvent, setWebotpEvent] = useState('')
 
-  const otpInputsRef = useRef([])
-  const verifyingRef = useRef(false)
-  // Latches once a session has been established. MSG91 can invoke both its
-  // global success callback and the local verify callback for the same OTP, so
-  // without this the second one re-runs the backend verify and fires onSuccess
-  // (and setSession) twice.
-  const succeededRef = useRef(false)
-  const tokenTimeoutRef = useRef(null)
-  const resendTimeoutRef = useRef(null)
+  const inputRef = useRef(null)
 
-  // The widget's global success handler is registered once, so anything it
-  // closes over is frozen at that render. Mirror the values it needs in refs.
+  // Mirrors of reactive values, so the callbacks below can be created once and
+  // still read current data. The WebOTP request stays pending for up to a
+  // minute; anything that re-creates it mid-flight kills auto-read.
+  const otpRef = useRef('')
   const phoneRef = useRef('')
   const onSuccessRef = useRef(onSuccess)
+  const fillOtpRef = useRef(null)
+
+  // Backend verification is in flight.
+  const verifyingRef = useRef(false)
+  // A session was established. Latched: MSG91 can fire both its global success
+  // hook and the local verify callback for one OTP, and verifying twice makes
+  // the second attempt fail as an invalid code.
+  const succeededRef = useRef(false)
+  // Submit lock. A ref, not state: autofill auto-submits at the same moment the
+  // user may tap Verify, and a state update is too slow to win that race.
+  const verifyLockRef = useRef(false)
+
+  const tokenTimeoutRef = useRef(null)
+  const watchdogRef = useRef(null)
+  const resendTimeoutRef = useRef(null)
 
   const widgetId = process.env.NEXT_PUBLIC_MSG91_WIDGET_ID
   const tokenAuth = process.env.NEXT_PUBLIC_MSG91_TOKEN_AUTH
 
-  useEffect(() => {
-    phoneRef.current = phone
-  }, [phone])
-
-  useEffect(() => {
-    onSuccessRef.current = onSuccess
-  }, [onSuccess])
+  useEffect(() => { otpRef.current = otp }, [otp])
+  useEffect(() => { phoneRef.current = phone }, [phone])
+  useEffect(() => { onSuccessRef.current = onSuccess }, [onSuccess])
 
   useEffect(() => () => {
     clearTimeout(tokenTimeoutRef.current)
+    clearTimeout(watchdogRef.current)
     clearTimeout(resendTimeoutRef.current)
   }, [])
 
   useEffect(() => {
     if (step !== 2 || resendTimer <= 0) return
-    const timer = setTimeout(() => {
-      setResendTimer((prev) => prev - 1)
-    }, 1000)
+    const timer = setTimeout(() => setResendTimer((prev) => prev - 1), 1000)
     return () => clearTimeout(timer)
   }, [step, resendTimer])
+
+  // Focus once the step-2 layout has settled, or mobile keyboards don't open.
+  useEffect(() => {
+    if (step !== 2) return
+    const timer = setTimeout(() => inputRef.current?.focus(), 250)
+    return () => clearTimeout(timer)
+  }, [step])
 
   // MSG91 sometimes passes the widget id (a 24-char hex string) to the failure
   // callback instead of a real message. Filter that out, but always return
   // something printable so a failure can never be silent.
-  const widgetErrorMessage = (errorRes, fallback) => {
+  const widgetErrorMessage = useCallback((errorRes, fallback) => {
     const msg = typeof errorRes === 'string' ? errorRes : errorRes?.message
     if (msg && msg !== widgetId && !/^[a-f0-9]{24}$/i.test(msg)) return msg
     return fallback
-  }
+  }, [widgetId])
 
-  const extractToken = (data) => {
+  const releaseLock = useCallback(() => {
+    verifyLockRef.current = false
+    clearTimeout(watchdogRef.current)
+  }, [])
+
+  const extractToken = useCallback((data) => {
     if (!data) return null
+    const looksLikeStatus = (value) =>
+      value.toLowerCase().includes('success') || value.toLowerCase().includes('verified')
+
     if (typeof data === 'string') {
       const trimmed = data.trim()
-      if (trimmed && !trimmed.toLowerCase().includes('success') && !trimmed.toLowerCase().includes('verified')) {
-        return trimmed
-      }
-      return null
+      return trimmed && !looksLikeStatus(trimmed) ? trimmed : null
     }
     const candidate = data['access-token'] || data.accessToken || data.token || data.message || data.data
     if (typeof candidate === 'string') {
       const trimmed = candidate.trim()
-      if (trimmed && !trimmed.toLowerCase().includes('success') && !trimmed.toLowerCase().includes('verified')) {
-        return trimmed
-      }
+      if (trimmed && !looksLikeStatus(trimmed)) return trimmed
     }
     return null
-  }
+  }, [])
 
-  const handleVerifyWithBackend = async (token) => {
+  const handleVerifyWithBackend = useCallback(async (token) => {
     if (!token || verifyingRef.current || succeededRef.current) return
     verifyingRef.current = true
     clearTimeout(tokenTimeoutRef.current)
+    clearTimeout(watchdogRef.current)
     setLoading(true)
     setError('')
 
@@ -105,7 +133,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
       try {
         backendData = JSON.parse(text)
       } catch {
-        // Fallback for non-JSON responses (HTML error pages)
+        // Non-JSON response (an HTML error page); the check below handles it.
       }
 
       if (!backendRes.ok || !backendData.success) {
@@ -114,20 +142,16 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         setLoading(false)
         setError(typeof errMsg === 'string' ? errMsg : 'Backend session verification failed.')
         verifyingRef.current = false
+        releaseLock()
         return
       }
 
       if (backendData.token && backendData.refresh_token) {
         const phoneNumber = backendData.user?.phone || phoneRef.current
-        trackingService.trackEvent(EVENTS.OTP_VERIFIED, {
-          phone_number: phoneNumber,
-        })
+        trackingService.trackEvent(EVENTS.OTP_VERIFIED, { phone_number: phoneNumber })
         trackingService.trackEvent(
           backendData.is_new_user ? EVENTS.ACCOUNT_CREATED : EVENTS.EXISTING_USER_LOGIN,
-          {
-            phone_number: phoneNumber,
-            userId: backendData.user?.id,
-          },
+          { phone_number: phoneNumber, userId: backendData.user?.id },
         )
         await supabase.auth.setSession({
           access_token: backendData.token,
@@ -136,9 +160,10 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
       }
 
       // Latch before handing control away, and deliberately leave verifyingRef
-      // set: a late duplicate callback must not be able to re-enter. Both are
-      // cleared by handleSendOtp / resetToPhoneStep when a new attempt starts.
+      // and the lock set so a late duplicate callback cannot re-enter. Both are
+      // cleared when a new attempt starts.
       succeededRef.current = true
+      clearTimeout(watchdogRef.current)
       setLoading(false)
       onSuccessRef.current?.(backendData.user)
     } catch (err) {
@@ -146,129 +171,157 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
       setLoading(false)
       setError(err?.message || 'Error verifying OTP with backend.')
       verifyingRef.current = false
+      releaseLock()
     }
-  }
+  }, [releaseLock])
 
-  const triggerVerify = (otpCode) => {
-    const code = otpCode || otp.join('')
-    if (!/^\d{6}$/.test(code)) {
-      setError('Please enter complete 6-digit OTP.')
+  const triggerVerify = useCallback((otpCode) => {
+    const code = String(otpCode ?? otpRef.current).replace(/\D/g, '')
+
+    if (code.length !== OTP_LENGTH) {
+      setError(`Please enter the complete ${OTP_LENGTH}-digit code.`)
       return
     }
+    // The lock is what stops autofill's auto-submit and the user's tap from
+    // both calling verify: MSG91 consumes the code on the first call and
+    // rejects the second as invalid.
+    if (verifyLockRef.current || verifyingRef.current || succeededRef.current) return
 
     const verifyFunc = window.verifyOtp || window.verifyOTP
-
     if (!verifyFunc) {
       setError('OTP verification handler unavailable.')
       return
     }
 
+    verifyLockRef.current = true
     setLoading(true)
     setError('')
+
+    // Provider callbacks can silently never fire; never strand the user.
+    clearTimeout(watchdogRef.current)
+    watchdogRef.current = setTimeout(() => {
+      if (verifyingRef.current || succeededRef.current) return
+      releaseLock()
+      setLoading(false)
+      setError('Verification timed out. Please try again or resend the code.')
+    }, VERIFY_WATCHDOG_MS)
 
     verifyFunc(
       code,
       (res) => {
-        console.log('[MSG91 Local Verify Res]:', res)
         const token = extractToken(res)
         if (token) {
           handleVerifyWithBackend(token)
           return
         }
-        // No token in the local response. The widget's global success callback
-        // may still deliver one, so wait briefly before giving up. This has to
-        // test refs, not `loading`: that would be the value captured before the
-        // setLoading(true) above, so it always read false and this branch never
-        // fired, leaving the spinner stuck forever.
+        // No token locally. The widget's global success hook may still deliver
+        // one, so allow a short grace period before giving up. Checked via refs
+        // rather than `loading`, which would be the value captured before
+        // setLoading(true) above and so always stale.
         clearTimeout(tokenTimeoutRef.current)
         tokenTimeoutRef.current = setTimeout(() => {
           if (verifyingRef.current || succeededRef.current) return
+          releaseLock()
           setLoading(false)
           setError('OTP verified, but access token was not returned. Please try resending.')
-        }, 2500)
+        }, TOKEN_GRACE_MS)
       },
       (err) => {
-        // A failure fired after the global callback already got a token is
-        // noise -- don't clobber a verification that is under way.
+        // A failure fired after the global hook already produced a token is
+        // noise; don't clobber a verification already under way.
         if (verifyingRef.current || succeededRef.current) return
+        releaseLock()
         setLoading(false)
         setError(widgetErrorMessage(err, 'Invalid OTP code.'))
       },
     )
-  }
+  }, [extractToken, handleVerifyWithBackend, releaseLock, widgetErrorMessage])
 
-  // WebOTP auto-read. Requirements that are NOT satisfiable from here:
-  //   * Chromium on Android only -- iOS Safari and every desktop browser lack
-  //     the API entirely, so `OTPCredential in window` is false and this is a
-  //     no-op. Those platforms fall back to keyboard autofill via the inputs'
-  //     autocomplete="one-time-code".
-  //   * A secure context in a top-level frame (not an iframe).
-  //   * The SMS body MUST end with a line of exactly `@<host> #<code>`, where
-  //     the host matches this page's origin. Without that binding line the
-  //     promise below simply never resolves. That lives in the MSG91 template.
+  // The single funnel every fill route goes through: typing, paste, iOS
+  // QuickType and Android WebOTP.
+  const fillOtp = useCallback((rawValue, shouldVerify = false) => {
+    const digits = String(rawValue || '').replace(/\D/g, '').slice(0, OTP_LENGTH)
+    otpRef.current = digits
+    setOtp(digits)
+    setError('')
+
+    if (shouldVerify && digits.length === OTP_LENGTH) {
+      // Let React paint the filled code before the UI flips to "Verifying...",
+      // and pass the digits explicitly so no stale state is read.
+      setTimeout(() => triggerVerify(digits), 100)
+    }
+  }, [triggerVerify])
+
+  useEffect(() => { fillOtpRef.current = fillOtp }, [fillOtp])
+
+  const handleOtpChange = useCallback((eventOrValue) => {
+    const raw = typeof eventOrValue === 'string' ? eventOrValue : eventOrValue?.target?.value
+    const digits = String(raw || '').replace(/\D/g, '').slice(0, OTP_LENGTH)
+    fillOtp(digits, digits.length === OTP_LENGTH)
+  }, [fillOtp])
+
+  const handlePaste = useCallback((e) => {
+    const text = e.clipboardData?.getData('text') || ''
+    const digits = text.replace(/\D/g, '').slice(0, OTP_LENGTH)
+    if (!digits) return
+    e.preventDefault()
+    fillOtp(digits, digits.length === OTP_LENGTH)
+  }, [fillOtp])
+
+  // ---- Android WebOTP -----------------------------------------------------
+  // Empty deps are load-bearing. credentials.get() stays pending for up to a
+  // minute waiting for the SMS; if anything re-runs this effect in that window
+  // the request is torn down, and the user taps Chrome's prompt to no effect.
+  // The latest callback is reached through fillOtpRef instead of a dependency.
   //
-  // `smsNonce` re-arms the listener after each confirmed send. credentials.get()
-  // settles once, so without this auto-read was dead for every code after the
-  // first. It is a dedicated counter rather than `resendCount` so that
-  // unrelated state (a rate-limit clamp, a reset) can't tear down a live
-  // request mid-prompt.
+  // Requirements that cannot be satisfied from here: Chromium on Android, a
+  // secure top-level context, and an SMS whose LAST line is exactly
+  // `@<host> #<code>` with the host matching this page's origin. That last one
+  // lives in the MSG91 template.
   useEffect(() => {
-    if (step !== 2) return
-    if (typeof window === 'undefined' || !('OTPCredential' in window)) return
+    if (typeof window === 'undefined') return
+    if (!('OTPCredential' in window) || !navigator.credentials) return
+    if (!window.isSecureContext) return
 
-    const ac = new AbortController()
-    let cancelled = false
+    const abortController = new AbortController()
+    let stopped = false
 
-    navigator.credentials
-      .get({
-        otp: { transport: ['sms'] },
-        signal: ac.signal,
-      })
-      .then((otpCredential) => {
-        if (cancelled) return
+    const arm = () => {
+      navigator.credentials
+        .get({ otp: { transport: ['sms'] }, signal: abortController.signal })
+        .then((credential) => {
+          if (stopped) return
+          const raw = String(credential?.code ?? '')
+          const code = raw.replace(/\D/g, '').slice(0, OTP_LENGTH)
+          console.log('[WebOTP] credential received:', JSON.stringify(raw), '->', code)
 
-        const raw = String(otpCredential?.code ?? '')
-        const digits = raw.replace(/\D/g, '').slice(0, 6)
-        console.log('[WebOTP] credential received:', JSON.stringify(raw), '->', digits)
+          if (!code) {
+            setWebotpEvent('credential arrived with no digits - check the "#code" in the SMS template')
+            return
+          }
 
-        if (!digits) {
-          console.warn('[WebOTP] credential carried no digits — check the "#code" part of the SMS template')
-          return
-        }
+          setWebotpEvent(`received "${code}" (${code.length} digits)`)
+          fillOtpRef.current?.(code, code.length === OTP_LENGTH)
+          // Re-arm so a resent code is auto-read too. Only after a real code,
+          // otherwise a null resolution would spin.
+          arm()
+        })
+        .catch((err) => {
+          if (stopped || err?.name === 'AbortError') return
+          console.warn('[WebOTP] failed:', err?.name, err?.message)
+          setWebotpEvent(`failed: ${err?.name} - ${err?.message}`)
+        })
+    }
 
-        // Insert whatever arrived. The old code required exactly six digits and
-        // did nothing otherwise, so a short or padded code vanished with no
-        // error and no filled boxes.
-        const next = ['', '', '', '', '', '']
-        digits.split('').forEach((digit, i) => { next[i] = digit })
-        setOtp(next)
-        otpInputsRef.current[Math.min(digits.length, 5)]?.focus()
-
-        if (digits.length === 6) {
-          triggerVerify(digits)
-        } else {
-          console.warn(`[WebOTP] expected 6 digits, got ${digits.length} — filled but not submitted`)
-        }
-      })
-      .catch((err) => {
-        // AbortError used to be swallowed entirely, which hid the most likely
-        // failure: the request being torn down (remount / step change) while
-        // the user was still looking at Chrome's "Allow" prompt. Tapping Allow
-        // then resolves nothing, so no digits ever appear.
-        if (err?.name === 'AbortError') {
-          console.warn('[WebOTP] request aborted before the code was delivered')
-          return
-        }
-        console.warn('[WebOTP] failed:', err?.name, err?.message)
-      })
+    arm()
 
     return () => {
-      cancelled = true
-      ac.abort()
+      stopped = true
+      abortController.abort()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, smsNonce])
+  }, [])
 
+  // ---- MSG91 widget -------------------------------------------------------
   useEffect(() => {
     if (typeof window === 'undefined' || !active) return
 
@@ -276,27 +329,23 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     let script = document.getElementById(scriptId)
 
     const initWidget = () => {
-      if (window.initSendOTP && widgetId && tokenAuth) {
-        try {
-          window.initSendOTP({
-            widgetId: widgetId,
-            tokenAuth: tokenAuth,
-            exposeMethods: true,
-            success: (data) => {
-              console.log('[MSG91 Global Success]:', data)
-              const token = extractToken(data)
-              if (token) {
-                handleVerifyWithBackend(token)
-              }
-            },
-            failure: (err) => {
-              if (err?.code === 703 || err?.message?.toLowerCase()?.includes('already verif')) return
-              console.error('MSG91 Widget failure:', err)
-            },
-          })
-        } catch (err) {
-          console.error('Failed to initialize MSG91 widget:', err)
-        }
+      if (!window.initSendOTP || !widgetId || !tokenAuth) return
+      try {
+        window.initSendOTP({
+          widgetId,
+          tokenAuth,
+          exposeMethods: true,
+          success: (data) => {
+            const token = extractToken(data)
+            if (token) handleVerifyWithBackend(token)
+          },
+          failure: (err) => {
+            if (err?.code === 703 || err?.message?.toLowerCase()?.includes('already verif')) return
+            console.error('MSG91 Widget failure:', err)
+          },
+        })
+      } catch (err) {
+        console.error('Failed to initialize MSG91 widget:', err)
       }
     }
 
@@ -311,7 +360,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     } else {
       initWidget()
     }
-  }, [active, widgetId, tokenAuth])
+  }, [active, widgetId, tokenAuth, extractToken, handleVerifyWithBackend])
 
   const handleSendOtp = async (e) => {
     e?.preventDefault()
@@ -320,7 +369,9 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     setResendCount(0)
     verifyingRef.current = false
     succeededRef.current = false
+    verifyLockRef.current = false
     clearTimeout(tokenTimeoutRef.current)
+    clearTimeout(watchdogRef.current)
 
     const cleanPhone = phone.replace(/\D/g, '')
     if (cleanPhone.length !== 10) {
@@ -329,14 +380,12 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     }
 
     const sendOtpFunc = window.sendOtp || window.sendOTP
-
     if (!sendOtpFunc) {
       setError('OTP Service is still loading. Please wait a moment and try again.')
       return
     }
 
     setLoading(true)
-
     let sent = false
 
     try {
@@ -349,21 +398,15 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
           setStep(2)
           setResendTimer(30)
           setResendCount(0)
-          setOtp(['', '', '', '', '', ''])
-          setSmsNonce((prev) => prev + 1)
-          setTimeout(() => otpInputsRef.current[0]?.focus(), 100)
-          trackingService.trackEvent(EVENTS.CLICKED_SEND_OTP, {
-            phone_number: cleanPhone,
-          })
+          fillOtp('')
+          setWebotpEvent('')
+          trackingService.trackEvent(EVENTS.CLICKED_SEND_OTP, { phone_number: cleanPhone })
         },
         (errorRes) => {
           // MSG91 can fire failure *after* a successful send; ignore that so a
           // working flow isn't overwritten with an error.
           if (sent) return
           setLoading(false)
-          // Always surface something: previously an error object without a
-          // string `.message` set no error at all, so the button just un-span
-          // and the user got no feedback whatsoever.
           setError(widgetErrorMessage(errorRes, 'Could not send OTP. Please try again.'))
         },
       )
@@ -376,14 +419,16 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
   const handleResend = async () => {
     if (resending || resendTimer > 0 || resendCount >= 2) return
     setError('')
-    setOtp(['', '', '', '', '', ''])
+    fillOtp('')
+    setWebotpEvent('')
     setResending(true)
+    verifyLockRef.current = false
+    verifyingRef.current = false
 
     trackingService.trackEvent(EVENTS.CLICKED_RESEND_OTP, { phone_number: phone })
 
     const cleanPhone = phone.replace(/\D/g, '')
     const sendOtpFunc = window.sendOtp || window.sendOTP
-
     let settled = false
 
     const handleSuccess = () => {
@@ -393,11 +438,10 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
       setResending(false)
       setError('')
       setResendTimer(30)
-      setSmsNonce((prev) => prev + 1)
       // Counted only on a confirmed resend, so a failed attempt doesn't burn
       // one of the two the user is allowed.
       setResendCount((prev) => prev + 1)
-      setTimeout(() => otpInputsRef.current[0]?.focus(), 100)
+      setTimeout(() => inputRef.current?.focus(), 100)
     }
 
     const handleError = (errorRes) => {
@@ -407,13 +451,11 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
       setResending(false)
       setError(widgetErrorMessage(errorRes, 'Failed to resend OTP.'))
       const msg = typeof errorRes === 'string' ? errorRes : errorRes?.message
-      if (msg && /limit|max|exceed/i.test(msg)) {
-        setResendCount(2)
-      }
+      if (msg && /limit|max|exceed/i.test(msg)) setResendCount(2)
     }
 
-    // Safety net for a widget that never calls back at all: re-enable the
-    // button without claiming success or failure, since we can't tell which.
+    // Safety net for a widget that never calls back: re-enable the button
+    // without claiming success or failure, since we can't tell which.
     clearTimeout(resendTimeoutRef.current)
     resendTimeoutRef.current = setTimeout(() => {
       if (!settled) setResending(false)
@@ -422,13 +464,13 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     try {
       if (typeof window.retryOtp === 'function') {
         try {
-          window.retryOtp(handleSuccess, handleError)
+          // MSG91's signature is retryOtp(channel, onSuccess, onFailure); null
+          // means "use the widget's configured default". Passing the callbacks
+          // first put them in the wrong positions entirely.
+          window.retryOtp(null, handleSuccess, handleError)
         } catch {
-          if (sendOtpFunc) {
-            sendOtpFunc(`91${cleanPhone}`, handleSuccess, handleError)
-          } else {
-            handleError('Failed to resend OTP.')
-          }
+          if (sendOtpFunc) sendOtpFunc(`91${cleanPhone}`, handleSuccess, handleError)
+          else handleError('Failed to resend OTP.')
         }
       } else if (sendOtpFunc) {
         sendOtpFunc(`91${cleanPhone}`, handleSuccess, handleError)
@@ -441,68 +483,6 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     }
   }
 
-  const handleOtpChange = (index, value) => {
-    // isNaN('') and isNaN(' ') are both false, so the old check let a space
-    // through as a digit and auto-submitted a code containing whitespace.
-    // Empty still has to pass -- clearing a box depends on it.
-    if (value !== '' && !/^\d+$/.test(value)) return
-
-    const newOtp = [...otp]
-
-    if (value.length > 1) {
-      // Browser autofill (Chrome's one-time-code suggestion, iOS's keyboard
-      // suggestion, or a paste onto a single box) delivers the WHOLE code to
-      // one input, bypassing maxLength. The old `value.substring(length - 1)`
-      // kept only the last character, so an auto-read 6-digit code landed as a
-      // single digit. Spread it across the boxes instead. Typed input can never
-      // reach here: maxLength="1" caps it at one character.
-      const digits = value.replace(/\D/g, '').slice(0, 6 - index).split('')
-      digits.forEach((digit, offset) => {
-        newOtp[index + offset] = digit
-      })
-      setOtp(newOtp)
-      otpInputsRef.current[Math.min(index + digits.length, 5)]?.focus()
-    } else {
-      newOtp[index] = value
-      setOtp(newOtp)
-      if (value && index < 5) {
-        otpInputsRef.current[index + 1]?.focus()
-      }
-    }
-
-    // Submit as soon as all six boxes hold a digit, wherever the fill started.
-    // Keying off `index === 5` alone missed autofill, which completes the code
-    // from box 0.
-    const fullCode = newOtp.join('')
-    if (/^\d{6}$/.test(fullCode)) {
-      triggerVerify(fullCode)
-    }
-  }
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      otpInputsRef.current[index - 1]?.focus()
-    }
-  }
-
-  const handlePaste = (e) => {
-    e.preventDefault()
-    const pasteData = e.clipboardData.getData('text').trim().replace(/\D/g, '')
-    if (pasteData.length > 0) {
-      const digits = pasteData.slice(0, 6).split('')
-      const newOtp = ['', '', '', '', '', '']
-      digits.forEach((digit, i) => {
-        newOtp[i] = digit
-      })
-      setOtp(newOtp)
-      const nextFocus = Math.min(digits.length, 5)
-      otpInputsRef.current[nextFocus]?.focus()
-      if (digits.length === 6) {
-        triggerVerify(digits.join(''))
-      }
-    }
-  }
-
   const resetToPhoneStep = () => {
     setStep(1)
     setError('')
@@ -510,30 +490,46 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     setResending(false)
     setResendTimer(30)
     setResendCount(0)
-    setOtp(['', '', '', '', '', ''])
+    fillOtp('')
+    setWebotpEvent('')
     verifyingRef.current = false
     succeededRef.current = false
+    verifyLockRef.current = false
     clearTimeout(tokenTimeoutRef.current)
+    clearTimeout(watchdogRef.current)
     clearTimeout(resendTimeoutRef.current)
   }
+
+  // Resting states are derived rather than stored: setState called
+  // synchronously inside an effect body triggers cascading renders.
+  const webotpStatus =
+    webotpEvent ||
+    (step !== 2 || typeof window === 'undefined'
+      ? 'idle'
+      : !('OTPCredential' in window)
+        ? 'unsupported: no OTPCredential (needs Chromium on Android)'
+        : !window.isSecureContext
+          ? 'unsupported: not a secure context'
+          : 'armed: waiting for SMS')
 
   return {
     step,
     phone,
     setPhone,
     otp,
+    otpLength: OTP_LENGTH,
     loading,
     error,
     resendTimer,
     resending,
     resendCount,
-    otpInputsRef,
+    inputRef,
     handleSendOtp,
     handleResend,
     handleOtpChange,
-    handleKeyDown,
     handlePaste,
     triggerVerify,
     resetToPhoneStep,
+    webotpStatus,
   }
 }
