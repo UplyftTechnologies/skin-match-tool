@@ -50,13 +50,19 @@ export default function SaveProductButton({
   const variantClassName = wishlisted ? savedClassName : unsavedClassName;
 
   return (
-    <button type="button" onClick={handleClick} className={variantClassName ?? className}>
+    <button
+      type="button"
+      onClick={handleClick}
+      aria-pressed={wishlisted}
+      aria-label={label ? undefined : (wishlisted ? "Remove from wishlist" : "Save my match")}
+      className={variantClassName ?? className}
+    >
       {wishlisted ? (
         <BsHeartFill size={mobile ? 16 : 18} />
       ) : (
         <BiHeart size={mobile ? 18 : 20} />
       )}
-      {wishlisted ? "Saved to Wishlist" : label}
+      {label ? (wishlisted ? "Saved to Wishlist" : label) : null}
     </button>
   );
 }

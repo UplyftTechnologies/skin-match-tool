@@ -618,6 +618,13 @@ select {
   color: #fff;
 }
 
+.pdp-heart-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+}
+
 /* The PDP becomes a compact product sheet on phones, matching the product-first
    hierarchy used by the mobile matcher rather than the wider desktop card UI. */
 @media (max-width: 639px) {
@@ -645,6 +652,12 @@ select {
 
   .pdp-product-image .score-badge small {
     font-size: .42rem;
+  }
+
+  .pdp-heart-btn {
+    top: 10px;
+    left: auto;
+    right: 10px;
   }
 }
 

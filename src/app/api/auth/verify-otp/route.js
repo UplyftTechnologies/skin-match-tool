@@ -16,24 +16,32 @@ function generateDeterministicPassword(phone, serviceKey) {
     .digest('hex');
 }
 
-function authUserMatches(user, cleanPhone, syntheticEmail) {
-  const metadataPhone = user.user_metadata?.phone_no || user.user_metadata?.phone;
-  return (user.phone && user.phone.replace(/\D/g, '') === cleanPhone) ||
-    user.email?.toLowerCase() === syntheticEmail.toLowerCase() ||
-    (metadataPhone && String(metadataPhone).replace(/\D/g, '') === cleanPhone);
-}
-
 async function findAuthUser(cleanPhone, syntheticEmail) {
   const perPage = 1000;
+  let emailMatch = null;
+  let metadataMatch = null;
 
   for (let page = 1; ; page += 1) {
     const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
     if (error) throw error;
 
     const users = data?.users || [];
-    const matched = users.find((user) => authUserMatches(user, cleanPhone, syntheticEmail));
-    if (matched) return matched;
-    if (users.length < perPage) return null;
+    for (const user of users) {
+      // The canonical phone owner must win over historical OAuth metadata or
+      // synthetic-email records, even when it appears on a later page.
+      if (user.phone?.replace(/\D/g, '') === cleanPhone) return user;
+
+      if (!emailMatch && user.email?.toLowerCase() === syntheticEmail.toLowerCase()) {
+        emailMatch = user;
+      }
+
+      const metadataPhone = user.user_metadata?.phone_no || user.user_metadata?.phone;
+      if (!metadataMatch && metadataPhone && String(metadataPhone).replace(/\D/g, '') === cleanPhone) {
+        metadataMatch = user;
+      }
+    }
+
+    if (users.length < perPage) return emailMatch || metadataMatch;
   }
 }
 

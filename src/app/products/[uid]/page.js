@@ -205,27 +205,26 @@ export default async function ProductPage({ params }) {
             <div className="pdp-product-image relative aspect-[1.42] w-full overflow-hidden bg-white p-0 sm:aspect-square sm:rounded-3xl sm:border sm:border-slate-100 sm:p-6 sm:shadow-sm">
               <ProductImage alt={product.product_name} src={product.image} />
               <ProductScoreBadge />
-            </div>
-            <div className="mt-3 sm:mt-6">
               <SaveProductButton
                 product={wishlistProduct}
-                label="Save my match"
+                label=""
                 trackSaveMyMatch
-                unsavedClassName="inline-flex w-full items-center justify-center gap-2 rounded-full
-                border border-[#f3a99a] bg-white
-                 px-7 py-2 text-[10px] font-semibold tracking-wide text-[#d77465] transition-all
-                 hover:-translate-y-0.5 hover:bg-[#e08a7d] hover:text-white focus-visible:outline-2
-                  focus-visible:outline-offset-4
-                 focus-visible:outline-[#e08a7d] sm:w-[100%] sm:px-5
-                 sm:py-3.5 sm:text-[13.5px]"
-                savedClassName="inline-flex w-full items-center justify-center gap-2 rounded-full
+                className="pdp-heart-btn flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#d77465] shadow-sm transition hover:bg-white"
+              />
+            </div>
+            <div className="mt-3 sm:mt-6">
+              <a
+                href="#buy-options"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full
                 border border-transparent bg-[#f3a99a]
                  px-7 py-2 text-[10px] font-semibold tracking-wide text-white transition-all
                  hover:-translate-y-0.5 hover:bg-[#e08a7d] focus-visible:outline-2
                   focus-visible:outline-offset-4
                  focus-visible:outline-[#e08a7d] sm:w-[100%] sm:px-5
                  sm:py-3.5 sm:text-[13.5px]"
-              />
+              >
+                Buy Now
+              </a>
             </div>
 
             <div className="mt-3 hidden rounded-3xl border border-slate-100
@@ -289,11 +288,13 @@ export default async function ProductPage({ params }) {
 
             {/* CTA — desktop / tablet button, hidden below lg since the mobile sticky bar covers it there */}
 
-            <RetailerPriceCompare
-              catalogPrice={product.sp || product.mrp}
-              productName={product.product_name}
-              productUid={product.product_uid}
-            />
+            <div id="buy-options">
+              <RetailerPriceCompare
+                catalogPrice={product.sp || product.mrp}
+                productName={product.product_name}
+                productUid={product.product_uid}
+              />
+            </div>
 
             {/* Signature: catalog spec "label" card */}
             {/* <div className="mt-4 rounded-none border-y border-slate-100 bg-white px-2 py-3 sm:mt-6 sm:rounded-[14px] sm:border sm:bg-slate-50/60 sm:px-5 sm:py-4">

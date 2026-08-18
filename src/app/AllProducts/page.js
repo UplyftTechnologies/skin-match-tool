@@ -6,7 +6,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { FiSearch } from 'react-icons/fi'
 import { HiArrowsUpDown } from 'react-icons/hi2'
-import { BsFunnel } from 'react-icons/bs'
+import { BsFunnel, BsHeartFill } from 'react-icons/bs'
+import { BiHeart } from 'react-icons/bi'
 import Serum from '@/assets/images/serum.png'
 import Header from '@/components/header'
 import { useWishlist } from '@/context/WishlistContext'
@@ -120,6 +121,11 @@ function ProductCard({ product }) {
         router.push(productHref)
     }
 
+    function handleBuyNow(event) {
+        event.stopPropagation()
+        handleVisit()
+    }
+
     return (
         <div
             role="link"
@@ -135,6 +141,15 @@ function ProductCard({ product }) {
         >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/3] mb-3">
                 <ScoreBadge score={product.score} />
+                <button
+                    type="button"
+                    onClick={handleSaveMatch}
+                    aria-pressed={wishlisted}
+                    aria-label={wishlisted ? 'Remove from wishlist' : 'Save my match'}
+                    className="absolute left-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-[#d77465] shadow-sm transition hover:bg-white"
+                >
+                    {wishlisted ? <BsHeartFill size={16} /> : <BiHeart size={18} />}
+                </button>
                 <Image
                     src={imageFailed || !product.image ? Serum : product.image}
                     alt={product.product_name}
@@ -176,16 +191,11 @@ function ProductCard({ product }) {
             </div>
             <button
                 type="button"
-                onClick={handleSaveMatch}
+                onClick={handleBuyNow}
                 style={{ fontSize: '11px' }}
-                aria-pressed={wishlisted}
-                className={`mt-auto w-[90%] mx-auto font-semibold border rounded-full py-[8px] transition-colors duration-200 ${
-                    wishlisted
-                        ? 'bg-[#e08a7d] border-[#e08a7d] text-white'
-                        : 'text-[#e08a7d] border-[#e08a7d] hover:bg-[#e08a7d] hover:text-white'
-                }`}
+                className="mt-auto w-[90%] mx-auto font-semibold border rounded-full py-[8px] transition-colors duration-200 text-white bg-[#e08a7d] border-[#e08a7d] hover:bg-[#d17a6d]"
             >
-                {wishlisted ? 'Saved to wishlist' : 'Save my match'}
+                Buy Now
             </button>
         </div>
     )
