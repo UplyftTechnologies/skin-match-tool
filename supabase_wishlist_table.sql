@@ -1,5 +1,5 @@
 -- Run this once in the Supabase SQL editor (Project → SQL Editor) for the
--- matchmyskin.roopsee.com project's database. Creates the table the new
+-- roopsee.com project's database. Creates the table the new
 -- /api/wishlist route reads/writes.
 
 create table if not exists public.wishlist (

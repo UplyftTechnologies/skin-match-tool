@@ -14,7 +14,7 @@ services:
       # every canonical tag, the sitemap and all JSON-LD urls, so it has to be
       # the live origin.
       - key: NEXT_PUBLIC_SITE_URL
-        value: https://matchmyskin.roopsee.com
+        value: https://roopsee.com
       - key: TELEGRAM_EVENT_BOT_TOKEN
         sync: false
       - key: TELEGRAM_EVENT_CHAT_ID
