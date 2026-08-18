@@ -200,7 +200,11 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
             const newOtp = ['', '', '', '', '', '']
             digits.forEach((d, i) => { newOtp[i] = d })
             setOtp(newOtp)
-            triggerVerify(digits.join(''))
+            // Let React render the autofilled code before verification. Starting
+            // MSG91 verification in the same tick disables the controlled inputs
+            // immediately, which can make a successful autofill appear to have
+            // failed. The existing form button remains responsible for verifying.
+            setTimeout(() => otpInputsRef.current[5]?.focus(), 0)
           }
         }
       })
