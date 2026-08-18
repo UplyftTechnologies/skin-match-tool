@@ -154,6 +154,35 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     )
   }
 
+  const startEarlyWebOtpListener = () => {
+    if (typeof window === 'undefined' || !('OTPCredential' in window)) return
+    if (webOtpListenRef.current) return
+
+    const controller = new AbortController()
+    webOtpListenRef.current = { controller, cancelTimer: null }
+
+    navigator.credentials
+      .get({
+        otp: { transport: ['sms'] },
+        signal: controller.signal,
+      })
+      .then((credential) => {
+        webOtpListenRef.current = null
+        const code = credential?.code?.replace(/\D/g, '').slice(0, 6)
+        if (code?.length === 6) {
+          setOtp(code.split(''))
+          setTimeout(() => otpInputsRef.current[0]?.focus(), 0)
+        }
+      })
+      .catch((err) => {
+        webOtpListenRef.current = null
+        if (err?.name !== 'AbortError') {
+          console.error('[WebOTP]:', err)
+          setError(`OTP autofill failed: ${err?.message || err?.name || 'Unknown browser error'}`)
+        }
+      })
+  }
+
   useEffect(() => {
     if (step !== 2) return
     if (typeof window === 'undefined' || !('OTPCredential' in window)) return
@@ -284,6 +313,8 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     }
 
     setLoading(true)
+    // Chrome requires credentials.get() to be pending before the SMS arrives.
+    startEarlyWebOtpListener()
 
     try {
       sendOtpFunc(
@@ -322,6 +353,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     setResendCount((prev) => prev + 1)
 
     trackingService.trackEvent(EVENTS.CLICKED_RESEND_OTP, { phone_number: phone })
+    startEarlyWebOtpListener()
 
     const cleanPhone = phone.replace(/\D/g, '')
     const sendOtpFunc = window.sendOtp || window.sendOTP
