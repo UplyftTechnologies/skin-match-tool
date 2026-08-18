@@ -16,6 +16,27 @@ function generateDeterministicPassword(phone, serviceKey) {
     .digest('hex');
 }
 
+function authUserMatches(user, cleanPhone, syntheticEmail) {
+  const metadataPhone = user.user_metadata?.phone_no || user.user_metadata?.phone;
+  return (user.phone && user.phone.replace(/\D/g, '') === cleanPhone) ||
+    user.email?.toLowerCase() === syntheticEmail.toLowerCase() ||
+    (metadataPhone && String(metadataPhone).replace(/\D/g, '') === cleanPhone);
+}
+
+async function findAuthUser(cleanPhone, syntheticEmail) {
+  const perPage = 1000;
+
+  for (let page = 1; ; page += 1) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+
+    const users = data?.users || [];
+    const matched = users.find((user) => authUserMatches(user, cleanPhone, syntheticEmail));
+    if (matched) return matched;
+    if (users.length < perPage) return null;
+  }
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -112,22 +133,18 @@ export async function POST(request) {
     let authUserId = null;
 
     try {
-      const { data: listUsers } = await supabaseAdmin.auth.admin.listUsers();
-      if (listUsers?.users) {
-        existingAuthUser = listUsers.users.find(
-          (u) => (u.phone && u.phone.replace(/\D/g, '') === cleanTargetPhone) ||
-                 (u.email && u.email === syntheticEmail) ||
-                 (u.user_metadata?.phone_no && u.user_metadata.phone_no.replace(/\D/g, '') === cleanTargetPhone) ||
-                 (u.user_metadata?.phone && u.user_metadata.phone.replace(/\D/g, '') === cleanTargetPhone)
-        );
-      }
+      existingAuthUser = await findAuthUser(cleanTargetPhone, syntheticEmail);
     } catch (err) {
-      console.warn('Error listing auth.users:', err.message);
+      console.error('Error listing auth.users:', err.message);
+      return NextResponse.json(
+        { success: false, error: 'Unable to check existing account. Please try again.' },
+        { status: 502 }
+      );
     }
 
     if (existingAuthUser) {
       authUserId = existingAuthUser.id;
-      await supabaseAdmin.auth.admin.updateUserById(authUserId, {
+      const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(authUserId, {
         password,
         phone: formattedPhone,
         phone_confirm: true,
@@ -137,6 +154,13 @@ export async function POST(request) {
           phone_verified: true,
         },
       });
+      if (updateError) {
+        console.error('Error updating existing auth user:', updateError.message);
+        return NextResponse.json(
+          { success: false, error: 'Unable to update the existing account. Please contact support.' },
+          { status: 409 }
+        );
+      }
     } else {
       // Create new user in auth.users (with phone + synthetic email fallback)
       const createPayload = {
@@ -162,15 +186,18 @@ export async function POST(request) {
 
       if (createRes.error) {
         if (createRes.error.message?.toLowerCase()?.includes('already exists') || createRes.error.status === 422) {
-          const { data: listUsers } = await supabaseAdmin.auth.admin.listUsers();
-          const matched = listUsers?.users?.find(
-            (u) => (u.phone && u.phone.replace(/\D/g, '') === cleanTargetPhone) || (u.email && u.email === syntheticEmail)
-          );
+          const matched = await findAuthUser(cleanTargetPhone, syntheticEmail);
           if (matched) {
             authUserId = matched.id;
-            await supabaseAdmin.auth.admin.updateUserById(authUserId, {
+            const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(authUserId, {
               password,
             });
+            if (updateError) {
+              return NextResponse.json(
+                { success: false, error: 'Unable to update the existing account. Please contact support.' },
+                { status: 409 }
+              );
+            }
           } else {
             return NextResponse.json(
               { success: false, error: 'User conflicts in auth database' },
