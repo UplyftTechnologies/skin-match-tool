@@ -175,7 +175,12 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         if (code?.length === 6) {
           setOtp(code.split(''))
           setWebOtpStatus('received')
-          setTimeout(() => otpInputsRef.current[0]?.focus(), 0)
+          // Deferred a tick so the controlled inputs render the autofilled
+          // code before verification disables them.
+          setTimeout(() => {
+            otpInputsRef.current[0]?.focus()
+            triggerVerify(code)
+          }, 0)
         } else {
           setWebOtpStatus('empty-credential')
         }
@@ -241,8 +246,11 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
             // Let React render the autofilled code before verification. Starting
             // MSG91 verification in the same tick disables the controlled inputs
             // immediately, which can make a successful autofill appear to have
-            // failed. The existing form button remains responsible for verifying.
-            setTimeout(() => otpInputsRef.current[0]?.focus(), 0)
+            // failed — so this fires a tick later, after focus.
+            setTimeout(() => {
+              otpInputsRef.current[0]?.focus()
+              triggerVerify(digits.join(''))
+            }, 0)
           }
         }
       })
