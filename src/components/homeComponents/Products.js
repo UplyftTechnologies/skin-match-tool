@@ -115,9 +115,7 @@ function ProductCard({ product }) {
     const savedProduct = wishlistProduct(product)
     const wishlisted = isWishlisted(savedProduct.product_uid)
     const productHref = scoredProductPath(product.product_uid, product.score)
-    const sellingPrice = formatPrice(product.selling_price)
     const mrp = formatPrice(product.mrp)
-    const showMrp = mrp && Number(product.mrp) > Number(product.selling_price)
 
     function handleSaveMatch(event) {
         event.stopPropagation()
@@ -215,11 +213,8 @@ function ProductCard({ product }) {
             </Link>
 
             <div className="flex items-center gap-2 mb-3">
-                {showMrp ? (
-                    <span className="text-sm text-gray-400 line-through">{mrp}</span>
-                ) : null}
                 <span className="text-sm font-semibold text-gray-900">
-                    {sellingPrice || mrp || 'Price unavailable'}
+                    {mrp || 'Price unavailable'}
                 </span>
             </div>
 

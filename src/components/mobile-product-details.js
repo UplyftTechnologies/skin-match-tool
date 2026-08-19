@@ -48,7 +48,7 @@ export default function MobileProductDetails({ description, ingredients, usageIn
   }, [checkOverflow]);
 
   return (
-    <section className="mt-6 border-y border-slate-100 bg-white px-3 py-4 sm:mt-8 sm:rounded-3xl sm:border sm:px-7 sm:py-6 sm:shadow-sm">
+    <section className="hidden lg:hidden mt-6 border-y border-slate-100 bg-white px-3 py-4 sm:mt-8 sm:rounded-3xl sm:border sm:px-7 sm:py-6 sm:shadow-sm">
       <h2 className="text-center text-[11px] font-semibold tracking-[0.16em] text-slate-800 sm:text-[13px]">PRODUCT DESCRIPTION</h2>
       <div aria-label="Product details" className="mt-3 flex justify-center gap-5 border-b border-slate-100 sm:mt-5 sm:gap-8" role="tablist">
         {tabs.map((tab) => {
@@ -57,7 +57,7 @@ export default function MobileProductDetails({ description, ingredients, usageIn
             <button
               aria-controls="mobile-product-detail-content"
               aria-selected={isActive}
-              className={`border-b pb-2 text-[8px] sm:text-[12px] ${isActive ? "border-[#e08a7d] text-[#d77465]" : "border-transparent text-slate-400"}`}
+              className={`border-b pb-2 text-[11px] sm:text-[12px] ${isActive ? "border-[#e08a7d] text-[#d77465]" : "border-transparent text-slate-400"}`}
               id={`mobile-product-detail-tab-${tab.id}`}
               key={tab.id}
               onClick={() => {
@@ -74,7 +74,8 @@ export default function MobileProductDetails({ description, ingredients, usageIn
       </div>
       <div
         aria-labelledby={`mobile-product-detail-tab-${activeTab}`}
-        className={`mx-auto mt-3 max-w-3xl text-[9px] leading-relaxed text-slate-600 sm:mt-5 sm:text-[13px] ${expanded ? "" : "line-clamp-5"}`}
+        className={`mx-auto mt-3 max-w-3xl text-[16px] leading-relaxed text-slate-600 
+          sm:mt-5 sm:text-[16px] ${expanded ? "" : "line-clamp-5"}`}
         id="mobile-product-detail-content"
         ref={contentRef}
         role="tabpanel"
@@ -83,7 +84,7 @@ export default function MobileProductDetails({ description, ingredients, usageIn
       </div>
       {isOverflowing ? (
         <button
-          className="mt-2 block w-full text-center text-[9px] text-[#d77465] sm:text-[12px]"
+          className="mt-2 block w-full text-center text-[11px] text-[#d77465] sm:text-[12px]"
           onClick={() => setExpanded((value) => !value)}
           type="button"
         >

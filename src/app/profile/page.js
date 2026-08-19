@@ -30,9 +30,7 @@ function ProfileRow({ label, value, isLast }) {
 }
 
 function WishlistCard({ product, onVisit, onRemove }) {
-    const price = product.selling_price || product.mrp;
     const mrp = product.mrp;
-    const showMrp = mrp && Number(mrp) > Number(price);
 
     return (
         <div className="rounded-2xl border border-gray-100 bg-white p-3 flex flex-col items-center text-center">
@@ -53,9 +51,8 @@ function WishlistCard({ product, onVisit, onRemove }) {
                 <p className="text-[12px] leading-snug text-gray-700 line-clamp-2">{product.product_name}</p>
             </Link>
             <div className="flex items-center gap-1.5 mt-1.5">
-                {showMrp ? <span className="text-[12px] text-gray-400 line-through">₹{Math.ceil(mrp)}</span> : null}
                 <span className="text-[12px] font-semibold text-gray-900">
-                    {price ? `₹${Math.ceil(price)}` : "Price unavailable"}
+                    {mrp ? `₹${Math.ceil(mrp)}` : "Price unavailable"}
                 </span>
             </div>
             <button

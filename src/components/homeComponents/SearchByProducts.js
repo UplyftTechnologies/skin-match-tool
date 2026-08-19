@@ -16,8 +16,6 @@ import P2 from '@/assets/Shopbyproducts/p2.png'
 import P3 from '@/assets/Shopbyproducts/p3.png'
 import P4 from '@/assets/Shopbyproducts/p4.png'
 import P5 from '@/assets/Shopbyproducts/p5.png'
-import P6 from '@/assets/Shopbyproducts/p6.png'
-import P7 from '@/assets/Shopbyproducts/p7.png'
 
 // `type` must match the catalog's product_type values exactly (see
 // data/products.csv) so /AllProducts?type=... actually filters something.
@@ -25,10 +23,8 @@ const productTypes = [
     { id: 1, name: 'Cleanser', image: P1, type: 'Cleanser' },
     { id: 2, name: 'Toner', image: P2, type: 'Toner' },
     { id: 3, name: 'Serum', image: P3, type: 'Serum' },
-    { id: 4, name: 'Moisturiser', image: P4, type: 'Moisturizer' },
+    { id: 4, name: 'Moisturiser', image: P4, type: 'moisturiser' },
     { id: 5, name: 'Mask', image: P5, type: 'Mask' },
-    { id: 6, name: 'Eye Cream', image: P6, type: 'Eye Cream' },
-    { id: 7, name: 'Lip Balm', image: P7, type: 'Lip Balm' },
 ]
 
 function productTypeHref(type) {

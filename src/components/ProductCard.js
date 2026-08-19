@@ -57,7 +57,7 @@ function rangeLabel(key) {
 }
 
 function formatPrice(product) {
-  const value = product.selling_price || product.mrp;
+  const value = product.mrp;
   return value ? `Rs. ${Math.ceil(value)}` : "Price unavailable";
 }
 
@@ -140,11 +140,6 @@ export default function ProductCard({ product, onVisit }) {
 
           <div className="price-row">
             <span>{formatPrice(product)}</span>
-            {product.mrp &&
-              product.selling_price &&
-              product.mrp !== product.selling_price ? (
-              <del>Rs. {Math.ceil(product.mrp)}</del>
-            ) : null}
           </div>
 
           <div className="tagline">

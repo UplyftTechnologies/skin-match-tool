@@ -50,7 +50,7 @@ export const EVENTS = {
   CLICKED_SEARCH_BY_PRODUCT_TYPE: 'clicked_search_by_product_type',
   CLICKED_SEARCH_BY_CATEGORY: 'clicked_search_by_category',
   CLICKED_SEARCH_K_BEAUTY_BRAND: 'clicked_search_k_beauty_brand',
-  CLICKED_INDIAN_ROCKSTAR_PRODUCT_TYPE: 'clicked_indian_rockstar_product_type',
+  CLICKED_INDIAN_ROCKSTAR_BRAND: 'clicked_indian_rockstar_brand',
   CLICKED_VIEW_ALL_PRODUCTS: 'clicked_view_all_products',
 
   // How it works page

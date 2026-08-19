@@ -7,7 +7,7 @@ import { EVENTS } from "@/lib/tracking/events";
 import { productPath } from "@/lib/site";
 
 export default function SeoProductCard({ product, section }) {
-  const price = product.selling_price || product.mrp;
+  const price = product.mrp;
 
   function trackVisit() {
     trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {

@@ -34,14 +34,8 @@ function descriptionFor(product) {
 }
 
 function priceAmount(product) {
-  const value = product.sp || product.mrp;
-  const number = Number(String(value || "").replace(/[^\d.]/g, ""));
+  const number = Number(String(product.mrp || "").replace(/[^\d.]/g, ""));
   return Number.isFinite(number) && number > 0 ? Math.ceil(number) : null;
-}
-
-function numericValue(raw) {
-  const number = Number(String(raw || "").replace(/[^\d.]/g, ""));
-  return Number.isFinite(number) && number > 0 ? number : null;
 }
 
 export async function generateStaticParams() {
@@ -108,10 +102,6 @@ export default async function ProductPage({ params }) {
   if (!product) notFound();
 
   const price = priceAmount(product);
-  const mrpValue = numericValue(product.mrp);
-  const spValue = numericValue(product.sp);
-  const hasDiscount = mrpValue && spValue && mrpValue > spValue;
-  const percentOff = hasDiscount ? Math.round(((mrpValue - spValue) / mrpValue) * 100) : null;
 
   const wishlistProduct = {
     product_uid: product.product_uid,
@@ -174,7 +164,7 @@ export default async function ProductPage({ params }) {
     .filter(Boolean);
 
   return (
-    <div className="rps-pdp min-h-screen bg-[#FAF9F6] pb-10 text-slate-800">
+    <div className="rps-pdp min-h-screen bg-[#FAF9F6] pb-24 text-slate-800 sm:pb-10">
       <ProductViewTracker product={product} />
       <Header className="hidden sm:block" />
       <script
@@ -272,19 +262,9 @@ export default async function ProductPage({ params }) {
 
             {/* Price */}
             <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1 sm:mt-5">
-              {/* <span className="text-[15px] font-extrabold leading-none text-slate-900 sm:text-[1.9rem]">
-                {product.mrp ? `Rs. ${Math.ceil(product.sp || product.mrp)}` : "Price not listed"}
-              </span> */}
-              {hasDiscount ? (
-                <>
-                  <span className="text-[14px] text-slate-400 line-through">
-                    Rs. {Math.ceil(product.mrp)}
-                  </span>
-                  <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-[#d77465]">
-                    {percentOff}% off
-                  </span>
-                </>
-              ) : null}
+              <span className="text-[15px] font-extrabold leading-none text-slate-900 sm:text-[1.9rem]">
+                {price ? `Rs. ${Math.ceil(price)}` : "Price not listed"}
+              </span>
             </div>
             <p className="mt-1 hidden text-[12px] text-slate-400 sm:block">Inclusive of all taxes</p>
 
@@ -292,7 +272,7 @@ export default async function ProductPage({ params }) {
 
             <div id="buy-options">
               <RetailerPriceCompare
-                catalogPrice={product.sp || product.mrp}
+                catalogPrice={product.mrp}
                 productName={product.product_name}
                 productUid={product.product_uid}
               />
@@ -330,13 +310,13 @@ export default async function ProductPage({ params }) {
         />
 
         {/* ---------------------------------------------------------- Detail rows */}
-        <div className="mt-6 hidden min-w-0 rounded-3xl border border-slate-100 bg-white shadow-sm sm:mt-8 sm:block lg:mt-10">
+        <div className="mt-6  min-w-0 rounded-3xl border border-slate-100 bg-white shadow-sm sm:mt-8 sm:block lg:mt-10">
           {/* Key ingredients */}
-          <div className="hidden grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
+          <div className=" grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
             <SectionHeading icon={FiDroplet} title="KEY INGREDIENTS" />
             <div className="max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
-                {product.single_hero_ingredient ? (
+                {/* {product.single_hero_ingredient ? (
                   <span className="rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-[12.5px] font-semibold text-[#d77465]">
                     {product.single_hero_ingredient}
                   </span>
@@ -348,7 +328,7 @@ export default async function ProductPage({ params }) {
                   >
                     {item}
                   </span>
-                ))}
+                ))} */}
                 {!product.single_hero_ingredient && secondaryIngredients.length === 0 ? (
                   <span className="text-[14px] text-slate-400">Not listed</span>
                 ) : null}
@@ -368,7 +348,7 @@ export default async function ProductPage({ params }) {
           </div>
 
           {/* How to use */}
-          <div className="hidden grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
+          <div className="block grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
             <SectionHeading icon={FiInfo} title="HOW TO USE" />
             <p className="max-w-2xl break-words text-[14px] leading-relaxed text-slate-600 sm:text-[14.5px]">
               {product.usage_instructions || "Follow the directions printed on the product packaging."}
@@ -376,7 +356,8 @@ export default async function ProductPage({ params }) {
           </div>
 
           {product.ingredient_cautions ? (
-            <div className="grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
+            <div className="grid gap-3 border-b border-slate-100 p-5 sm:gap-4 sm:p-7
+             lg:grid-cols-[200px_1fr] lg:gap-10">
               <div className="flex items-center gap-2">
                 <FiAlertTriangle aria-hidden="true" className="h-4 w-4 shrink-0 text-amber-500" />
                 <span className="text-[13px] font-bold tracking-wide text-slate-800">CAUTIONS</span>
@@ -398,7 +379,7 @@ export default async function ProductPage({ params }) {
             </p>
           </div>
 
-          <div className="grid gap-3 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
+          <div className="hidden lg:hidden grid gap-3 p-5 sm:gap-4 sm:p-7 lg:grid-cols-[200px_1fr] lg:gap-10">
             <SectionHeading icon={FiCompass} title="EXPLORE GUIDES" />
             <div className="flex flex-wrap gap-2">
               {SKIN_GUIDES.map((guide) => (
@@ -417,6 +398,23 @@ export default async function ProductPage({ params }) {
       </div>
 
       {/* --------------------------------------------------- Mobile sticky bar */}
+      {/* <div
+        className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t border-slate-100 bg-white px-4 py-3 shadow-[0_-4px_16px_rgba(15,23,42,0.08)] sm:hidden"
+        style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+      >
+        <div className="min-w-0">
+          <p className="truncate text-[11px] text-slate-500">{product.brand_name || "Roopsee"}</p>
+          <p className="text-[16px] font-extrabold leading-none text-slate-900">
+            {price ? `Rs. ${Math.ceil(price)}` : "Price not listed"}
+          </p>
+        </div>
+        <a
+          className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#f3a99a] px-6 py-3 text-[12.5px] font-semibold tracking-wide text-white shadow-sm transition-colors hover:bg-[#e08a7d]"
+          href="#buy-options"
+        >
+          View prices
+        </a>
+      </div> */}
     </div>
   );
 }

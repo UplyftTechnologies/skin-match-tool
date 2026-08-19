@@ -182,9 +182,7 @@ function ProductCard({ product }) {
                 {product.product_name}
             </Link>
             <div className="flex items-center gap-2 mb-3">
-                {Number(product.mrp) > Number(product.selling_price) ? (
-                    <span className="text-sm text-gray-400 line-through">₹{Math.ceil(product.mrp)}</span>
-                ) : null}
+             
                 <span className="text-sm font-semibold text-gray-900">
                     {product.selling_price || product.mrp ? `₹${Math.ceil(product.selling_price || product.mrp)}` : 'Price unavailable'}
                 </span>

@@ -11,28 +11,31 @@ import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import RequireQuizModal from '@/components/RequireQuizModal'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
-import P1 from '@/assets/indianrockstar/i1.png'
-import P2 from '@/assets/indianrockstar/i2.png'
-import P3 from '@/assets/indianrockstar/i3.png'
-import P4 from '@/assets/indianrockstar/i4.png'
-import P5 from '@/assets/indianrockstar/i5.png'
-import P6 from '@/assets/indianrockstar/i6.png'
-import P7 from '@/assets/indianrockstar/i7.png'
-// `type` must match the catalog's product_type values exactly (see
-// data/products.csv) so /AllProducts?type=... actually filters something.
-const productTypes = [
-    { id: 1, name: 'Cleanser', image: P1, type: 'Cleanser' },
-    { id: 2, name: 'Toner', image: P2, type: 'Toner' },
-    { id: 3, name: 'Serum', image: P3, type: 'Serum' },
-    { id: 4, name: 'Moisturiser', image: P4, type: 'Moisturizer' },
-    { id: 5, name: 'Mask', image: P5, type: 'Mask' },
-    { id: 6, name: 'Eye Cream', image: P6, type: 'Eye Cream' },
-    { id: 7, name: 'Lip Balm', image: P7, type: 'Lip Balm' },
+import B1 from '@/assets/indianrockstar/i1.png'
+import B2 from '@/assets/indianrockstar/i2.png'
+import B3 from '@/assets/indianrockstar/i3.png'
+import B4 from '@/assets/indianrockstar/i4.png'
+import B5 from '@/assets/indianrockstar/i5.png'
+import B6 from '@/assets/indianrockstar/i6.png'
+import B7 from '@/assets/indianrockstar/i7.png'
+
+// This is a brand showcase (Indian D2C skincare brands), not a product-type
+// filter — mirrors SearchByBrands.js's K-beauty carousel. `brand` must match
+// the catalog's brand values exactly (see data/products.csv) so
+// /AllProducts?brand=... actually filters something.
+const brands = [
+    { id: 1, name: 'Minimalist', image: B1, brand: 'Minimalist' },
+    { id: 2, name: 'The Derma Co', image: B2, brand: 'The Derma Co' },
+    { id: 3, name: 'Plum', image: B3, brand: 'Plum' },
+    { id: 4, name: "Re'equil", image: B4, brand: "Re'equil" },
+    { id: 5, name: 'Dot & Key', image: B5, brand: 'Dot & Key' },
+    { id: 6, name: "Dr. Sheth's", image: B6, brand: "Dr. Sheth's" },
+    { id: 7, name: 'Chemist At Play', image: B7, brand: 'Chemist At Play' },
 ]
 
-function productTypeHref(type) {
+function brandHref(brand) {
     const params = new URLSearchParams()
-    params.append('type', type)
+    params.append('brand', brand)
     return `/AllProducts?${params}`
 }
 
@@ -41,10 +44,10 @@ export default function IndianRockstar() {
     const quizAnswers = useQuizAnswers()
     const [showQuizModal, setShowQuizModal] = useState(false)
 
-    const handleProductClick = (product) => {
-        trackingService.trackEvent(EVENTS.CLICKED_INDIAN_ROCKSTAR_PRODUCT_TYPE, {
-            productType: product.type,
-            productName: product.name,
+    const handleBrandClick = (brand) => {
+        trackingService.trackEvent(EVENTS.CLICKED_INDIAN_ROCKSTAR_BRAND, {
+            brand: brand.brand,
+            brandName: brand.name,
             section: 'indian_rockstar',
         })
 
@@ -52,7 +55,7 @@ export default function IndianRockstar() {
             setShowQuizModal(true)
             return
         }
-        router.push(productTypeHref(product.type))
+        router.push(brandHref(brand.brand))
     }
 
     return (
@@ -75,18 +78,18 @@ export default function IndianRockstar() {
                         1280: { spaceBetween: 28 },
                     }}
                 >
-                    {productTypes.map((product) => (
-                        <SwiperSlide key={product.id} className="!w-auto">
+                    {brands.map((brand) => (
+                        <SwiperSlide key={brand.id} className="!w-auto">
                             <button
                                 type="button"
-                                onClick={() => handleProductClick(product)}
+                                onClick={() => handleBrandClick(brand)}
                                 className="flex flex-col items-center gap-3 cursor-pointer"
-                                aria-label={`Shop ${product.name}`}
+                                aria-label={`Shop ${brand.name}`}
                             >
                                 <div className="relative w-[150px] h-[150px] sm:w-44 sm:h-44 lg:w-52 lg:h-52 rounded-2xl overflow-hidden border-2 border-white shadow-md transition-transform duration-200 hover:scale-[1.03]">
                                     <Image
-                                        src={product.image}
-                                        alt={product.name}
+                                        src={brand.image}
+                                        alt={brand.name}
                                         fill
                                         sizes="(max-width: 639px) 150px, (max-width: 1023px) 176px, 208px"
                                         className="object-cover"
