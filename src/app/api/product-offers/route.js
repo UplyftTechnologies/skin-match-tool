@@ -27,6 +27,7 @@ const OFFER_FIELDS = [
   "how_to_use",
   "key_features",
   "key_ingredients",
+  "gtin",
 ].join(",");
 
 // Pulling all 18k retailer rows per request would be wasteful, so narrow to the

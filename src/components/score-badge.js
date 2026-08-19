@@ -10,7 +10,7 @@ export default function ScoreBadge({ score }) {
                 : value >= 80
                     ? { label: 'GOOD', ring: '#e8b53a', fill: '#d9a52c', glow: 'rgba(217,165,44,0.35)' }
                     : value >= 60
-                        ? { label: 'FAIR', ring: '#f0cf6b', fill: '#e6c157', glow: 'rgba(230,193,87,0.35)' }
+                        ? { label: 'Caution', ring: '#f0cf6b', fill: '#e6c157', glow: 'rgba(230,193,87,0.35)' }
                         : { label: 'LOW', ring: '#e0645f', fill: '#d1524d', glow: 'rgba(209,82,77,0.35)' }
 
     const progressDeg = Math.min(100, Math.max(0, value)) * 3.6

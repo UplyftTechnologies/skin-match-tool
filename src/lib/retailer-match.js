@@ -145,5 +145,22 @@ export function bestOfferPerSite(product, rows) {
     }
   }
 
+  // A GTIN is the same physical product everywhere it's stocked, so once the
+  // fuzzy matcher above has confidently pinned one site's row (say, Nykaa)
+  // and it carries a GTIN, use that barcode to pull in — or correct — the
+  // other sites' rows in this same brand-scoped batch. That's strictly more
+  // reliable than name/strength/size similarity, which is why it overrides
+  // rather than just filling gaps.
+  const gtin = [...best.values()].map((row) => row.gtin).find(Boolean);
+  if (gtin) {
+    for (const row of rows) {
+      if (row.gtin !== gtin || isMultipack(row)) continue;
+      const current = best.get(row.site);
+      if (!current || current.gtin !== gtin) {
+        best.set(row.site, { ...row, confidence: 1 });
+      }
+    }
+  }
+
   return [...best.values()].sort((a, b) => b.confidence - a.confidence);
 }
