@@ -22,6 +22,7 @@ const PRODUCT_FIELDS = [
   "product_url",
   "image_url",
   "product_attributes",
+  "gtin",
   "updated_at",
 ].join(",");
 
@@ -169,12 +170,13 @@ export async function GET(request) {
     });
   }
 
-  const [nameResult, brandResult, categoryResult] = await Promise.all([
+  const [nameResult, brandResult, categoryResult, gtinResult] = await Promise.all([
     productQuery(limit, offset, searchParams, { paginate: false }).ilike("product_name", `%${search}%`),
     productQuery(limit, offset, searchParams, { paginate: false }).ilike("brand", `%${search}%`),
     productQuery(limit, offset, searchParams, { paginate: false }).overlaps("categories", categoryCandidates(search)),
+    productQuery(limit, offset, searchParams, { paginate: false }).ilike("gtin", `%${search}%`),
   ]);
-  const failedResult = [nameResult, brandResult, categoryResult].find(
+  const failedResult = [nameResult, brandResult, categoryResult, gtinResult].find(
     (result) => result.error,
   );
 
@@ -187,7 +189,7 @@ export async function GET(request) {
   }
 
   const productsById = new Map();
-  [...nameResult.data, ...brandResult.data, ...categoryResult.data].forEach(
+  [...nameResult.data, ...brandResult.data, ...categoryResult.data, ...gtinResult.data].forEach(
     (product) => productsById.set(product.id, product),
   );
   const matchingProducts = sortProducts(

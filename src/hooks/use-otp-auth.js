@@ -15,7 +15,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
   const [error, setError] = useState('')
   const [resendTimer, setResendTimer] = useState(30)
   const [resending, setResending] = useState(false)
-  const [resendCount, setResendCount] = useState(0)
+  const [resendBlocked, setResendBlocked] = useState(false)
   const [webOtpStatus, setWebOtpStatus] = useState('idle')
 
   const otpInputsRef = useRef([])
@@ -313,7 +313,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     e?.preventDefault()
     setError('')
     setResending(false)
-    setResendCount(0)
+    setResendBlocked(false)
     verifyingRef.current = false
 
     const cleanPhone = phone.replace(/\D/g, '')
@@ -341,7 +341,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
           setError('')
           setStep(2)
           setResendTimer(30)
-          setResendCount(0)
+          setResendBlocked(false)
           setOtp(['', '', '', '', '', ''])
           setTimeout(() => otpInputsRef.current[0]?.focus(), 100)
           trackingService.trackEvent(EVENTS.CLICKED_SEND_OTP, {
@@ -363,11 +363,15 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
   }
 
   const handleResend = async () => {
-    if (resending || resendTimer > 0 || resendCount >= 2) return
+    if (resending || resendTimer > 0 || resendBlocked) return
     setError('')
     setOtp(['', '', '', '', '', ''])
     setResending(true)
-    setResendCount((prev) => prev + 1)
+    // Start the cooldown immediately rather than waiting on the widget's
+    // success callback — MSG91's retryOtp doesn't reliably invoke it, which
+    // left the timer stuck at 0 (and "Resend code" re-clickable right away)
+    // even though the resend itself went through.
+    setResendTimer(30)
 
     trackingService.trackEvent(EVENTS.CLICKED_RESEND_OTP, { phone_number: phone })
     startEarlyWebOtpListener()
@@ -381,7 +385,6 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
       callbackCalled = true
       setResending(false)
       setError('')
-      setResendTimer(30)
       setTimeout(() => otpInputsRef.current[0]?.focus(), 100)
     }
 
@@ -393,7 +396,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         setError(msg || 'Failed to resend OTP.')
       }
       if (msg && (msg.toLowerCase().includes('limit') || msg.toLowerCase().includes('max') || msg.toLowerCase().includes('exceed'))) {
-        setResendCount(2)
+        setResendBlocked(true)
       }
     }
 
@@ -486,7 +489,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     setError('')
     setResending(false)
     setResendTimer(30)
-    setResendCount(0)
+    setResendBlocked(false)
     setOtp(['', '', '', '', '', ''])
     verifyingRef.current = false
   }
@@ -500,7 +503,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     error,
     resendTimer,
     resending,
-    resendCount,
+    resendBlocked,
     webOtpStatus,
     otpInputsRef,
     handleSendOtp,

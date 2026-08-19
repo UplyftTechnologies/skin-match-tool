@@ -100,7 +100,7 @@ function LoginPageContent() {
     error,
     resendTimer,
     resending,
-    resendCount,
+    resendBlocked,
     webOtpStatus,
     otpInputsRef,
     handleSendOtp,
@@ -283,7 +283,7 @@ function LoginPageContent() {
             />
 
             <div className="mt-3 flex items-center justify-between text-xs">
-              {resendCount >= 2 ? (
+              {resendBlocked ? (
                 <span className="text-amber-600 font-medium">Max resends reached</span>
               ) : resendTimer > 0 ? (
                 <span className="text-gray-500 font-medium">Resend code in {resendTimer}s</span>
