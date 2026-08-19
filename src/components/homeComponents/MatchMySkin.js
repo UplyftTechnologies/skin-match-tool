@@ -34,7 +34,7 @@ function Pill({ disabled = false, label, selected, onClick }) {
             onClick={onClick}
             disabled={disabled}
             style={{ fontSize: '13px' }}
-            className={`w-full md:text-base py-[8px] px-1 rounded-[3px] border transition-colors duration-200
+            className={`flex h-[42px] w-full items-center justify-center rounded-[3px] border px-1 py-1.5 transition-colors duration-200 md:text-base
         ${selected
                     ? 'bg-[#D8E7E6] border-[#D8E7E6] text-gray-900'
                     : disabled
@@ -42,7 +42,7 @@ function Pill({ disabled = false, label, selected, onClick }) {
                         : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
                 }`}
         >
-            {label}
+            <span className="quiz-pill-label">{label}</span>
         </button>
     )
 }
@@ -60,6 +60,7 @@ export default function MatchMySkin() {
     const [savingQuiz, setSavingQuiz] = useState(false)
     const [saveError, setSaveError] = useState('')
     const [hasCompletedQuiz, setHasCompletedQuiz] = useState(false)
+    const [isQuizEditing, setIsQuizEditing] = useState(true)
 
     const missingFields = [
         !skinType && { key: 'skin-type', label: 'Skin type' },
@@ -78,6 +79,7 @@ export default function MatchMySkin() {
             if (!savedAnswers) return
 
             setHasCompletedQuiz(true)
+            setIsQuizEditing(false)
             setSkinType(savedAnswers.skinType || null)
             setSensitive(savedAnswers.sensitive || null)
             const savedConcerns = Array.isArray(savedAnswers.concerns)
@@ -232,6 +234,7 @@ export default function MatchMySkin() {
             ].filter(Boolean).join(' | '),
         })
         setHasCompletedQuiz(true)
+        setIsQuizEditing(false)
 
         sessionStorage.setItem('roopsee-quiz-answers', JSON.stringify(answers))
         saveSkinProfile(resultProfile)
@@ -286,6 +289,23 @@ export default function MatchMySkin() {
             <div id="match-my-skin">
             </div>
             <div className='bg-[#FFFFFF]'>
+                {hasCompletedQuiz && !isQuizEditing ? (
+                    <div className="mx-auto max-w-md px-4 py-6 md:py-12 lg:max-w-6xl lg:px-8 xl:max-w-7xl">
+                        <section className="quiz-complete-panel" aria-label="Skin quiz completed">
+                            <div className="quiz-complete-message">
+                                <span className="quiz-complete-check" aria-hidden="true">&#10003;</span>
+                                <span>Skin quiz completed</span>
+                            </div>
+                            <button
+                                className="quiz-update-btn"
+                                onClick={() => setIsQuizEditing(true)}
+                                type="button"
+                            >
+                                Update Quiz
+                            </button>
+                        </section>
+                    </div>
+                ) : (
                 <div className="max-w-md mx-auto px-4 py-6 md:py-12 lg:max-w-6xl xl:max-w-7xl lg:px-8">
                     <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
                         SKIN QUIZ
@@ -466,6 +486,7 @@ export default function MatchMySkin() {
                         </p>
                     ) : null}
                 </div>
+                )}
             </div>
         </div>
     )

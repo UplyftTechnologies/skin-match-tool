@@ -515,6 +515,24 @@ select {
   min-width: 0;
 }
 
+.product-name-clamp {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.quiz-pill-label {
+  display: -webkit-box;
+  overflow: hidden;
+  max-width: 100%;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .product-card:hover {
   transform: translateY(-3px);
   border-color: rgba(194, 85, 168, 0.38);
@@ -1120,6 +1138,87 @@ details.payload-details summary {
   /* border: 1px solid #e1e8ed; */
   /* padding: 20px 18px; */
   /* box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05); */
+}
+
+.quiz-complete-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  align-self: start;
+  padding: 18px 20px;
+  border: 1px solid #d6d0c3;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 2px 7px rgb(67 55 35 / 8%);
+}
+
+.quiz-complete-message {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: #171717;
+  font-size: 1rem;
+  font-weight: 750;
+}
+
+.quiz-complete-check {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #d60b86;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.quiz-update-btn {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 10px 24px;
+  border-radius: 12px;
+  background: #171717;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  /* transition: background-color 160ms ease, transform 160ms ease; */
+}
+
+.quiz-update-btn:hover {
+  background: #333;
+}
+
+.quiz-update-btn:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 480px) {
+  .quiz-complete-panel {
+    gap: 12px;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .quiz-complete-message {
+    gap: 9px;
+    font-size: 0.85rem;
+  }
+
+  .quiz-complete-check {
+    width: 25px;
+    height: 25px;
+    font-size: 0.85rem;
+  }
+
+  .quiz-update-btn {
+    min-height: 28px;
+    padding: 8px 16px;
+    font-size: 0.70rem;
+  }
 }
 
 .quiz-header {

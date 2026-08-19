@@ -411,6 +411,7 @@ export default function MatchStudio({ initialData }) {
   const [error, setError] = useState("");
   const [view, setView] = useState("products");
   const [modalProduct, setModalProduct] = useState(null);
+  const [isQuizEditing, setIsQuizEditing] = useState(false);
   const { wishlistIds } = useWishlist();
 
   // NEW: Search state
@@ -781,6 +782,7 @@ export default function MatchStudio({ initialData }) {
         }),
     ]);
     saveSkinProfile(profile);
+    setIsQuizEditing(false);
 
     // UPDATED: Added a short timeout to ensure the data loads and #results section renders before scroll.
     setTimeout(() => {
@@ -890,6 +892,21 @@ export default function MatchStudio({ initialData }) {
       />
 
       <main id="matcher">
+        {data && !isQuizEditing ? (
+          <section className="panel profile-panel quiz-complete-panel" aria-label="Skin quiz completed">
+            <div className="quiz-complete-message">
+              <span className="quiz-complete-check" aria-hidden="true">&#10003;</span>
+              <span>Skin quiz completed</span>
+            </div>
+            <button
+              className="quiz-update-btn"
+              onClick={() => setIsQuizEditing(true)}
+              type="button"
+            >
+              Update Quiz
+            </button>
+          </section>
+        ) : (
         <section className="panel profile-panel quiz-panel">
           {/* <div className="quiz-header">
             <span className="quiz-icon">✨</span>
@@ -1116,6 +1133,7 @@ export default function MatchStudio({ initialData }) {
             </div>
           </div>
         </section>
+        )}
 
         {data ? (
           <section className="panel shop-panel" id="results">

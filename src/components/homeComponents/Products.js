@@ -198,7 +198,7 @@ function ProductCard({ product }) {
                     trackVisit()
                 }}
                 title={product.product_name}
-                className="mb-2 line-clamp-2 min-h-[2.5rem] text-[12px] font-lato leading-snug text-gray-800 transition hover:text-[#e08a7d] hover:underline lg:text-sm"
+                className="product-name-clamp mb-2 min-h-[2.5rem] text-[12px] font-lato leading-snug text-gray-800 transition hover:text-[#e08a7d] hover:underline lg:text-sm"
             >
                 {product.product_name}
             </Link>
