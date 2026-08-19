@@ -28,7 +28,6 @@ export default function ProductGallery({ images = [], alt, children }) {
             ? "border-[#e08a7d] ring-2 ring-[#f3a99a]"
             : "border-slate-100 hover:border-[#f3a99a]"
         }`}
-        key={`${src}-${index}`}
         onClick={() => setSelected(index)}
         type="button"
       >
@@ -67,18 +66,20 @@ export default function ProductGallery({ images = [], alt, children }) {
       </div>
 
       {gallery.length > 1 ? (
-        <>
-          <div className="mt-3 sm:hidden">
-            <Swiper slidesPerView={4.3} spaceBetween={8}>
-              {gallery.map((src, index) => (
-                <SwiperSlide key={`${src}-${index}`}>{renderThumb(src, index)}</SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
-          <div className="mt-3 hidden grid-cols-4 gap-2 sm:grid">
-            {gallery.map((src, index) => renderThumb(src, index))}
-          </div>
-        </>
+        <div className="mt-3">
+          <Swiper
+            spaceBetween={8}
+            slidesPerView={4.3}
+            breakpoints={{
+              640: { slidesPerView: 5, spaceBetween: 10 },
+              1024: { slidesPerView: 6, spaceBetween: 12 },
+            }}
+          >
+            {gallery.map((src, index) => (
+              <SwiperSlide key={`${src}-${index}`}>{renderThumb(src, index)}</SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
       ) : null}
     </>
   );
