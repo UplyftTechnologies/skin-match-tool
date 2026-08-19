@@ -172,9 +172,9 @@ function ProductCard({ product }) {
             >
                 {product.product_name}
             </Link>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="mb-3 flex min-h-5 items-center gap-2">
              
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="truncate text-sm font-semibold text-gray-900">
                     {product.selling_price || product.mrp ? `₹${Math.ceil(product.selling_price || product.mrp)}` : 'Price unavailable'}
                 </span>
             </div>
@@ -583,7 +583,7 @@ function ProductsPageContent() {
                 }}
             />
 
-            <div className="max-w-6xl mx-auto px-3 bg-[#FAF9F6] py-6">
+            <div className="max-w-6xl mx-auto px-3 bg-[#FAF9F6] py-4">
                 <h1 style={{ letterSpacing: '0.1em' }} className="font-lato uppercase text-2xl md:text-3xl text-center tracking- mb-1">
                     Products
                 </h1>

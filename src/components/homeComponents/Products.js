@@ -203,8 +203,8 @@ function ProductCard({ product }) {
                 {product.product_name}
             </Link>
 
-            <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm font-semibold text-gray-900">
+            <div className="mb-3 flex min-h-5 items-center gap-2">
+                <span className="truncate text-sm font-semibold text-gray-900">
                     {mrp || 'Price unavailable'}
                 </span>
             </div>
