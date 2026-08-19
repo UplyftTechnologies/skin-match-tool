@@ -157,8 +157,8 @@ function AuthCallbackContent() {
             && Math.abs(new Date(session.user.last_sign_in_at) - new Date(session.user.created_at)) < 5000
 
           trackingService.trackEvent(
-            isNewUser ? EVENTS.ACCOUNT_CREATED : EVENTS.EXISTING_USER_LOGIN,
-            { userId: session.user.id, method: 'google' },
+            EVENTS.LOGIN_SUCCESSFUL,
+            { userId: session.user.id, method: 'google', is_new_user: isNewUser },
           )
 
           // Google never hands us a phone number, so first-time Google

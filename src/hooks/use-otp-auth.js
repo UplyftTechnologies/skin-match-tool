@@ -86,13 +86,11 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
         trackingService.trackEvent(EVENTS.OTP_VERIFIED, {
           phone_number: backendData.user?.phone || phone,
         })
-        trackingService.trackEvent(
-          backendData.is_new_user ? EVENTS.ACCOUNT_CREATED : EVENTS.EXISTING_USER_LOGIN,
-          {
-            phone_number: backendData.user?.phone || phone,
-            userId: backendData.user?.id,
-          },
-        )
+        trackingService.trackEvent(EVENTS.LOGIN_SUCCESSFUL, {
+          phone_number: backendData.user?.phone || phone,
+          userId: backendData.user?.id,
+          is_new_user: backendData.is_new_user,
+        })
         await supabase.auth.setSession({
           access_token: backendData.token,
           refresh_token: backendData.refresh_token,

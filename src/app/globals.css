@@ -643,8 +643,8 @@ select {
     top: 10px;
     right: auto;
     left: 10px;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border: 2px solid #fff;
     box-shadow: 0 2px 8px rgb(15 23 42 / 18%);
     font-size: .75rem;
