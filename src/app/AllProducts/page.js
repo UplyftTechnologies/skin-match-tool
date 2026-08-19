@@ -634,12 +634,12 @@ function ProductsPageContent() {
                         <p className="text-xs text-gray-500">
                             Showing {firstProductNumber}–{lastProductNumber} of {totalProducts} products
                         </p>
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex w-full max-w-full flex-wrap items-center justify-center gap-1.5 sm:gap-2">
                             <button
                                 type="button"
                                 onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
                                 disabled={currentPage === 1}
-                                className="rounded-full border border-[#e08a7d] px-3 py-2 text-xs text-[#d17a6d] disabled:cursor-not-allowed disabled:opacity-40"
+                                className="shrink-0 rounded-full border border-[#e08a7d] px-2.5 py-1.5 text-[11px] text-[#d17a6d] disabled:cursor-not-allowed disabled:opacity-40 sm:px-3 sm:py-2 sm:text-xs"
                             >
                                 Previous
                             </button>
@@ -649,7 +649,7 @@ function ProductsPageContent() {
                                     key={pageNumber}
                                     onClick={() => setCurrentPage(pageNumber)}
                                     aria-current={currentPage === pageNumber ? 'page' : undefined}
-                                    className={`h-9 w-9 rounded-full text-xs font-semibold transition-colors ${
+                                    className={`h-8 w-8 shrink-0 rounded-full text-[11px] font-semibold transition-colors sm:h-9 sm:w-9 sm:text-xs ${
                                         currentPage === pageNumber
                                             ? 'bg-[#e08a7d] text-white'
                                             : 'border border-gray-200 bg-white text-gray-700 hover:border-[#e08a7d]'
@@ -662,7 +662,7 @@ function ProductsPageContent() {
                                 type="button"
                                 onClick={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
                                 disabled={currentPage === totalPages}
-                                className="rounded-full border border-[#e08a7d] px-3 py-2 text-xs text-[#d17a6d] disabled:cursor-not-allowed disabled:opacity-40"
+                                className="shrink-0 rounded-full border border-[#e08a7d] px-2.5 py-1.5 text-[11px] text-[#d17a6d] disabled:cursor-not-allowed disabled:opacity-40 sm:px-3 sm:py-2 sm:text-xs"
                             >
                                 Next
                             </button>

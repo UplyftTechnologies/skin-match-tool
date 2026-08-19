@@ -254,7 +254,7 @@ function LoginPageContent() {
 
             <button
               type="submit"
-              disabled={loading || !phone || phone.length < 10}
+              disabled={loading || !/^[6-9]\d{9}$/.test(phone)}
               className="mt-5 min-h-11 w-full rounded-[10px] border border-[#e08a7d] px-4 py-2.5 font-lato text-sm capitalize tracking-widest text-[#e16f60] transition-colors duration-300 hover:bg-[#d17a6d] hover:text-white disabled:cursor-wait disabled:opacity-60"
             >
               {loading ? 'Sending OTP…' : 'Get OTP'}

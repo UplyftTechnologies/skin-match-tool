@@ -317,7 +317,7 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
     verifyingRef.current = false
 
     const cleanPhone = phone.replace(/\D/g, '')
-    if (cleanPhone.length !== 10) {
+    if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
       setError('Please enter a valid 10-digit mobile number.')
       return
     }

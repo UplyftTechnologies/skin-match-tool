@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 
 export default function ProductGallery({ images = [], alt, children }) {
   const gallery = images.filter(Boolean);
@@ -14,6 +16,36 @@ export default function ProductGallery({ images = [], alt, children }) {
 
   function markFailed(index) {
     setFailed((prev) => new Set(prev).add(index));
+  }
+
+  function renderThumb(src, index) {
+    return (
+      <button
+        aria-current={index === activeIndex}
+        aria-label={`Show image ${index + 1} of ${gallery.length}`}
+        className={`relative aspect-square w-full overflow-hidden rounded-xl border bg-white transition ${
+          index === activeIndex
+            ? "border-[#e08a7d] ring-2 ring-[#f3a99a]"
+            : "border-slate-100 hover:border-[#f3a99a]"
+        }`}
+        key={`${src}-${index}`}
+        onClick={() => setSelected(index)}
+        type="button"
+      >
+        {failed.has(index) ? (
+          <div className="flex h-full w-full items-center justify-center text-lg font-extrabold text-[#f3a99a]">
+            R
+          </div>
+        ) : (
+          <img
+            alt={`${alt} thumbnail ${index + 1}`}
+            className="h-full w-full object-contain p-1"
+            onError={() => markFailed(index)}
+            src={src}
+          />
+        )}
+      </button>
+    );
   }
 
   return (
@@ -35,35 +67,18 @@ export default function ProductGallery({ images = [], alt, children }) {
       </div>
 
       {gallery.length > 1 ? (
-        <div className="mt-3 grid grid-cols-4 gap-2">
-          {gallery.map((src, index) => (
-            <button
-              aria-current={index === activeIndex}
-              aria-label={`Show image ${index + 1} of ${gallery.length}`}
-              className={`relative aspect-square overflow-hidden rounded-xl border bg-white transition ${
-                index === activeIndex
-                  ? "border-[#e08a7d] ring-2 ring-[#f3a99a]"
-                  : "border-slate-100 hover:border-[#f3a99a]"
-              }`}
-              key={`${src}-${index}`}
-              onClick={() => setSelected(index)}
-              type="button"
-            >
-              {failed.has(index) ? (
-                <div className="flex h-full w-full items-center justify-center text-lg font-extrabold text-[#f3a99a]">
-                  R
-                </div>
-              ) : (
-                <img
-                  alt={`${alt} thumbnail ${index + 1}`}
-                  className="h-full w-full object-contain p-1"
-                  onError={() => markFailed(index)}
-                  src={src}
-                />
-              )}
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="mt-3 sm:hidden">
+            <Swiper slidesPerView={4.3} spaceBetween={8}>
+              {gallery.map((src, index) => (
+                <SwiperSlide key={`${src}-${index}`}>{renderThumb(src, index)}</SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+          <div className="mt-3 hidden grid-cols-4 gap-2 sm:grid">
+            {gallery.map((src, index) => renderThumb(src, index))}
+          </div>
+        </>
       ) : null}
     </>
   );
