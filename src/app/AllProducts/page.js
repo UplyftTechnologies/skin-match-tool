@@ -82,7 +82,6 @@ function matchesCategory(product, category) {
 function ProductCard({ product }) {
     const router = useRouter()
     const { isWishlisted, toggleWishlist } = useWishlist()
-    const [nameExpanded, setNameExpanded] = useState(false)
     const [imageFailed, setImageFailed] = useState(false)
     const savedProduct = product
     const wishlisted = isWishlisted(savedProduct.product_uid)
@@ -137,7 +136,7 @@ function ProductCard({ product }) {
                     handleVisit()
                 }
             }}
-            className="bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
+            className="h-full bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
         >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/3] mb-3">
                 <ScoreBadge score={product.score} />
@@ -159,25 +158,17 @@ function ProductCard({ product }) {
                     onError={() => setImageFailed(true)}
                 />
             </div>
-            <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">
+            <p className="mb-1 min-h-4 truncate text-xs uppercase tracking-wide text-gray-400">
                 {product.brand_name}
             </p>
             <Link
                 href={productHref}
                 onClick={(event) => {
                     event.stopPropagation()
-                    if (!nameExpanded) {
-                        event.preventDefault()
-                        setNameExpanded(true)
-                        return
-                    }
                     trackVisit()
                 }}
-                aria-expanded={nameExpanded}
-                title={nameExpanded ? undefined : 'Click to show full product name'}
-                className={`mb-2 text-[12px] lg:text-sm font-lato text-gray-800 leading-snug transition hover:text-[#e08a7d] hover:underline ${
-                    nameExpanded ? '' : 'line-clamp-2'
-                }`}
+                title={product.product_name}
+                className="mb-2 line-clamp-2 min-h-[2.75rem] text-[15px] font-lato leading-snug text-gray-800 transition hover:text-[#e08a7d] hover:underline lg:text-[16px]"
             >
                 {product.product_name}
             </Link>

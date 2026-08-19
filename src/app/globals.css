@@ -510,6 +510,11 @@ select {
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
+.product-card-wrap {
+  height: 100%;
+  min-width: 0;
+}
+
 .product-card:hover {
   transform: translateY(-3px);
   border-color: rgba(194, 85, 168, 0.38);
