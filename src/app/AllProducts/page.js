@@ -8,7 +8,6 @@ import { FiSearch } from 'react-icons/fi'
 import { HiArrowsUpDown } from 'react-icons/hi2'
 import { BsFunnel, BsHeartFill } from 'react-icons/bs'
 import { BiHeart } from 'react-icons/bi'
-import Serum from '@/assets/images/serum.png'
 import Header from '@/components/header'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
@@ -149,14 +148,18 @@ function ProductCard({ product }) {
                 >
                     {wishlisted ? <BsHeartFill size={16} /> : <BiHeart size={18} />}
                 </button>
-                <Image
-                    src={imageFailed || !product.image ? Serum : product.image}
-                    alt={product.product_name}
-                    fill
-                    sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, 25vw"
-                    className="object-contain"
-                    onError={() => setImageFailed(true)}
-                />
+                {imageFailed || !product.image ? (
+                    <div className="image-fallback">R</div>
+                ) : (
+                    <Image
+                        src={product.image}
+                        alt={product.product_name}
+                        fill
+                        sizes="(max-width: 639px) 50vw, (max-width: 1023px) 33vw, 25vw"
+                        className="object-contain"
+                        onError={() => setImageFailed(true)}
+                    />
+                )}
             </div>
             <p className="mb-1 min-h-4 truncate text-xs uppercase tracking-wide text-gray-400">
                 {product.brand_name}

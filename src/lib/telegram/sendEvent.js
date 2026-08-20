@@ -200,6 +200,7 @@ const EXTRA_DATA_IGNORED_FIELDS = new Set([
   'userId',
   'userName',
   'phone',
+  'phone_number',
   'visitorId',
   'sessionId',
   'country',
@@ -355,7 +356,7 @@ export const sendWebsiteVisitorEvent = async ({
 
 👤 ${getValue(userName || 'Guest')}
 🆔 User ID: ${getValue(userId)}
-📞 Phone: ${getValue(phone)}
+📞 Phone: +91${getValue(phone)}
 🧩 Session ID: ${getValue(sessionId)}
 📍 ${[cleanListValue(country), cleanListValue(city), cleanListValue(region)].filter(Boolean).join(', ')}
 🌐 IP: ${getValue(ip)}
@@ -411,7 +412,9 @@ export const buildVisitorEventFromRequest = async (body, headers) => {
   const userAgentInfo = parseUserAgent(headers.get('user-agent') || '');
 
   let userName = body?.userName || '';
-  let phone = body?.phone || '';
+  // OTP/login events send the typed number as `phone_number`, not `phone`
+  // (see use-otp-auth.js) — without this fallback it never reaches Telegram.
+  let phone = body?.phone || body?.phone_number || '';
   let userId = null;
   const requestedUserId = body?.userId;
 

@@ -7,7 +7,6 @@ import Link from 'next/link'
 import { FiSearch } from 'react-icons/fi'
 import { BsHeartFill } from 'react-icons/bs'
 import { BiHeart } from 'react-icons/bi'
-import Serum from '@/assets/images/serum.png'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
@@ -40,9 +39,6 @@ const PRODUCT_SCORE_SECTIONS = [
     { title: 'Not Recommended', subtitle: 'Below 50 score', min: -Infinity, max: 50, color: '#a6534b', line: '#e8c3bf', badge: '#fff0ee' },
 ]
 
-// Last resort, only if a row is still short after its fallback. When true the
-// remaining slots take the next best unused products, appended at the end of
-// the grid. Set to false to leave the grid short instead.
 const FILL_EMPTY_SLOTS = false
 
 function productsInRange(products, { min, max }, used, count) {
@@ -178,14 +174,18 @@ function ProductCard({ product }) {
                 >
                     {wishlisted ? <BsHeartFill size={16} /> : <BiHeart size={18} />}
                 </button>
-                <Image
-                    src={imageFailed || !product.image ? Serum : product.image}
-                    alt={product.product_name || 'Skincare product'}
-                    fill
-                    sizes="(max-width: 639px) 50vw, 33vw"
-                    className="object-contain"
-                    onError={() => setImageFailed(true)}
-                />
+                {imageFailed || !product.image ? (
+                    <div className="image-fallback">R</div>
+                ) : (
+                    <Image
+                        src={product.image}
+                        alt={product.product_name || 'Skincare product'}
+                        fill
+                        sizes="(max-width: 639px) 50vw, 33vw"
+                        className="object-contain"
+                        onError={() => setImageFailed(true)}
+                    />
+                )}
             </div>
 
             <p className="mb-1 min-h-4 truncate text-xs uppercase tracking-wide text-gray-400">

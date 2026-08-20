@@ -131,6 +131,16 @@ export function matchConfidence(product, row) {
   return similarity + statedStrength + statedSize;
 }
 
+// Looser than matchConfidence: brand and name only, ignoring strength/size
+// text agreement. Used solely to locate a GTIN to anchor on — the barcode
+// itself is what makes the resulting match trustworthy, not this check.
+function matchesByBrandAndName(product, row) {
+  const left = catalogFacts(product);
+  const right = retailerFacts(row);
+  if (!left.brand || left.brand !== right.brand) return false;
+  return nameSimilarity(left.name, right.name) >= NAME_SIMILARITY_FLOOR;
+}
+
 // Best matching row per site. Sites with no confident match are omitted.
 export function bestOfferPerSite(product, rows) {
   const best = new Map();
@@ -145,13 +155,20 @@ export function bestOfferPerSite(product, rows) {
     }
   }
 
-  // A GTIN is the same physical product everywhere it's stocked, so once the
-  // fuzzy matcher above has confidently pinned one site's row (say, Nykaa)
-  // and it carries a GTIN, use that barcode to pull in — or correct — the
-  // other sites' rows in this same brand-scoped batch. That's strictly more
-  // reliable than name/strength/size similarity, which is why it overrides
-  // rather than just filling gaps.
-  const gtin = [...best.values()].map((row) => row.gtin).find(Boolean);
+  // A GTIN is the same physical product everywhere it's stocked, so once
+  // we've confidently pinned one site's row (say, Nykaa) and it carries a
+  // GTIN, use that barcode to pull in — or correct — the other sites' rows
+  // in this same brand-scoped batch. That's strictly more reliable than
+  // name/strength/size similarity, which is why it overrides rather than
+  // just filling gaps.
+  //
+  // Prefer a GTIN from a fully strict match (best.values()) when one exists.
+  // Failing that, fall back to brand + name similarity alone — strength/size
+  // text often fails to parse identically across retailers ("0.6%" vs
+  // "0.6 percent", "50g" vs "50 g (Pack of 1)") and shouldn't block us from
+  // finding the barcode that would settle the match definitively anyway.
+  const gtin = [...best.values()].map((row) => row.gtin).find(Boolean)
+    || rows.find((row) => row.gtin && !isMultipack(row) && matchesByBrandAndName(product, row))?.gtin;
   if (gtin) {
     for (const row of rows) {
       if (row.gtin !== gtin || isMultipack(row)) continue;

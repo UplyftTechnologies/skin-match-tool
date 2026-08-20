@@ -518,7 +518,6 @@ select {
 .product-name-clamp {
   display: -webkit-box;
   overflow: hidden;
-  height: 2.4em;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
