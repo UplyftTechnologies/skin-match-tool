@@ -6,9 +6,9 @@ const footerLinks = [
   {
     title: 'Roopsee',
     links: [
-            { label: 'partnership', href: '/partner' },
-      { label: 'how it works', href: '/how-it-works' },
-      { label: 'contact', href: 'mailto:hello@roopsee.com' },
+      { label: 'Partnership', href: '/partner' },
+      { label: 'How it works', href: '/how-it-works' },
+      { label: 'Contact', href: 'mailto:hello@roopsee.com' },
     ],
   },
 ]
