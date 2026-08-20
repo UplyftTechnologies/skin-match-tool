@@ -46,7 +46,6 @@ const partnerWays = [
 function page() {
     return (
         <div className="container-">
-            <style>{`html { scroll-behavior: smooth; }`}</style>
             <Header />
 
             <div className="px-4 py-3 md:px-8 lg:max-w-[1100px] lg:mx-auto">
@@ -64,13 +63,13 @@ function page() {
             </div>
 
             <div className="py-2 mt-3 md:mt-4 flex justify-center gap-2 md:gap-4 items-center">
-                <a href="#partner-inquiry-form" className="bg-[#FF7E67] text-black font-poppins font-bold
-                text-[10px] md:text-[13px] px-3 md:px-6 py-[10px] md:py-3 rounded-[18px] hover:bg-[#7bbab5] transition-colors duration-300">
+                <a href="#partner-inquiry-form" className="bg-[#FF7E67] text-black font-poppins font-medium
+              text-[14px]  md:text-[16px] px-3 md:px-6 py-[10px] md:py-3 rounded-[18px] hover:bg-[#7bbab5] transition-colors duration-300">
                     Start a Partnership
                 </a>
 
-                <Link href="/how-it-works" className="bg-transparent border border-[1px] border-[#000] text-black font-poppins font-semibold
-                text-[10px] md:text-[13px] px-3 md:px-6 py-[10px] md:py-3 rounded-[18px] hover:bg-[#7bbab5] transition-colors duration-300">
+                <Link href="/" className="bg-transparent border border-[1px] border-[#000] text-black font-poppins font-medium
+               text-[14px]  md:text-[16px] px-3 md:px-6 py-[10px] md:py-3 rounded-[18px] hover:bg-[#7bbab5] transition-colors duration-300">
                     See How It Works
                 </Link>
 
