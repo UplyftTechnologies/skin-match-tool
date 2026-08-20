@@ -79,14 +79,14 @@ function tokenCoverage(aTokens, bTokens) {
 async function fetchAllRetailerProducts(env) {
   const rows = [];
   const pageSize = 1000;
-  const baseUrl = `${env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/retailer_products`;
+  const baseUrl = `${env.ROOPSEE_NEXT_PUBLIC_SUPABASE_URL}/rest/v1/retailer_products`;
   const columns = "id,site,brand,product_name,sku,categories,mrp,selling_price";
   for (let from = 0; ; from += pageSize) {
     const to = from + pageSize - 1;
     const res = await fetch(`${baseUrl}?select=${columns}`, {
       headers: {
-        apikey: env.SUPABASE_SERVICE_KEY,
-        Authorization: `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        apikey: env.ROOPSEE_SUPABASE_SERVICE_KEY,
+        Authorization: `Bearer ${env.ROOPSEE_SUPABASE_SERVICE_KEY}`,
         Range: `${from}-${to}`,
         Prefer: "count=exact",
       },

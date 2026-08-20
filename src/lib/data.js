@@ -145,9 +145,16 @@ function mapRow(row, index) {
 }
 
 let cachedProductsPromise;
+let cachedAt = 0;
+// Without a TTL, a Supabase edit is invisible to a warm server/serverless
+// instance until it happens to restart — a live catalog/price change could
+// sit stale for hours. 60s keeps most requests off Supabase while still
+// picking up edits within about a minute.
+const CACHE_TTL_MS = 60_000;
 
 export async function loadProducts() {
-  if (!cachedProductsPromise) {
+  if (!cachedProductsPromise || Date.now() - cachedAt > CACHE_TTL_MS) {
+    cachedAt = Date.now();
     cachedProductsPromise = fetchAllRows()
       .then((rows) => rows
         .filter((row) => cleanText(row.product_uid) && cleanText(row.product_name))

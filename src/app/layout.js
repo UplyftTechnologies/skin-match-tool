@@ -6,7 +6,7 @@ import SiteExitTracker from "@/components/tracking/site-exit-tracker";
 import ScrollRestoreGuard from "@/components/scroll-restore-guard";
 import ScrollTracker from "@/components/tracking/scroll-tracker";
 import QuizRehydrator from "@/components/tracking/quiz-rehydrator";
-import { Cormorant_Garamond, Lato } from 'next/font/google'
+import { Cormorant_Garamond, Lato ,Poppins} from 'next/font/google'
 
 export const viewport = {
   width: "device-width",
@@ -91,9 +91,15 @@ const lato = Lato({
   variable: '--font-lato',
 })
 
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700","800","900"],
+  variable: "--font-poppins",
+});
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${lato.variable}`}>
+    <html lang="en" className={`${cormorant.variable} ${lato.variable} ${poppins.variable}`}>
       <body suppressHydrationWarning>
         <ScrollRestoreGuard />
         <SiteExitTracker />

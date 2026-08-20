@@ -19,6 +19,63 @@ async function authenticatedUserId(request) {
   return error ? null : data.user?.id || null;
 }
 
+// Used to paint the "notify me about new products" toggle's initial state.
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const visitorId = cleanIdentity(searchParams.get("visitorId") || "");
+  if (!visitorId) {
+    return Response.json({ notifyNewProducts: false });
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("push_subscriptions")
+    .select("id")
+    .eq("visitor_id", visitorId)
+    .eq("disabled", false)
+    .eq("notify_new_products", true)
+    .limit(1);
+
+  if (error) {
+    console.error("[api/push/subscribe] notify_new_products lookup failed:", error.message);
+    return Response.json({ notifyNewProducts: false });
+  }
+
+  return Response.json({ notifyNewProducts: Boolean(data?.length) });
+}
+
+// Flips the new-product opt-in for every active subscription this visitor
+// has (there's usually just one, but a visitor can have several devices).
+export async function PATCH(request) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const visitorId = cleanIdentity(body?.visitorId);
+  const notifyNewProducts = Boolean(body?.notifyNewProducts);
+
+  if (!visitorId) {
+    return Response.json({ error: "visitorId is required" }, { status: 400 });
+  }
+
+  try {
+    const { error } = await supabaseAdmin
+      .from("push_subscriptions")
+      .update({ notify_new_products: notifyNewProducts, updated_at: new Date().toISOString() })
+      .eq("visitor_id", visitorId)
+      .eq("disabled", false);
+
+    if (error) throw error;
+
+    return Response.json({ ok: true });
+  } catch (error) {
+    console.error("[api/push/subscribe] Failed to update notify_new_products:", error.message);
+    return Response.json({ error: "Unable to update notification preference" }, { status: 500 });
+  }
+}
+
 export async function POST(request) {
   let body;
   try {

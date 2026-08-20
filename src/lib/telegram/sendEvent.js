@@ -1,11 +1,5 @@
-// lib/telegram/sendEvent.js
-// Ported from your Express service.js. Two changes from the original:
-//   1. Uses `fetch` instead of Node's `https` module — Next.js route
-//      handlers run fine with fetch, no need for the manual req/Buffer setup.
-//   2. Takes plain objects instead of an Express `req` — App Router request
-//      bodies must be read with `await req.json()` before you can pass
-//      pieces of it around, so the "build event from request" step now takes
-//      the already-parsed body + headers instead of the raw req.
+
+
 import {
   getClientIp,
   getVisitorLocationFromHeaders,

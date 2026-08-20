@@ -17,6 +17,7 @@ import { findProduct, loadProducts } from "@/lib/data";
 import { SKIN_GUIDES } from "@/lib/seo-pages";
 import { absoluteUrl, productPath } from "@/lib/site";
 import SaveProductButton from "@/components/save-product-button";
+import PriceDropAlertButton from "@/components/price-drop-alert-button";
 import Header from "@/components/header";
 import ProductGallery from "@/components/product-gallery";
 import ProductScoreBadge from "@/components/product-score-badge";
@@ -268,11 +269,24 @@ export default async function ProductPage({ params }) {
             </div>
             <p className="mt-1 hidden text-[12px] text-slate-400 sm:block">Inclusive of all taxes</p>
 
+            {price ? (
+              <div className="mt-3">
+                <PriceDropAlertButton
+                  product={{
+                    product_uid: product.product_uid,
+                    product_name: product.product_name,
+                    selling_price: product.sp,
+                    mrp: product.mrp,
+                  }}
+                />
+              </div>
+            ) : null}
+
             {/* CTA — desktop / tablet button, hidden below lg since the mobile sticky bar covers it there */}
 
             <div id="buy-options">
               <RetailerPriceCompare
-                catalogPrice={product.mrp}
+                catalogPrice={product.sp || product.mrp}
                 productName={product.product_name}
                 productUid={product.product_uid}
               />

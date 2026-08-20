@@ -57,4 +57,10 @@ export const EVENTS = {
   PAGE_VIEWED_HOW_IT_WORKS: 'page_viewed_how_it_works',
   CLICKED_HOW_IT_WORKS_CTA: 'clicked_how_it_works_cta',
 
+  // Notifications: price drop + new product alerts
+  CLICKED_GET_PRICE_DROP_ALERT: 'clicked_get_price_drop_alert',
+  CLICKED_CANCEL_PRICE_ALERT: 'clicked_cancel_price_alert',
+  CLICKED_ENABLE_NEW_PRODUCT_ALERTS: 'clicked_enable_new_product_alerts',
+  CLICKED_DISABLE_NEW_PRODUCT_ALERTS: 'clicked_disable_new_product_alerts',
+
 };

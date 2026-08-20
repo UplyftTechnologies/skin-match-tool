@@ -5,6 +5,14 @@
     {
       "path": "/api/cron/send-wishlist-reminders",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/check-price-drops",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/check-new-products",
+      "schedule": "15 * * * *"
     }
   ]
 }

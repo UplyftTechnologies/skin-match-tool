@@ -15,6 +15,7 @@ import { EVENTS } from '@/lib/tracking/events'
 import { scoredProductPath } from '@/lib/site'
 import { useScoredProducts } from '@/hooks/use-scored-products'
 import ScoreBadge from '@/components/score-badge'
+import NewProductAlertsToggle from '@/components/new-product-alerts-toggle'
 
 const filterTabs = [
     { key: 'brand', label: 'Brand' },
@@ -603,6 +604,10 @@ function ProductsPageContent() {
                         placeholder="Search products or brands"
                         className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-[#e08a7d] shadow-sm"
                     />
+                </div>
+
+                <div className="flex justify-center mb-2">
+                    <NewProductAlertsToggle source="all_products" />
                 </div>
 
                 {loading ? (

@@ -1,5 +1,5 @@
-import webpush from "web-push";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { ensureVapid, missingVapidVars, cronAuthorized, sendToSubscription } from "@/lib/push/webpush-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,73 +8,6 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const BATCH_LIMIT = 100;
-
-/**
- * Driven by the Vercel Cron entry in vercel.json. Vercel calls the production
- * deployment on schedule and attaches `Authorization: Bearer $CRON_SECRET`
- * automatically — but only when CRON_SECRET is set on the project, otherwise it
- * sends no auth header at all and every run 401s here.
- *
- * Configured lazily rather than at module scope so a missing key reports which
- * variable is absent, and so setting one takes effect on the next cold start.
- */
-let vapidReady = false;
-
-function vapidPublicKey() {
-  // The BROWSER subscribes with NEXT_PUBLIC_VAPID_PUBLIC_KEY (see
-  // src/lib/push/subscribe.js). The push service binds every subscription to
-  // that exact key and rejects anything signed with a different one as
-  // 403 VapidPkHashMismatch — so the client's value MUST win here.
-  // VAPID_PUBLIC_KEY is only a fallback for when the public var was absent from
-  // the build. Both are trimmed: a trailing newline from a dashboard paste is
-  // enough to break the match.
-  const clientKey = (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "").trim();
-  const serverKey = (process.env.VAPID_PUBLIC_KEY || "").trim();
-
-  if (clientKey && serverKey && clientKey !== serverKey) {
-    console.error(
-      "[api/cron/send-wishlist-reminders] VAPID_PUBLIC_KEY differs from " +
-        "NEXT_PUBLIC_VAPID_PUBLIC_KEY. Signing with the public one, because that " +
-        "is what existing subscriptions were created against. Make them identical.",
-    );
-  }
-
-  return clientKey || serverKey;
-}
-
-function missingVapidVars() {
-  const missing = [];
-  if (!vapidPublicKey()) missing.push("VAPID_PUBLIC_KEY (or NEXT_PUBLIC_VAPID_PUBLIC_KEY)");
-  if (!process.env.VAPID_PRIVATE_KEY) missing.push("VAPID_PRIVATE_KEY");
-  return missing;
-}
-
-function ensureVapid() {
-  if (vapidReady) return true;
-  if (missingVapidVars().length) return false;
-
-  webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT || "mailto:support@roopsee.com",
-    vapidPublicKey(),
-    process.env.VAPID_PRIVATE_KEY.trim(),
-  );
-  vapidReady = true;
-  return true;
-}
-
-function authorized(request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    console.error("[api/cron/send-wishlist-reminders] CRON_SECRET is not set — every run will 401");
-    return false;
-  }
-
-  const authorization = request.headers.get("authorization") || "";
-  const bearerToken = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
-  const queryToken = new URL(request.url).searchParams.get("secret") || "";
-
-  return bearerToken === secret || queryToken === secret;
-}
 
 function reminderMessage(reminder) {
   const productPhrase = reminder.product_name ? `"${reminder.product_name}" is` : "Your saved picks are";
@@ -118,39 +51,8 @@ async function loadSubscriptions(visitorIds) {
   return byVisitor;
 }
 
-async function sendToSubscription(subscription, payload) {
-  try {
-    await webpush.sendNotification(
-      {
-        endpoint: subscription.endpoint,
-        keys: { p256dh: subscription.p256dh, auth: subscription.auth_key },
-      },
-      JSON.stringify(payload),
-    );
-    return { ok: true };
-  } catch (error) {
-    const statusCode = error?.statusCode;
-    const expired = statusCode === 404 || statusCode === 410;
-
-    // The push service's own status and body are the ONLY things that separate
-    // a VAPID key mismatch (403) from an expired endpoint (410) from a bad JWT
-    // (401). Swallowing them left every failure looking identical.
-    console.error("[api/cron/send-wishlist-reminders] push send failed", {
-      statusCode,
-      body: error?.body,
-      message: error?.message,
-      endpoint: String(subscription.endpoint || "").slice(0, 60),
-    });
-
-    if (expired) {
-      await supabaseAdmin.from("push_subscriptions").update({ disabled: true }).eq("id", subscription.id);
-    }
-    return { ok: false, expired, statusCode };
-  }
-}
-
 async function handleCronRequest(request) {
-  if (!authorized(request)) {
+  if (!cronAuthorized(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
   if (!ensureVapid()) {
@@ -187,7 +89,7 @@ async function handleCronRequest(request) {
 
       const payload = reminderMessage(reminder);
       const results = await Promise.all(
-        subscriptions.map((subscription) => sendToSubscription(subscription, payload)),
+        subscriptions.map((subscription) => sendToSubscription(subscription, payload, "[api/cron/send-wishlist-reminders]")),
       );
       const delivered = results.some((result) => result.ok);
 
