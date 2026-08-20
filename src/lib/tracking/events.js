@@ -21,6 +21,11 @@ export const EVENTS = {
   CLICKED_SORT_OPTION: 'clicked_sort_option',
   CLICKED_LOAD_MORE: 'clicked_load_more',
   SEARCH_PERFORMED: 'search_performed',
+  VISUAL_SEARCH_OPENED: 'visual_search_opened',
+  VISUAL_SEARCH_SUBMITTED: 'visual_search_submitted',
+  VISUAL_SEARCH_MATCHED: 'visual_search_matched',
+  VISUAL_SEARCH_NO_MATCH: 'visual_search_no_match',
+  VISUAL_SEARCH_FAILED: 'visual_search_failed',
   LEFT_SITE: 'left_site',
 
   // All products / listing page events

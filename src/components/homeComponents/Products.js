@@ -13,6 +13,7 @@ import { EVENTS } from '@/lib/tracking/events'
 import { scoredProductPath } from '@/lib/site'
 import { useScoredProducts } from '@/hooks/use-scored-products'
 import ScoreBadge from '@/components/score-badge'
+import VisualSearch from '@/components/visual-search'
 
 
 const SCORE_BANDS = [
@@ -324,8 +325,9 @@ export default function Products() {
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                         placeholder="Search products or brands"
-                        className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-[#e08a7d] shadow-sm"
+                        className="w-full pl-11 pr-12 py-3 rounded-full border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-[#e08a7d] shadow-sm"
                     />
+                    <VisualSearch onQuery={setSearch} />
                 </div> : null}
 
                 {loading ? (

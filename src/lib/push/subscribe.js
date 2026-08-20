@@ -80,7 +80,37 @@ export async function ensurePushSubscribed(visitorId) {
 
         return true
     } catch (error) {
-        console.warn('[push] subscribe failed:', error)
+        console.warn(`[push] subscribe failed: ${describeSubscribeError(error)}`, error)
         return false
     }
+}
+
+/**
+ * Turns the browser's terse push errors into something actionable. The common
+ * one is not a bug in this code: pushManager.subscribe() needs to reach the
+ * browser's own push service (FCM for Chrome/Edge, Mozilla's for Firefox), and
+ * when it cannot the browser reports only "push service not available".
+ */
+export function describeSubscribeError(error) {
+    const message = String(error?.message || error || '')
+
+    if (/push service not available|Registration failed/i.test(message)) {
+        return (
+            'the browser could not reach its push service. This is a browser/network '
+            + 'condition, not a site error. Common causes: Brave with "Use Google services '
+            + 'for push messaging" turned off (brave://settings/privacy), a network or '
+            + 'firewall blocking Google FCM, or a Chromium build without Google API keys. '
+            + 'Notification display itself still works — use the Local channel.'
+        )
+    }
+    if (/permission/i.test(message)) {
+        return 'notification permission was not granted for this origin.'
+    }
+    if (/applicationServerKey|InvalidAccessError/i.test(message)) {
+        return (
+            'the VAPID public key was rejected. An existing subscription created against a '
+            + 'different key must be unsubscribed before a new one can be made.'
+        )
+    }
+    return message || 'unknown error'
 }
