@@ -273,16 +273,6 @@ export default function Products() {
                     >
                         Products
                     </button>
-                    {/* <span aria-hidden="true" className="font-light text-gray-400">|</span>
-                    <button
-                        type="button"
-                        role="tab"
-                        aria-selected={activeView === 'routine'}
-                        onClick={() => setActiveView('routine')}
-                        className={`transition-colors ${activeView === 'routine' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
-                    >
-                        Routine
-                    </button> */}
                 </div>
 
                 <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">

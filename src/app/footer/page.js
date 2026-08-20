@@ -6,6 +6,7 @@ const footerLinks = [
   {
     title: 'Roopsee',
     links: [
+      { label: 'Partnership', href: '/partner' },
       { label: 'How it works', href: '/how-it-works' },
       { label: 'Contact', href: 'mailto:hello@roopsee.com' },
     ],
@@ -67,7 +68,7 @@ export default function FooterPage() {
               <p className="mt-5 max-w-sm font-lato text-sm leading-6 text-white/70">
                 Product discoveries, routine tips and price-drop updates—without the clutter.
               </p>
-              <form className="mt-6 flex max-w-sm border-b border-white/40" action="#">
+              {/* <form className="mt-6 flex max-w-sm border-b border-white/40" action="#">
                 <FiMail className="mt-3 shrink-0 text-white/55" aria-hidden="true" />
                 <label htmlFor="footer-email" className="sr-only">Email address</label>
                 <input
@@ -86,7 +87,7 @@ export default function FooterPage() {
                 >
                   <FiArrowRight size={19} />
                 </button>
-              </form>
+              </form> */}
             </div>
           </div>
 
