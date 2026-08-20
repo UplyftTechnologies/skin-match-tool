@@ -50,7 +50,7 @@ export const sendPartnerInquiryEmail = async ({ fullName, brandName, workEmail, 
       from: SMTP_FROM,
       to: PARTNER_INQUIRY_TO_EMAIL,
       replyTo: workEmail,
-      subject: `Partnership`,
+      subject: `Partnership Inquiry`,
       html,
     });
   } catch (error) {
