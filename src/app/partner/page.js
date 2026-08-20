@@ -1,4 +1,5 @@
 import React from 'react'
+import Link from 'next/link'
 import { FiSearch, FiShoppingCart, FiBarChart2 } from 'react-icons/fi'
 import PartnerInquiryForm from '@/components/partner/PartnerInquiryForm'
 import Header from '@/components/header'
@@ -45,6 +46,7 @@ const partnerWays = [
 function page() {
     return (
         <div className="container-">
+            <style>{`html { scroll-behavior: smooth; }`}</style>
             <Header />
 
             <div className="px-4 py-3 md:px-8 lg:max-w-[1100px] lg:mx-auto">
@@ -62,15 +64,15 @@ function page() {
             </div>
 
             <div className="py-2 mt-3 md:mt-4 flex justify-center gap-2 md:gap-4 items-center">
-                <button className="bg-[#FF7E67] text-black font-poppins font-bold
-                text-[11px] md:text-[13px] px-3 md:px-6 py-[10px] md:py-3 rounded-[18px] hover:bg-[#7bbab5] transition-colors duration-300">
+                <a href="#partner-inquiry-form" className="bg-[#FF7E67] text-black font-poppins font-bold
+                text-[10px] md:text-[13px] px-3 md:px-6 py-[10px] md:py-3 rounded-[18px] hover:bg-[#7bbab5] transition-colors duration-300">
                     Start a Partnership
-                </button>
+                </a>
 
-                <button className="bg-transparent border border-[1px] border-[#000] text-black font-poppins font-semibold
-                text-[11px] md:text-[13px] px-3 md:px-6 py-[10px] md:py-3 rounded-[18px] hover:bg-[#7bbab5] transition-colors duration-300">
+                <Link href="/how-it-works" className="bg-transparent border border-[1px] border-[#000] text-black font-poppins font-semibold
+                text-[10px] md:text-[13px] px-3 md:px-6 py-[10px] md:py-3 rounded-[18px] hover:bg-[#7bbab5] transition-colors duration-300">
                     See How It Works
-                </button>
+                </Link>
 
             </div>
 
@@ -148,7 +150,7 @@ function page() {
                 ))}
             </div>
 
-            <div className="md:mt-8 lg:max-w-[720px] lg:mx-auto">
+            <div id="partner-inquiry-form" className="md:mt-8 lg:max-w-[720px] lg:mx-auto scroll-mt-24">
                 <PartnerInquiryForm />
             </div>
             </div>
