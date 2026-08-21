@@ -29,7 +29,7 @@ const partnerWays = [
     {
         number: '01',
         title: 'Price Comparison Listing',
-        description: 'Get your products featured across our comparison tool, with affiliate or referral tracking so every click and sale is attributed back to you.',
+        description: 'Get your products featured across our comparison tool, with API integration.',
     },
     {
         number: '02',
