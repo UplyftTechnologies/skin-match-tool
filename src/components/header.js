@@ -93,20 +93,10 @@ export default function Header({ className = "" }) {
   return (
     <div className={`sticky top-0 z-[999] w-full max-w-none !mt-0 bg-[#faf7f2] border-b border-gray-100 ${className}`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-6 py-2">
-        <Logo
-          dark={false}
-          onClick={() => {
-            trackingService.trackEvent(EVENTS.CLICKED_LOGO, {
-              clickedFrom: "navbar_logo",
-              path: "/",
-              userName: phone,
-            });
-            router.push("/");
-          }}
-        />
+        <Logo dark={false} onClick={handleLogoClick} />
 
         <div className="flex items-center gap-1">
-          {wishlistIds.length > 0 && (
+          {sessionLoaded && userSession && wishlistIds.length > 0 && (
             <Link
               href="/wishlist"
               aria-label="View wishlist"
@@ -126,22 +116,19 @@ export default function Header({ className = "" }) {
             </Link>
           )}
 
-          {/* Profile icon only appears once the user is logged in. */}
+          {/* Profile stays in the mobile bottom nav; desktop keeps an icon-only shortcut. */}
           {sessionLoaded && userSession && (
             <Link
               href="/profile"
               aria-label="My profile"
-              className="flex items-center justify-center h-8 w-9 lg:w-auto lg:gap-2 lg:pl-1 lg:pr-3
-              rounded-  border-gray- text-gray-600 hover:bg-gray-100 transition-colors duration-200"
+              className="hidden md:flex items-center justify-center h-8 w-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
               onClick={() => trackingService.trackEvent(EVENTS.CLICKED_PROFILE_ICON)}
             >
-              <IoPersonCircleOutline size={30} />
-              <span className="hidden lg:inline text-sm font-medium">My Profile</span>
+              <IoPersonCircleOutline size={22} />
             </Link>
           )}
 
-          {/* Guests get a way to log in on their own, instead of only being
-              prompted when a gated action (view all / save match) blocks them. */}
+          {/* Guests get a visible login action because the bottom nav is hidden until login. */}
           {sessionLoaded && !userSession && (
             <button
               type="button"
@@ -152,7 +139,7 @@ export default function Header({ className = "" }) {
                 });
                 router.push(`/login?redirect=${encodeURIComponent(pathname || "/")}`);
               }}
-              className="ml-1 flex h-9 items-center justify-center rounded-full border border-gray-300 px-3
+              className="flex ml-1 h-9 items-center justify-center rounded-full border border-gray-300 px-4
               text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors duration-200"
             >
               Login

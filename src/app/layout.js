@@ -7,6 +7,7 @@ import SiteExitTracker from "@/components/tracking/site-exit-tracker";
 import ScrollRestoreGuard from "@/components/scroll-restore-guard";
 import ScrollTracker from "@/components/tracking/scroll-tracker";
 import QuizRehydrator from "@/components/tracking/quiz-rehydrator";
+import BottomNav from "@/components/bottom-nav";
 import { Cormorant_Garamond, Lato } from 'next/font/google'
 
 export const viewport = {
@@ -101,7 +102,10 @@ export default function RootLayout({ children }) {
         <ScrollTracker />
         <QuizRehydrator />
         <WishlistProvider>
-          {children}
+          <div className="pb-14 md:pb-0">
+            {children}
+          </div>
+          <BottomNav />
         </WishlistProvider>
 
         <NotificationOptIn />
