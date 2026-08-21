@@ -5,6 +5,10 @@
     {
       "path": "/api/cron/send-wishlist-reminders",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/send-scheduled-notifications",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

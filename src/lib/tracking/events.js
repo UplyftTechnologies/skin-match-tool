@@ -26,6 +26,8 @@ export const EVENTS = {
   VISUAL_SEARCH_MATCHED: 'visual_search_matched',
   VISUAL_SEARCH_NO_MATCH: 'visual_search_no_match',
   VISUAL_SEARCH_FAILED: 'visual_search_failed',
+  PUSH_PERMISSION_ANSWERED: 'push_permission_answered',
+  PUSH_SUBSCRIBED: 'push_subscribed',
   LEFT_SITE: 'left_site',
 
   // All products / listing page events

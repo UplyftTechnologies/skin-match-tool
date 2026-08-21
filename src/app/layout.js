@@ -2,6 +2,7 @@ import "./globals.css";
 import Script from "next/script";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { WishlistProvider } from "@/context/WishlistContext";
+import NotificationOptIn from "@/components/notification-opt-in";
 import SiteExitTracker from "@/components/tracking/site-exit-tracker";
 import ScrollRestoreGuard from "@/components/scroll-restore-guard";
 import ScrollTracker from "@/components/tracking/scroll-tracker";
@@ -102,6 +103,8 @@ export default function RootLayout({ children }) {
         <WishlistProvider>
           {children}
         </WishlistProvider>
+
+        <NotificationOptIn />
 
         {process.env.NODE_ENV === "production" &&
           process.env.NEXT_PUBLIC_GA_ID ? (
