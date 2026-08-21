@@ -95,7 +95,7 @@ export default function Header({ className = "" }) {
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-6 py-2">
         <Logo dark={false} onClick={handleLogoClick} />
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           {sessionLoaded && userSession && wishlistIds.length > 0 && (
             <Link
               href="/wishlist"
@@ -121,10 +121,13 @@ export default function Header({ className = "" }) {
             <Link
               href="/profile"
               aria-label="My profile"
-              className="hidden md:flex items-center justify-center h-8 w-8 rounded-full border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+              className="hidden md:flex items-center justify-center
+               h-8 w-8 rounded-full 
+               text-gray-700 
+               hover:bg-gray-100 transition-colors duration-200"
               onClick={() => trackingService.trackEvent(EVENTS.CLICKED_PROFILE_ICON)}
             >
-              <IoPersonCircleOutline size={22} />
+              <IoPersonCircleOutline  size={42} />
             </Link>
           )}
 

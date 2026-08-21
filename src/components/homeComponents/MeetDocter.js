@@ -23,7 +23,7 @@ function DoctorFlipCard({ image, name, points }) {
 
     return (
         <div
-            className="w-[135px] h-[220px] md:w-[240px] md:h-[340px] cursor-pointer"
+            className="w-[180px] h-[220px] md:w-[240px] md:h-[340px] cursor-pointer"
             style={{ perspective: "1200px" }}
             onClick={() => setFlipped((prev) => !prev)}
         >
@@ -42,7 +42,7 @@ function DoctorFlipCard({ image, name, points }) {
                     <Image
                         src={image}
                         alt={name}
-                        className="object-cover w-[125px] h-[165px] md:w-[220px] md:h-[280px] rounded-sm"
+                        className="object-cover w-[150px] h-[165px] md:w-[220px] md:h-[280px] rounded-sm"
                     />
                     <p className="font-lato text-xs md:text-base mt-2 md:mt-3 text-center">{name}</p>
                 </div>
@@ -70,7 +70,7 @@ function DoctorFlipCard({ image, name, points }) {
 export function MeetDoctor() {
     return (
         <>
-            <div className="bg-[#FAF9F6] px-3 py-10 md:py-16">
+            <div className="bg-[#FAF9F6] px-3 py-8 md:py-12">
                 <h2
                     style={{ letterSpacing: "0.1em" }}
                     className="font-lato text-lg uppercase md:text-3xl text-center mb-8 md:mb-12"
