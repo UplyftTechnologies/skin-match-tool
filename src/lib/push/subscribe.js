@@ -1,5 +1,7 @@
 'use client'
 
+import { supabase } from '@/lib/supabase/client'
+
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
 
 function urlBase64ToUint8Array(base64String) {
@@ -72,9 +74,22 @@ export async function ensurePushSubscribed(visitorId) {
             })
         }
 
+        // The route derives user_id from a bearer token. Without this header it
+        // has nothing to read, which is why every row landed with user_id NULL:
+        // the server was looking for something the client never sent.
+        const headers = { 'Content-Type': 'application/json' }
+        try {
+            const { data } = await supabase.auth.getSession()
+            const token = data?.session?.access_token
+            if (token) headers.Authorization = `Bearer ${token}`
+        } catch {
+            // Logged out, or auth unreachable — the subscription still saves,
+            // just anonymously against visitorId.
+        }
+
         await fetch('/api/push/subscribe', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({ visitorId, subscription: subscription.toJSON() }),
         })
 
