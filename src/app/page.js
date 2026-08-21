@@ -87,7 +87,6 @@ export default async function Home() {
       <Header/>
       <MatchStudio initialData={initialData} />
 
-
       <section className="seo-content-section hidden" style={{ maxWidth: 960, margin: "0 auto", padding: "48px 20px" }}>
         <h2>How the Roopsee Skin Match Studio works</h2>
         <p>

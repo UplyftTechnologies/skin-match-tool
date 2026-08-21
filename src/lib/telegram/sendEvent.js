@@ -356,7 +356,7 @@ export const sendWebsiteVisitorEvent = async ({
 
 👤 ${getValue(userName || 'Guest')}
 🆔 User ID: ${getValue(userId)}
-📞 Phone: +91${getValue(phone)}
+📞 Phone: ${getValue(phone)}
 🧩 Session ID: ${getValue(sessionId)}
 📍 ${[cleanListValue(country), cleanListValue(city), cleanListValue(region)].filter(Boolean).join(', ')}
 🌐 IP: ${getValue(ip)}
