@@ -11,6 +11,7 @@ import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import RequireQuizModal from '@/components/RequireQuizModal'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
+import { FiArrowRight } from 'react-icons/fi'
 import B1 from '@/assets/Kbeauty/k1.png'
 import B2 from '@/assets/Kbeauty/k2.png'
 import B3 from '@/assets/Kbeauty/k3.png'
@@ -56,6 +57,13 @@ export default function SearchByBrands() {
     router.push(brandHref(brand.brand))
   }
 
+  const handleViewAll = () => {
+    trackingService.trackEvent(EVENTS.CLICKED_VIEW_ALL_PRODUCTS, {
+      source: 'search_k_beauty',
+    })
+    router.push('/brands')
+  }
+
   return (
     <div className="bg-[#EBDFED] py-6 px-4 md:py-10">
       <RequireQuizModal open={showQuizModal} onClose={() => setShowQuizModal(false)} />
@@ -96,6 +104,19 @@ export default function SearchByBrands() {
               </button>
             </SwiperSlide>
           ))}
+          <SwiperSlide className="!w-auto">
+            <button
+              type="button"
+              onClick={handleViewAll}
+              className="flex flex-col items-center gap-3 cursor-pointer"
+              aria-label="View all brands"
+            >
+              <div className="relative flex w-[200px] h-[150px] sm:w-44 sm:h-44 lg:w-[352px] lg:h-52 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[#EBDFED] bg-white/60 text-[#6b4c73] transition-transform duration-200 hover:scale-[1.03] hover:bg-white">
+                <FiArrowRight aria-hidden="true" className="h-6 w-6" />
+                <span className="text-sm font-semibold tracking-wide">View all</span>
+              </div>
+            </button>
+          </SwiperSlide>
         </Swiper>
       </div>
     </div>

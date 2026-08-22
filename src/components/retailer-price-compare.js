@@ -17,7 +17,7 @@ function siteName(site) {
 }
 
 function roopseeStoreUrl(productUid) {
-    return `https://roopsee.com/products/${encodeURIComponent(productUid)}`
+    return `https://shop.roopsee.com/products/${encodeURIComponent(productUid)}`
 }
 
 function RetailerLogo({ site, height = 18, className = '' }) {
