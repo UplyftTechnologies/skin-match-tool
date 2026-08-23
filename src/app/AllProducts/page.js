@@ -16,7 +16,6 @@ import { productPath, scoredProductPath } from '@/lib/site'
 import { useScoredProducts } from '@/hooks/use-scored-products'
 import ScoreBadge from '@/components/score-badge'
 import VisualSearch from '@/components/visual-search'
-import RequireQuizModal from '@/components/RequireQuizModal'
 
 const filterTabs = [
     { key: 'brand', label: 'Brand' },
@@ -404,19 +403,12 @@ function ProductsPageContent() {
     const [search, setSearch] = useState(() => restoredState?.search || '')
     const { products: scoredProducts, loading, error, quizAnswers } = useScoredProducts()
     const hasQuizAnswers = Boolean(quizAnswers)
-    const [showQuizModal, setShowQuizModal] = useState(false)
     const [filterOpen, setFilterOpen] = useState(false)
     const [draftFilters, setDraftFilters] = useState(() => copyFilters(restoredFilters))
     const [appliedFilters, setAppliedFilters] = useState(() => copyFilters(restoredFilters))
     const [sortOpen, setSortOpen] = useState(false)
     const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'score_desc')
     const [currentPage, setCurrentPage] = useState(() => restoredState?.currentPage || 1)
-
-    useEffect(() => {
-        if (quizAnswers !== null) return undefined
-        const timer = window.setTimeout(() => setShowQuizModal(true), 15000)
-        return () => window.clearTimeout(timer)
-    }, [quizAnswers])
 
     const availableFilterTabs = hasQuizAnswers ? filterTabs : filterTabs.filter((tab) => tab.key !== 'score')
     const availableSortOptions = hasQuizAnswers ? sortOptions : sortOptions.filter((option) => !option.value.startsWith('score_'))
@@ -573,7 +565,6 @@ function ProductsPageContent() {
     return (
         <div>
             <Header />
-            <RequireQuizModal open={showQuizModal} onClose={() => setShowQuizModal(false)} />
             <SortFilterBar
                 filterCount={appliedFilterCount}
                 onFilterClick={openFilters}

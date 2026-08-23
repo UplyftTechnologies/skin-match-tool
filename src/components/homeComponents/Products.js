@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -14,7 +14,6 @@ import { productPath, scoredProductPath } from '@/lib/site'
 import { useScoredProducts } from '@/hooks/use-scored-products'
 import ScoreBadge from '@/components/score-badge'
 import VisualSearch from '@/components/visual-search'
-import RequireQuizModal from '@/components/RequireQuizModal'
 
 
 const SCORE_BANDS = [
@@ -229,15 +228,8 @@ function ProductCard({ product, showScore = true }) {
 export default function Products() {
     const [activeView, setActiveView] = useState('products')
     const [search, setSearch] = useState('')
-    const [showQuizModal, setShowQuizModal] = useState(false)
     const { products, routine, loading, error, quizAnswers } = useScoredProducts()
     const router = useRouter()
-
-    useEffect(() => {
-        if (quizAnswers !== null) return undefined
-        const timer = window.setTimeout(() => setShowQuizModal(true), 15000)
-        return () => window.clearTimeout(timer)
-    }, [quizAnswers])
 
     const handleViewAll = () => {
         trackingService.trackEvent(EVENTS.CLICKED_VIEW_ALL_PRODUCTS, {
@@ -265,7 +257,6 @@ export default function Products() {
 
     return (
         <div id="products" className="scroll-mt-20 bg-[#FAF9F6]">
-            <RequireQuizModal open={showQuizModal} onClose={() => setShowQuizModal(false)} />
             <div className="max-w-6xl lg:max-w-[80%] mx-auto px-3 py-6">
                 <div
                     role="tablist"
