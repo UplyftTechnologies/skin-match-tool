@@ -12,10 +12,11 @@ import Header from '@/components/header'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
-import { scoredProductPath } from '@/lib/site'
+import { productPath, scoredProductPath } from '@/lib/site'
 import { useScoredProducts } from '@/hooks/use-scored-products'
 import ScoreBadge from '@/components/score-badge'
 import VisualSearch from '@/components/visual-search'
+import RequireQuizModal from '@/components/RequireQuizModal'
 
 const filterTabs = [
     { key: 'brand', label: 'Brand' },
@@ -79,13 +80,13 @@ function matchesCategory(product, category) {
     return product.category?.toLowerCase() === wanted
 }
 
-function ProductCard({ product }) {
+function ProductCard({ product, showScore }) {
     const router = useRouter()
     const { isWishlisted, toggleWishlist } = useWishlist()
     const [imageFailed, setImageFailed] = useState(false)
     const savedProduct = product
     const wishlisted = isWishlisted(savedProduct.product_uid)
-    const productHref = scoredProductPath(product.product_uid, product.score)
+    const productHref = showScore ? scoredProductPath(product.product_uid, product.score) : productPath(product.product_uid)
 
     function handleSaveMatch(event) {
         event.stopPropagation()
@@ -139,7 +140,7 @@ function ProductCard({ product }) {
             className="h-full bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
         >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/3] mb-3">
-                <ScoreBadge score={product.score} />
+                {showScore ? <ScoreBadge score={product.score} /> : null}
                 <button
                     type="button"
                     onClick={handleSaveMatch}
@@ -203,6 +204,7 @@ function FilterPanel({
     options,
     optionsLoading,
     selected,
+    tabs,
 }) {
     const [activeTab, setActiveTab] = useState('brand')
     const [optionSearch, setOptionSearch] = useState('')
@@ -230,7 +232,7 @@ function FilterPanel({
 
                 <div className="flex flex-1 overflow-hidden">
                     <div className="w-2/5 bg-gray-50 overflow-y-auto">
-                        {filterTabs.map((tab) => (
+                        {tabs.map((tab) => (
                             <button
                                 key={tab.key}
                                 onClick={() => {
@@ -255,7 +257,7 @@ function FilterPanel({
                                 type="search"
                                 value={optionSearch}
                                 onChange={(event) => setOptionSearch(event.target.value)}
-                                placeholder={`Search ${filterTabs.find((tab) => tab.key === activeTab)?.label.toLowerCase()}`}
+                                placeholder={`Search ${tabs.find((tab) => tab.key === activeTab)?.label.toLowerCase()}`}
                                 className="sticky top-0 z-10 mb-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-[#e08a7d]"
                             />
                         ) : null}
@@ -306,7 +308,7 @@ function FilterPanel({
     )
 }
 
-function SortPanel({ open, onClose, onApply, selectedSort, onSelectSort }) {
+function SortPanel({ open, onClose, onApply, selectedSort, onSelectSort, options }) {
     if (!open) return null
 
     return (
@@ -320,7 +322,7 @@ function SortPanel({ open, onClose, onApply, selectedSort, onSelectSort }) {
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-5 py-2">
-                    {sortOptions.map((opt) => (
+                    {options.map((opt) => (
                         <label
                             key={opt.value}
                             className="flex items-center justify-between py-3 border-b border-gray-50 cursor-pointer"
@@ -400,7 +402,9 @@ function ProductsPageContent() {
         : null
     const restoredFilters = restoredState?.appliedFilters || initialFilters
     const [search, setSearch] = useState(() => restoredState?.search || '')
-    const { products: scoredProducts, loading, error } = useScoredProducts()
+    const { products: scoredProducts, loading, error, quizAnswers } = useScoredProducts()
+    const hasQuizAnswers = Boolean(quizAnswers)
+    const [showQuizModal, setShowQuizModal] = useState(false)
     const [filterOpen, setFilterOpen] = useState(false)
     const [draftFilters, setDraftFilters] = useState(() => copyFilters(restoredFilters))
     const [appliedFilters, setAppliedFilters] = useState(() => copyFilters(restoredFilters))
@@ -408,7 +412,16 @@ function ProductsPageContent() {
     const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'score_desc')
     const [currentPage, setCurrentPage] = useState(() => restoredState?.currentPage || 1)
 
-    const currentSortLabel = sortOptions.find((s) => s.value === selectedSort)?.label
+    useEffect(() => {
+        if (quizAnswers !== null) return undefined
+        const timer = window.setTimeout(() => setShowQuizModal(true), 15000)
+        return () => window.clearTimeout(timer)
+    }, [quizAnswers])
+
+    const availableFilterTabs = hasQuizAnswers ? filterTabs : filterTabs.filter((tab) => tab.key !== 'score')
+    const availableSortOptions = hasQuizAnswers ? sortOptions : sortOptions.filter((option) => !option.value.startsWith('score_'))
+    const effectiveSort = hasQuizAnswers || !selectedSort.startsWith('score_') ? selectedSort : 'name_asc'
+    const currentSortLabel = availableSortOptions.find((s) => s.value === effectiveSort)?.label
     const appliedFilterCount = Object.values(appliedFilters)
         .reduce((total, values) => total + values.length, 0)
 
@@ -459,7 +472,7 @@ function ProductsPageContent() {
             if (appliedFilters.category.length
                 && !appliedFilters.category.some((category) => matchesCategory(product, category))) return false
             if (appliedFilters.type.length && !appliedFilters.type.includes(product.product_type)) return false
-            if (appliedFilters.score.length && !appliedFilters.score.includes(scoreRange(product.score))) return false
+            if (hasQuizAnswers && appliedFilters.score.length && !appliedFilters.score.includes(scoreRange(product.score))) return false
 
             const price = productPrice(product)
             if (appliedFilters.price.length && !appliedFilters.price.some((range) => (
@@ -471,13 +484,13 @@ function ProductsPageContent() {
         })
 
         return matches.sort((left, right) => {
-            if (selectedSort === 'score_asc') return left.score - right.score
-            if (selectedSort === 'price_asc') return productPrice(left) - productPrice(right)
-            if (selectedSort === 'price_desc') return productPrice(right) - productPrice(left)
-            if (selectedSort === 'name_asc') return left.product_name.localeCompare(right.product_name)
+            if (effectiveSort === 'score_asc') return left.score - right.score
+            if (effectiveSort === 'price_asc') return productPrice(left) - productPrice(right)
+            if (effectiveSort === 'price_desc') return productPrice(right) - productPrice(left)
+            if (effectiveSort === 'name_asc') return left.product_name.localeCompare(right.product_name)
             return right.score - left.score
         })
-    }, [appliedFilters, scoredProducts, search, selectedSort])
+    }, [appliedFilters, effectiveSort, hasQuizAnswers, scoredProducts, search])
 
     const totalProducts = filteredProducts.length
     const totalPages = Math.max(Math.ceil(totalProducts / PRODUCTS_PER_PAGE), 1)
@@ -560,6 +573,7 @@ function ProductsPageContent() {
     return (
         <div>
             <Header />
+            <RequireQuizModal open={showQuizModal} onClose={() => setShowQuizModal(false)} />
             <SortFilterBar
                 filterCount={appliedFilterCount}
                 onFilterClick={openFilters}
@@ -575,12 +589,14 @@ function ProductsPageContent() {
                 options={facetOptions}
                 optionsLoading={loading}
                 selected={draftFilters}
+                tabs={availableFilterTabs}
             />
             <SortPanel
                 open={sortOpen}
                 onClose={() => setSortOpen(false)}
                 onApply={applySort}
-                selectedSort={selectedSort}
+                selectedSort={effectiveSort}
+                options={availableSortOptions}
                 onSelectSort={(sort) => {
                     setSelectedSort(sort)
                     setCurrentPage(1)
@@ -624,7 +640,7 @@ function ProductsPageContent() {
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 mt-3 md:gap-6">
                     {products.map((product) => (
-                        <ProductCard key={product.product_uid} product={product} />
+                        <ProductCard key={product.product_uid} product={product} showScore={hasQuizAnswers} />
                     ))}
                 </div>
 

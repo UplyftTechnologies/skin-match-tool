@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -10,10 +10,11 @@ import { BiHeart } from 'react-icons/bi'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
-import { scoredProductPath } from '@/lib/site'
+import { productPath, scoredProductPath } from '@/lib/site'
 import { useScoredProducts } from '@/hooks/use-scored-products'
 import ScoreBadge from '@/components/score-badge'
 import VisualSearch from '@/components/visual-search'
+import RequireQuizModal from '@/components/RequireQuizModal'
 
 
 const SCORE_BANDS = [
@@ -104,13 +105,15 @@ function wishlistProduct(product) {
     }
 }
 
-function ProductCard({ product }) {
+function ProductCard({ product, showScore = true }) {
     const { isWishlisted, toggleWishlist } = useWishlist()
     const router = useRouter()
     const [imageFailed, setImageFailed] = useState(false)
     const savedProduct = wishlistProduct(product)
     const wishlisted = isWishlisted(savedProduct.product_uid)
-    const productHref = scoredProductPath(product.product_uid, product.score)
+    const productHref = showScore
+        ? scoredProductPath(product.product_uid, product.score)
+        : productPath(product.product_uid)
     const mrp = formatPrice(product.mrp)
 
     function handleSaveMatch(event) {
@@ -165,7 +168,7 @@ function ProductCard({ product }) {
             className="h-full bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
         >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/2] mb-3">
-                <ScoreBadge score={product.score} />
+                {showScore ? <ScoreBadge score={product.score} /> : null}
                 <button
                     type="button"
                     onClick={handleSaveMatch}
@@ -226,8 +229,15 @@ function ProductCard({ product }) {
 export default function Products() {
     const [activeView, setActiveView] = useState('products')
     const [search, setSearch] = useState('')
+    const [showQuizModal, setShowQuizModal] = useState(false)
     const { products, routine, loading, error, quizAnswers } = useScoredProducts()
     const router = useRouter()
+
+    useEffect(() => {
+        if (quizAnswers !== null) return undefined
+        const timer = window.setTimeout(() => setShowQuizModal(true), 15000)
+        return () => window.clearTimeout(timer)
+    }, [quizAnswers])
 
     const handleViewAll = () => {
         trackingService.trackEvent(EVENTS.CLICKED_VIEW_ALL_PRODUCTS, {
@@ -247,18 +257,15 @@ export default function Products() {
             )
             : products
 
+        if (!quizAnswers) return filtered.slice(0, PRODUCTS_PER_ROW * 2)
+
         const withScore = filtered.filter((product) => Number.isFinite(Number(product.score)))
-
         return pickByScoreBands(withScore)
-    }, [products, search])
-
-    // Nothing to show until the quiz has actually been completed.
-    if (!quizAnswers) {
-        return null
-    }
+    }, [products, quizAnswers, search])
 
     return (
         <div id="products" className="scroll-mt-20 bg-[#FAF9F6]">
+            <RequireQuizModal open={showQuizModal} onClose={() => setShowQuizModal(false)} />
             <div className="max-w-6xl lg:max-w-[80%] mx-auto px-3 py-6">
                 <div
                     role="tablist"
@@ -277,7 +284,7 @@ export default function Products() {
                
                 </div>
 
-                <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
+                {quizAnswers ? <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
                     <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">
                         Your selections
                     </p>
@@ -304,7 +311,7 @@ export default function Products() {
                             </span>
                         ))}
                     </div>
-                </div>
+                </div> : null}
 
                 {activeView === 'products' ? <div className="relative max-w-xl mx-auto mb-2 mt-3 lg:mt-4">
                     <FiSearch
@@ -331,7 +338,22 @@ export default function Products() {
                     <p className="py-8 text-center text-sm text-gray-500">No products found.</p>
                 ) : null}
 
-                {activeView === 'products' ? (
+                {activeView === 'products' && !quizAnswers ? (
+                    <section className="mt-4 lg:mt-6">
+                        <div className="mb-3 flex items-center gap-3">
+                            <span className="h-px flex-1 bg-[#ead8d3]" />
+                            <h3 className="shrink-0 font-cormorant text-[20px] font-semibold italic tracking-wide text-[#7b625b] md:text-2xl">
+                                Explore Products
+                            </h3>
+                            <span className="h-px flex-1 bg-[#ead8d3]" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-6">
+                            {visibleProducts.map((product) => (
+                                <ProductCard key={product.product_uid} product={product} showScore={false} />
+                            ))}
+                        </div>
+                    </section>
+                ) : activeView === 'products' ? (
                     <div className="mt-4 space-y-7 lg:mt-6">
                         {PRODUCT_SCORE_SECTIONS.map((section) => {
                             const sectionProducts = visibleProducts.filter((product) => {
@@ -429,7 +451,7 @@ export default function Products() {
                      capitalize text-[#ff7e67] border border-[#e08a7d] rounded-[10px] py-2
                       hover:bg-[#d17a6d] hover:text-white transition-colors duration-300"
                 >
-                    View all
+                    View all products
                 </button>
             </div>
         </div>

@@ -1,14 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { FreeMode } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/free-mode'
-import { useQuizAnswers } from '@/hooks/use-quiz-answers'
-import RequireQuizModal from '@/components/RequireQuizModal'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
 import { FiArrowRight } from 'react-icons/fi'
@@ -40,8 +37,6 @@ function brandHref(brand) {
 
 export default function SearchByBrands() {
   const router = useRouter()
-  const quizAnswers = useQuizAnswers()
-  const [showQuizModal, setShowQuizModal] = useState(false)
 
   const handleBrandClick = (brand) => {
     trackingService.trackEvent(EVENTS.CLICKED_SEARCH_K_BEAUTY_BRAND, {
@@ -50,10 +45,6 @@ export default function SearchByBrands() {
       section: 'search_k_beauty',
     })
 
-    if (!quizAnswers) {
-      setShowQuizModal(true)
-      return
-    }
     router.push(brandHref(brand.brand))
   }
 
@@ -66,7 +57,6 @@ export default function SearchByBrands() {
 
   return (
     <div className="bg-[#EBDFED] py-6 px-4 md:py-10">
-      <RequireQuizModal open={showQuizModal} onClose={() => setShowQuizModal(false)} />
       <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
         SEARCH K-BEAUTY
       </h2>
