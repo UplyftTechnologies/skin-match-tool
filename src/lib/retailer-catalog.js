@@ -5,6 +5,9 @@
 // Listing those as separate cards would make the grid look broken, so rows are
 // collapsed to one card per product and the cheapest offer is what we show.
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { detectRestrictedActives } from "@/lib/scoring/ingredient-safety";
+import { listingSize, variantBaseKey } from "@/lib/variant-sizes";
+import { isMultipack } from "@/lib/retailer-match";
 
 const CATALOG_FIELDS = [
   "id",
@@ -22,6 +25,7 @@ const CATALOG_FIELDS = [
   "product_url",
   "image_url",
   "gtin",
+  "ingredients",
 ].join(",");
 
 const PAGE_SIZE = 1000;
@@ -62,11 +66,33 @@ function normalizeKey(value) {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
-// A GTIN is the same physical product everywhere; without one, fall back to
-// brand plus a trimmed name, which is where near-duplicates can still slip
-// through — acceptable for a listing, and never used for pricing decisions.
+function normalizeGtin(value) {
+  return String(value || "").replace(/[^a-z0-9]/gi, "").toLowerCase();
+}
+
+// Temporary editorial gate: the public catalogue lists only products both
+// of these retailers stock, so every card can show a real price comparison.
+export const TARGET_RETAILERS = ["nykaa", "tira"];
+
+function isAvailableOnBothTargetRetailers(group) {
+  const gtins = group
+    .map((row) => normalizeGtin(row.gtin))
+    .filter(Boolean);
+  if (!gtins.length) return false;
+
+  const sites = new Set(
+    group
+      .filter((row) => normalizeGtin(row.gtin))
+      .map((row) => normalizeKey(row.site)),
+  );
+  return TARGET_RETAILERS.every((site) => sites.has(site));
+}
+
+// A GTIN is the same physical product everywhere; name fallback is retained
+// only for internal grouping because public catalogue entries require a GTIN.
 function dedupeKey(row) {
-  if (row.gtin) return `g:${row.gtin}`;
+  const gtin = normalizeGtin(row.gtin);
+  if (gtin) return `g:${gtin}`;
   return `n:${normalizeKey(row.brand)}|${normalizeKey(row.product_name).slice(0, 60)}`;
 }
 
@@ -106,8 +132,18 @@ function toCard(primary, group) {
     (left, right) => Number(right.rating_count || 0) - Number(left.rating_count || 0),
   )[0];
 
+  // Screened here, while the raw ingredient text is still in hand — the card
+  // does not carry it, and re-fetching 19k ingredient lists per request to
+  // re-derive this would be absurd. Only the rule ids survive.
+  const restricted = [
+    ...new Set(
+      group.flatMap((row) => detectRestrictedActives(row).map((rule) => rule.id)),
+    ),
+  ];
+
   return {
     product_uid: String(primary.id),
+    restricted,
     product_name: primary.product_name,
     brand_name: primary.brand,
     category: canonicalCategory(primary),
@@ -123,7 +159,71 @@ function toCard(primary, group) {
     offer_count: group.length,
     sites: [...new Set(group.map((row) => row.site))],
     lowest_price: prices.length ? Math.min(...prices) : null,
+    gtin: normalizeGtin(primary.gtin),
   };
+}
+
+
+
+// Removes a trailing size from a product name: "... Toning Lotion (100ml)"
+// becomes "... Toning Lotion". Only at the end, and only when something is
+// left over — a name that is nothing but a size stays as it was.
+function stripTrailingSize(name) {
+  const stripped = String(name || "")
+    .replace(/[\s\-–—]*[([]?\s*\d+(?:\.\d+)?\s*(?:fl\s*oz|ml|gms|gm|kg|oz|g|l)\s*[)\]]?\s*$/i, "")
+    .trim();
+  return stripped || String(name || "");
+}
+
+// One card per product line, not one per size.
+//
+// The detail page now offers the sizes as a selector, so listing the 100ml
+// and 200ml of the same toner as separate cards just repeats the product.
+// Multipacks stay separate: a 2-pack is a different purchase, not a size.
+//
+// The representative is the card with the widest retailer coverage first, so
+// collapsing can never hide a family behind a size that only one retailer
+// stocks; ratings and then price break the remaining ties.
+function collapseSizeVariants(cards) {
+  const families = new Map();
+
+  for (const card of cards) {
+    const key = isMultipack(card) ? null : variantBaseKey(card);
+    if (!key) {
+      families.set(`solo:${card.product_uid}`, [card]);
+      continue;
+    }
+    if (!families.has(key)) families.set(key, []);
+    families.get(key).push(card);
+  }
+
+  return [...families.values()].map((family) => {
+    if (family.length === 1) return family[0];
+
+    const ranked = [...family].sort(
+      (left, right) =>
+        right.sites.length - left.sites.length ||
+        (right.rating_count || 0) - (left.rating_count || 0) ||
+        (left.selling_price ?? Infinity) - (right.selling_price ?? Infinity),
+    );
+    const prices = family.map((item) => item.selling_price).filter((n) => Number.isFinite(n));
+
+    return {
+      ...ranked[0],
+      // The representative's name still names its own size — "(50ml)" beside
+      // a "2 sizes" label contradicts itself, so the trailing quantity is
+      // dropped once the card stands for a range.
+      product_name: stripTrailingSize(ranked[0].product_name),
+      // Rendered as "3 sizes · from ₹349" so the card says a range exists
+      // rather than presenting one size's price as the product's price.
+      size_count: family.length,
+      from_price: prices.length ? Math.min(...prices) : null,
+      sizes_available: family
+        .map((item) => listingSize(item))
+        .filter(Boolean)
+        .sort((a, b) => parseFloat(a) - parseFloat(b)),
+    };
+  });
 }
 
 async function fetchActiveRows() {
@@ -159,15 +259,30 @@ export async function loadRetailerCatalog() {
       groups.get(key).push(row);
     }
 
+    // The both-retailers rule is FLAGGED here, not applied. This catalogue is
+    // shared: the browse listing wants only products it can price-compare, but
+    // visual search must be able to find anything the shopper photographs.
+    // Filtering here removed 86% of products from search, so a photo of a
+    // Nykaa-only product returned the nearest surviving lookalike instead of
+    // nothing. Each consumer now applies the rule, or ignores it.
     const products = [];
     for (const group of groups.values()) {
       let primary = null;
       for (const row of group) if (isBetterOffer(row, primary)) primary = row;
-      if (primary) products.push(toCard(primary, group));
+      if (!primary) continue;
+      products.push({
+        ...toCard(primary, group),
+        on_target_retailers: isAvailableOnBothTargetRetailers(group),
+      });
     }
 
-    cache = { products, builtAt: Date.now() };
-    return products;
+    // Collapse once and serve the same array the cache holds. Returning the
+    // pre-collapse `products` here meant the first request after every cache
+    // expiry got duplicate size cards while every later one got the collapsed
+    // list.
+    const collapsed = collapseSizeVariants(products);
+    cache = { products: collapsed, builtAt: Date.now() };
+    return collapsed;
   } catch (error) {
     // A refresh failure should not blank the listing — keep serving the last
     // good catalogue and let the next request try again.

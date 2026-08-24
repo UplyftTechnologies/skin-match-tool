@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { loadRetailerCatalog } from "@/lib/retailer-catalog";
+import { loadRetailerCatalog, TARGET_RETAILERS } from "@/lib/retailer-catalog";
+import { attachScores } from "@/lib/scoring/catalog-scores";
 
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 20;
+
 
 const PRICE_BUCKETS = [
   { value: "under_500", label: "Under ₹500", test: (price) => price !== null && price < 500 },
@@ -48,6 +50,11 @@ function matchesSearch(product, query) {
 // count never reads as zero for something the shopper can actually still pick.
 function applyFilters(products, filters, { except } = {}) {
   return products.filter((product) => {
+    // The editorial both-retailers rule. Applied here rather than in the
+    // shared catalogue loader, so visual search can still find products this
+    // listing chooses not to show. Never exempted by `except`: it defines the
+    // listing rather than narrowing it, so facet counts sit inside it too.
+    if (!product.on_target_retailers) return false;
     if (!matchesSearch(product, filters.query)) return false;
     if (except !== "brand" && filters.brand.length && !filters.brand.includes(product.brand_name)) {
       return false;
@@ -87,6 +94,18 @@ function sortProducts(products, sort) {
   if (sort === "name_asc") {
     return copy.sort((left, right) => left.product_name.localeCompare(right.product_name));
   }
+  if (sort === "score_desc") {
+    return copy.sort((left, right) => {
+      const a = left.scoring;
+      const b = right.scoring;
+      // Unscored products sink below every scored one rather than being
+      // treated as a zero, which would rank them alongside hard blocks.
+      if (!a && !b) return weightedRating(right) - weightedRating(left);
+      if (!a) return 1;
+      if (!b) return -1;
+      return b.score - a.score || a.rank - b.rank;
+    });
+  }
   return copy.sort((left, right) => weightedRating(right) - weightedRating(left));
 }
 
@@ -116,6 +135,22 @@ export async function GET(request) {
     site: searchParams.getAll("site").filter(Boolean),
     price: searchParams.getAll("price").filter(Boolean),
   };
+  // The skin-match score is profile-dependent, so the quiz answers travel with
+  // the request. Absent them the catalogue is served unscored rather than
+  // scored against a default profile nobody chose.
+  const skinType = searchParams.get("skinType");
+  const profile = skinType
+    ? {
+        skinType,
+        sensitive: searchParams.get("sensitive") === "1",
+        age: searchParams.get("age") || "Adult",
+        concern: searchParams.get("concern") || "None",
+        specialConditions: searchParams.getAll("condition").filter(Boolean).length
+          ? searchParams.getAll("condition").filter(Boolean)
+          : ["None"],
+      }
+    : null;
+
   const sort = searchParams.get("sort") || "rating";
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
 
@@ -128,7 +163,10 @@ export async function GET(request) {
   }
 
   const matching = applyFilters(catalog, filters);
-  const sorted = sortProducts(matching, sort);
+  // Scores must be attached BEFORE sorting when sorting by score, since a
+  // product's score is not a property of the catalogue row.
+  const scored = sort === "score_desc" ? attachScores(matching, profile) : matching;
+  const sorted = sortProducts(scored, sort);
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
 
@@ -138,9 +176,11 @@ export async function GET(request) {
   const forPrice = applyFilters(catalog, filters, { except: "price" });
 
   return NextResponse.json({
-    products: sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    products: attachScores(sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE), profile),
+    scored: Boolean(profile),
     total: sorted.length,
     catalogTotal: catalog.length,
+    requiredSites: TARGET_RETAILERS,
     page: safePage,
     totalPages,
     pageSize: PAGE_SIZE,

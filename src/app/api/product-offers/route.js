@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { findProduct } from "@/lib/data";
-import { bestOfferPerSite, canonicalName, normalize } from "@/lib/retailer-match";
+import { loadRetailerCatalog } from "@/lib/retailer-catalog";
+import { canonicalName, normalize } from "@/lib/retailer-match";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,26 @@ function priceOf(offer) {
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 
+function normalizedGtin(value) {
+  return String(value || "").replace(/[^a-z0-9]/gi, "").toLowerCase();
+}
+
+function nameTokens(value) {
+  return new Set(normalize(value).split(" ").filter((token) => token.length > 2));
+}
+
+function catalogMatch(product, catalog) {
+  const wanted = nameTokens(product.product_name);
+  return catalog
+    .filter((item) => normalize(item.brand_name) === normalize(product.brand_name) && item.gtin)
+    .map((item) => {
+      const candidate = nameTokens(item.product_name);
+      const shared = [...wanted].filter((token) => candidate.has(token)).length;
+      return { item, shared };
+    })
+    .sort((left, right) => right.shared - left.shared)[0]?.item || null;
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const uid = searchParams.get("uid");
@@ -60,10 +81,14 @@ export async function GET(request) {
     return NextResponse.json({ error: "Product not found." }, { status: 404 });
   }
 
-  const term = brandSearchTerm(product.brand_name);
-  if (!term) {
+  const catalog = await loadRetailerCatalog();
+  const matchedCatalogProduct = catalogMatch(product, catalog);
+  const targetGtin = normalizedGtin(matchedCatalogProduct?.gtin);
+  if (!targetGtin) {
     return NextResponse.json({ offers: [], matched: false });
   }
+
+  const term = brandSearchTerm(product.brand_name);
 
   const { data, error } = await supabaseAdmin
     .from("retailer_products")
@@ -80,9 +105,9 @@ export async function GET(request) {
     );
   }
 
-  // Anything the matcher is not confident about is dropped entirely — a price
-  // pointing at the wrong strength or size is worse than no price at all.
-  const offers = bestOfferPerSite(product, data || [])
+  const offersBySite = new Map();
+  for (const offer of (data || [])
+    .filter((offer) => normalizedGtin(offer.gtin) === targetGtin)
     .map((offer) => ({
       ...offer,
       price: priceOf(offer),
@@ -90,8 +115,11 @@ export async function GET(request) {
       product_name: canonicalName(offer.product_name),
       full_product_name: offer.product_name,
     }))
-    .filter((offer) => offer.price !== null)
-    .sort((left, right) => left.price - right.price);
+    .filter((offer) => offer.price !== null)) {
+    const current = offersBySite.get(offer.site);
+    if (!current || offer.price < current.price) offersBySite.set(offer.site, offer);
+  }
+  const offers = [...offersBySite.values()].sort((left, right) => left.price - right.price);
 
   return NextResponse.json({
     offers,

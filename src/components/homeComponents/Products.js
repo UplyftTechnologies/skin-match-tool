@@ -10,8 +10,8 @@ import { BiHeart } from 'react-icons/bi'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
-import { scoredProductPath } from '@/lib/site'
-import { useScoredProducts } from '@/hooks/use-scored-products'
+import { useRetailerCatalog } from '@/hooks/use-retailer-catalog'
+import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import ScoreBadge from '@/components/score-badge'
 import VisualSearch from '@/components/visual-search'
 
@@ -110,7 +110,7 @@ function ProductCard({ product }) {
     const [imageFailed, setImageFailed] = useState(false)
     const savedProduct = wishlistProduct(product)
     const wishlisted = isWishlisted(savedProduct.product_uid)
-    const productHref = scoredProductPath(product.product_uid, product.score)
+    const productHref = `/retailer-products/${encodeURIComponent(product.product_uid)}`
     const mrp = formatPrice(product.mrp)
 
     function handleSaveMatch(event) {
@@ -226,7 +226,30 @@ function ProductCard({ product }) {
 export default function Products() {
     const [activeView, setActiveView] = useState('products')
     const [search, setSearch] = useState('')
-    const { products, routine, loading, error, quizAnswers } = useScoredProducts()
+    const quizAnswers = useQuizAnswers()
+    const profile = quizAnswers
+        ? {
+            selectedSkinType: quizAnswers.skinType,
+            selectedSensitive: quizAnswers.sensitive,
+            age: quizAnswers.age,
+            selectedGender: quizAnswers.gender,
+            selectedFaceBodyConcerns: quizAnswers.concerns || [],
+            selectedLipsEyesConcerns: quizAnswers.lipsEyesConcerns || [],
+            selectedSpecialConditions: quizAnswers.conditions || quizAnswers.specialConditions || [],
+        }
+        : null
+    const { products: catalogProducts, loading, error } = useRetailerCatalog({
+        search: '',
+        filters: { brand: [], category: [], site: [], price: [] },
+        sort: 'score_desc',
+        page: 1,
+        profile,
+    })
+    const products = catalogProducts.map((product) => ({
+        ...product,
+        score: product.scoring?.score,
+        size: product.sku_size,
+    }))
     const router = useRouter()
 
     const handleViewAll = () => {

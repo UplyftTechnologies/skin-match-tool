@@ -12,34 +12,45 @@ import Header from '@/components/header'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
-import { scoredProductPath } from '@/lib/site'
-import { useScoredProducts } from '@/hooks/use-scored-products'
-import ScoreBadge from '@/components/score-badge'
+import { useRetailerCatalog } from '@/hooks/use-retailer-catalog'
+import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
+import { useQuizAnswers } from '@/hooks/use-quiz-answers'
+import { getSavedSkinProfile } from '@/lib/profile-storage'
 import VisualSearch from '@/components/visual-search'
 
 const filterTabs = [
     { key: 'brand', label: 'Brand' },
     { key: 'price', label: 'Price' },
     { key: 'category', label: 'Category' },
-    { key: 'score', label: 'Match Score' },
-    { key: 'type', label: 'Product Type' },
+    { key: 'site', label: 'Retailer' },
 ]
 
 const emptyFilters = {
     brand: [],
     price: [],
     category: [],
-    score: [],
-    type: [],
+    site: [],
 }
 
+// Match score is only available once the quiz has been taken; the rest rank on
+// what the retailers publish, so the listing still sorts sensibly without it.
 const sortOptions = [
-    { label: 'Score high to low', value: 'score_desc' },
+    { label: 'Match score', value: 'score_desc' },
+    { label: 'Best rated', value: 'rating' },
     { label: 'Price: Low to High', value: 'price_asc' },
     { label: 'Price: High to Low', value: 'price_desc' },
-    { label: 'Score low to high', value: 'score_asc' },
+    { label: 'Biggest discount', value: 'discount' },
     { label: 'Name: A to Z', value: 'name_asc' },
 ]
+
+const SITE_LABELS = {
+    nykaa: 'Nykaa',
+    tira: 'Tira',
+    amazon: 'Amazon',
+    purplle: 'Purplle',
+    broadway: 'Broadway',
+    kindlife: 'Kindlife',
+}
 
 const PRODUCTS_PER_PAGE = 20
 
@@ -51,41 +62,13 @@ function copyFilters(filters) {
     )
 }
 
-function productPrice(product) {
-    return Number(product.selling_price || product.mrp || 0)
-}
-
-function countOptions(values) {
-    const counts = new Map()
-    values.filter(Boolean).forEach((value) => counts.set(value, (counts.get(value) || 0) + 1))
-    return [...counts.entries()]
-        .sort(([left], [right]) => left.localeCompare(right))
-        .map(([value, count]) => ({ value, label: value, count }))
-}
-
-function scoreRange(score) {
-    if (score >= 90) return '90_100'
-    if (score >= 80) return '80_89'
-    if (score >= 70) return '70_79'
-    if (score >= 50) return '50_69'
-    return 'under_50'
-}
-
-function matchesCategory(product, category) {
-    const wanted = category.toLowerCase()
-    const text = `${product.product_name} ${product.product_type}`.toLowerCase()
-    if (wanted === 'lips' || wanted === 'lip') return text.includes('lip')
-    if (wanted === 'eyes' || wanted === 'eye') return /\beye|eyelash|eyebrow/.test(text)
-    return product.category?.toLowerCase() === wanted
-}
-
 function ProductCard({ product }) {
     const router = useRouter()
     const { isWishlisted, toggleWishlist } = useWishlist()
     const [imageFailed, setImageFailed] = useState(false)
     const savedProduct = product
     const wishlisted = isWishlisted(savedProduct.product_uid)
-    const productHref = scoredProductPath(product.product_uid, product.score)
+    const productHref = `/retailer-products/${encodeURIComponent(product.product_uid)}`
 
     function handleSaveMatch(event) {
         event.stopPropagation()
@@ -110,7 +93,7 @@ function ProductCard({ product }) {
             productName: savedProduct.product_name,
             brand: savedProduct.brand_name,
             price: savedProduct.selling_price || savedProduct.mrp,
-            score: product.score,
+            retailer: product.site,
             section: 'all_products',
         })
     }
@@ -139,7 +122,32 @@ function ProductCard({ product }) {
             className="h-full bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
         >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/3] mb-3">
-                <ScoreBadge score={product.score} />
+                {product.scoring ? (
+                    <span
+                        className={`absolute right-2 top-2 z-10 flex h-11 w-11 flex-col items-center justify-center rounded-full text-white shadow ${
+                            product.scoring.blocked
+                                ? 'bg-slate-500'
+                                : product.scoring.score >= 80
+                                  ? 'bg-emerald-600'
+                                  : product.scoring.score >= 50
+                                    ? 'bg-amber-500'
+                                    : 'bg-rose-500'
+                        }`}
+                        title={product.scoring.blockReason || product.scoring.label}
+                    >
+                        <span className="text-[13px] font-bold leading-none">
+                            {product.scoring.blocked ? '—' : product.scoring.score}
+                        </span>
+                        <span className="mt-0.5 text-[7px] font-semibold uppercase leading-none">
+                            {product.scoring.blocked ? 'blocked' : 'match'}
+                        </span>
+                    </span>
+                ) : null}
+                {product.in_stock === false ? (
+                    <span className={`absolute z-10 rounded-full bg-slate-800/80 px-2 py-0.5 text-[10px] font-semibold text-white ${product.scoring ? 'right-2 top-14' : 'right-2 top-2'}`}>
+                        Out of stock
+                    </span>
+                ) : null}
                 <button
                     type="button"
                     onClick={handleSaveMatch}
@@ -176,10 +184,43 @@ function ProductCard({ product }) {
             >
                 {product.product_name}
             </Link>
-            <div className="mb-3 flex min-h-5 items-center gap-2">
-             
+            {product.scoring?.blocked && product.scoring.blockReason ? (
+                <p className="mb-1 text-[10.5px] leading-snug text-rose-700">
+                    {product.scoring.blockReason}
+                </p>
+            ) : null}
+            <div className="mb-1 flex min-h-5 items-center gap-2">
                 <span className="truncate text-sm font-semibold text-gray-900">
                     {product.selling_price || product.mrp ? `₹${Math.ceil(product.selling_price || product.mrp)}` : 'Price unavailable'}
+                </span>
+                {product.mrp && product.selling_price && product.mrp > product.selling_price ? (
+                    <>
+                        <span className="text-xs text-gray-400 line-through">₹{Math.ceil(product.mrp)}</span>
+                        <span className="text-xs font-semibold text-green-700">
+                            {Math.round(((product.mrp - product.selling_price) / product.mrp) * 100)}% off
+                        </span>
+                    </>
+                ) : null}
+            </div>
+            {product.size_count > 1 ? (
+              <p className="mb-1 text-[11px] text-slate-500">
+                {product.size_count} sizes
+                {product.from_price
+                  ? ` · from ₹${Math.ceil(product.from_price).toLocaleString("en-IN")}`
+                  : ""}
+              </p>
+            ) : null}
+            <div className="mb-3 flex min-h-4 items-center gap-2 text-[11px] text-gray-400">
+                {product.rating ? (
+                    <span className="text-amber-500">
+                        ★ {Number(product.rating).toFixed(1)}
+                        {product.rating_count ? ` (${product.rating_count.toLocaleString('en-IN')})` : ''}
+                    </span>
+                ) : null}
+                <span className="truncate">
+                    {product.sites?.length > 1
+                        ? `${product.sites.length} retailers`
+                        : SITE_LABELS[product.site] || product.site}
                 </span>
             </div>
             <button
@@ -306,7 +347,7 @@ function FilterPanel({
     )
 }
 
-function SortPanel({ open, onClose, onApply, selectedSort, onSelectSort }) {
+function SortPanel({ open, onClose, onApply, selectedSort, onSelectSort, options }) {
     if (!open) return null
 
     return (
@@ -320,7 +361,7 @@ function SortPanel({ open, onClose, onApply, selectedSort, onSelectSort }) {
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-5 py-2">
-                    {sortOptions.map((opt) => (
+                    {options.map((opt) => (
                         <label
                             key={opt.value}
                             className="flex items-center justify-between py-3 border-b border-gray-50 cursor-pointer"
@@ -383,16 +424,12 @@ function ProductsPageContent() {
     const initialCategories = searchParams.getAll('category')
         .map((category) => category.trim())
         .filter(Boolean)
-    const initialTypes = searchParams.getAll('type')
-        .map((type) => type.trim())
-        .filter(Boolean)
     const initialBrands = searchParams.getAll('brand')
         .map((brand) => brand.trim())
         .filter(Boolean)
     const initialFilters = {
         ...emptyFilters,
         category: [...new Set(initialCategories)],
-        type: [...new Set(initialTypes)],
         brand: [...new Set(initialBrands)],
     }
     const restoredState = rememberedProductListState?.routeStateKey === routeStateKey
@@ -400,14 +437,42 @@ function ProductsPageContent() {
         : null
     const restoredFilters = restoredState?.appliedFilters || initialFilters
     const [search, setSearch] = useState(() => restoredState?.search || '')
-    const { products: scoredProducts, loading, error } = useScoredProducts()
     const [filterOpen, setFilterOpen] = useState(false)
     const [draftFilters, setDraftFilters] = useState(() => copyFilters(restoredFilters))
     const [appliedFilters, setAppliedFilters] = useState(() => copyFilters(restoredFilters))
     const [sortOpen, setSortOpen] = useState(false)
-    const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'score_desc')
+    const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'rating')
     const [currentPage, setCurrentPage] = useState(() => restoredState?.currentPage || 1)
 
+    // Live quiz answers, so retaking the quiz rescores this page immediately.
+    const quizAnswers = useQuizAnswers()
+
+    // ...but those live in sessionStorage, which is per-tab: opening this page
+    // in a new tab loses them even though the shopper has taken the quiz. The
+    // durable copy in localStorage is the fallback, so scores survive a new tab
+    // rather than silently disappearing.
+    const [savedProfile, setSavedProfile] = useState(null)
+    useEffect(() => {
+        // Deferred rather than read synchronously: localStorage does not exist
+        // during the server render, and setting state in the effect body makes
+        // the first paint cascade. Same shape as useQuizAnswers.
+        const timer = setTimeout(() => {
+            setSavedProfile(getSavedSkinProfile()?.profile || null)
+        }, 0)
+        return () => clearTimeout(timer)
+    }, [quizAnswers])
+
+    const scoringProfile = useMemo(() => {
+        if (quizAnswers) return quizAnswersToScoringProfile(quizAnswers)
+        // Already in scoring-profile shape — quizAnswersToResultProfile is a
+        // superset of quizAnswersToScoringProfile.
+        return savedProfile?.selectedSkinType ? savedProfile : null
+    }, [quizAnswers, savedProfile])
+
+    // Offering "Match score" with no profile gives a sort that changes nothing.
+    const availableSortOptions = scoringProfile
+        ? sortOptions
+        : sortOptions.filter((option) => option.value !== 'score_desc')
     const currentSortLabel = sortOptions.find((s) => s.value === selectedSort)?.label
     const appliedFilterCount = Object.values(appliedFilters)
         .reduce((total, values) => total + values.length, 0)
@@ -418,73 +483,41 @@ function ProductsPageContent() {
     useEffect(() => {
         trackingService.trackPageLoad(EVENTS.PAGE_VIEWED_ALL_PRODUCTS, {
             page_type: 'all_products',
-            type: initialTypes,
             category: initialCategories,
             brand: initialBrands,
-            filters_applied_from_url: Boolean(initialTypes.length || initialCategories.length || initialBrands.length),
+            filters_applied_from_url: Boolean(initialCategories.length || initialBrands.length),
         })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [routeStateKey])
 
-    // Supabase retailer-product loading is intentionally paused. The new design
-    // currently uses the same scored CSV catalog as Match Studio.
+    // Filtering, sorting, paging and facet counts all run on the server — the
+    // retailer catalogue is ~13k products, far too much to ship to the browser
+    // the way the 409-product scored catalogue was.
+    const {
+        products,
+        facets,
+        total: totalProducts,
+        catalogTotal,
+        totalPages,
+        loading,
+        error,
+    } = useRetailerCatalog({
+        search,
+        filters: appliedFilters,
+        sort: selectedSort,
+        page: currentPage,
+        profile: scoringProfile,
+    })
+
     const facetOptions = useMemo(() => ({
-        brand: countOptions(scoredProducts.map((product) => product.brand_name)),
-        price: [
-            { value: 'under_500', label: 'Under ₹500', count: scoredProducts.filter((product) => productPrice(product) < 500).length },
-            { value: '500_1000', label: '₹500–₹1,000', count: scoredProducts.filter((product) => productPrice(product) >= 500 && productPrice(product) <= 1000).length },
-            { value: 'over_1000', label: 'Over ₹1,000', count: scoredProducts.filter((product) => productPrice(product) > 1000).length },
-        ],
-        category: countOptions(scoredProducts.map((product) => product.category)),
-        score: [
-            { value: '90_100', label: 'Excellent (90–100)', count: scoredProducts.filter((product) => scoreRange(product.score) === '90_100').length },
-            { value: '80_89', label: 'Great (80–89)', count: scoredProducts.filter((product) => scoreRange(product.score) === '80_89').length },
-            { value: '70_79', label: 'Good (70–79)', count: scoredProducts.filter((product) => scoreRange(product.score) === '70_79').length },
-            { value: '50_69', label: 'Caution (50–69)', count: scoredProducts.filter((product) => scoreRange(product.score) === '50_69').length },
-            { value: 'under_50', label: 'Not recommended', count: scoredProducts.filter((product) => scoreRange(product.score) === 'under_50').length },
-        ],
-        type: countOptions(scoredProducts.map((product) => product.product_type)),
-    }), [scoredProducts])
-
-    const filteredProducts = useMemo(() => {
-        const query = search.trim().toLowerCase()
-        const matches = scoredProducts.filter((product) => {
-            if (query && ![
-                product.product_name,
-                product.brand_name,
-                product.category,
-                product.product_type,
-            ].some((value) => value?.toLowerCase().includes(query))) return false
-            if (appliedFilters.brand.length && !appliedFilters.brand.includes(product.brand_name)) return false
-            if (appliedFilters.category.length
-                && !appliedFilters.category.some((category) => matchesCategory(product, category))) return false
-            if (appliedFilters.type.length && !appliedFilters.type.includes(product.product_type)) return false
-            if (appliedFilters.score.length && !appliedFilters.score.includes(scoreRange(product.score))) return false
-
-            const price = productPrice(product)
-            if (appliedFilters.price.length && !appliedFilters.price.some((range) => (
-                (range === 'under_500' && price < 500)
-                || (range === '500_1000' && price >= 500 && price <= 1000)
-                || (range === 'over_1000' && price > 1000)
-            ))) return false
-            return true
-        })
-
-        return matches.sort((left, right) => {
-            if (selectedSort === 'score_asc') return left.score - right.score
-            if (selectedSort === 'price_asc') return productPrice(left) - productPrice(right)
-            if (selectedSort === 'price_desc') return productPrice(right) - productPrice(left)
-            if (selectedSort === 'name_asc') return left.product_name.localeCompare(right.product_name)
-            return right.score - left.score
-        })
-    }, [appliedFilters, scoredProducts, search, selectedSort])
-
-    const totalProducts = filteredProducts.length
-    const totalPages = Math.max(Math.ceil(totalProducts / PRODUCTS_PER_PAGE), 1)
-    const products = filteredProducts.slice(
-        (currentPage - 1) * PRODUCTS_PER_PAGE,
-        currentPage * PRODUCTS_PER_PAGE,
-    )
+        brand: facets.brand,
+        price: facets.price,
+        category: facets.category,
+        site: facets.site.map((option) => ({
+            ...option,
+            label: SITE_LABELS[option.value] || option.value,
+        })),
+    }), [facets])
 
     useEffect(() => {
         rememberedProductListState = {
@@ -532,6 +565,9 @@ function ProductsPageContent() {
             section: 'all_products',
         })
 
+        // Page 300 of a price-sorted list is a different place from page 300 of
+        // a rating-sorted one, so a re-sort always returns to the start.
+        setCurrentPage(1)
         setSortOpen(false)
     }
 
@@ -581,6 +617,7 @@ function ProductsPageContent() {
                 onClose={() => setSortOpen(false)}
                 onApply={applySort}
                 selectedSort={selectedSort}
+                options={availableSortOptions}
                 onSelectSort={(sort) => {
                     setSelectedSort(sort)
                     setCurrentPage(1)
@@ -627,6 +664,12 @@ function ProductsPageContent() {
                         <ProductCard key={product.product_uid} product={product} />
                     ))}
                 </div>
+
+                {!loading && !error && !scoringProfile ? (
+                    <div className="mx-auto mb-3 max-w-xl rounded-xl bg-[#fdf7f5] px-4 py-3 text-center text-[12.5px] leading-relaxed text-[#8a5c52]">
+                        Take the skin quiz to see how well each product matches your skin.
+                    </div>
+                ) : null}
 
                 {!loading && !error && totalProducts > 0 ? (
                     <nav className="mt-8 flex flex-col items-center gap-3" aria-label="Product pages">

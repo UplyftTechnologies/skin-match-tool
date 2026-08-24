@@ -5,6 +5,7 @@ import { FiArrowLeft, FiChevronDown, FiExternalLink } from "react-icons/fi";
 import Header from "@/components/header";
 import RetailerProductGallery from "@/components/retailer-product-gallery";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { buildSizeOptions, isSizeSibling } from "@/lib/variant-sizes";
 
 export const dynamic = "force-dynamic";
 
@@ -198,22 +199,68 @@ function isSameProduct(current, candidate) {
   return strictNameMatch || ingredientBackedMatch || metadataBackedMatch;
 }
 
-async function findComparableProducts(product) {
-  if (!product.brand) return [product];
+const COMPARISON_FIELDS =
+  "id,site,gtin,product_name,variant,mrp,selling_price,discount_pct,in_stock,product_url,image_url,categories,ingredients";
+
+/**
+ * Listings sharing this product's GTIN.
+ *
+ * A GTIN is the same physical product wherever it is stocked, so this is
+ * stronger evidence than any name comparison — and it is the only thing that
+ * finds retailers who rename the product wholesale. Nykaa lists barcode
+ * 4006000181332 as "NIVEA Luminous Even Glow Brightening Face Serum with
+ * Niacinamide, Thiamidol 60X Vitamin C, Aloevera" while Tira calls the same
+ * item "Nivea Luminous Even Glow Instant Glow Serum (30 ml)": no name rule
+ * will ever pair those, so the card promised "2 retailers" and this panel
+ * then found nothing.
+ */
+async function findByGtin(product) {
+  if (!product.gtin) return [];
 
   const { data, error } = await supabaseAdmin
     .from("retailer_products")
-    .select("id,site,product_name,variant,mrp,selling_price,discount_pct,in_stock,product_url,image_url,categories,ingredients")
+    .select(COMPARISON_FIELDS)
+    .eq("gtin", product.gtin)
+    .eq("is_active", true)
+    .neq("id", product.id)
+    .limit(50);
+
+  if (error) {
+    console.error("GTIN comparison lookup failed:", error.message);
+    return [];
+  }
+  return data || [];
+}
+
+async function findComparableProducts(product) {
+  const byGtin = await findByGtin(product);
+  if (!product.brand) return dedupeByRetailer([product, ...byGtin]);
+
+  const { data, error } = await supabaseAdmin
+    .from("retailer_products")
+    .select(COMPARISON_FIELDS)
     .ilike("brand", product.brand)
     .neq("site", product.site)
     .limit(1000);
 
   if (error) {
     console.error("Failed to find comparable retailer products:", error.message);
-    return [product];
+    return dedupeByRetailer([product, ...byGtin]);
   }
 
-  const matches = [product, ...(data || []).filter((candidate) => isSameProduct(product, candidate))];
+  const seen = new Set(byGtin.map((row) => row.id));
+  const matches = [
+    product,
+    ...byGtin,
+    ...(data || []).filter(
+      (candidate) => !seen.has(candidate.id) && isSameProduct(product, candidate),
+    ),
+  ];
+  return dedupeByRetailer(matches);
+}
+
+/** Cheapest listing per retailer, cheapest retailer first. */
+function dedupeByRetailer(matches) {
   const bestByRetailer = new Map();
 
   matches.forEach((item) => {
@@ -280,11 +327,40 @@ export async function generateMetadata({ params }) {
   };
 }
 
+/**
+ * The other sizes this retailer sells of the same product.
+ *
+ * Queried by brand rather than by parent_product_id alone, because that column
+ * is applied inconsistently — see the note in src/lib/variant-sizes.js. The
+ * brand narrows it in SQL; isSizeSibling does the precise work in memory.
+ */
+async function findSizeSiblings(product) {
+  if (!product.brand) return [];
+
+  const { data, error } = await supabaseAdmin
+    .from("retailer_products")
+    .select("id,site,brand,product_name,variant,parent_product_id,selling_price,mrp,in_stock")
+    .ilike("brand", product.brand)
+    .eq("site", product.site)
+    .eq("is_active", true)
+    .limit(500);
+
+  if (error) {
+    console.error("Size variant lookup failed:", error.message);
+    return [];
+  }
+  return (data || []).filter((candidate) => isSizeSibling(product, candidate));
+}
+
 export default async function RetailerProductPage({ params }) {
   const { id } = await params;
   const product = await getProduct(id);
   if (!product) notFound();
-  const comparableProducts = await findComparableProducts(product);
+  const [comparableProducts, sizeSiblings] = await Promise.all([
+    findComparableProducts(product),
+    findSizeSiblings(product),
+  ]);
+  const sizeOptions = buildSizeOptions(product, sizeSiblings);
 
   const sellingPrice = formatPrice(product.selling_price);
   const mrp = formatPrice(product.mrp);
@@ -340,6 +416,39 @@ export default async function RetailerProductPage({ params }) {
             </h1>
             {product.variant ? (
               <p className="mt-2 text-sm text-slate-500">{product.variant}</p>
+            ) : null}
+
+
+            {sizeOptions.length ? (
+              <div className="mt-4">
+                <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                  Size
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {sizeOptions.map((option) => (
+                    <Link
+                      key={option.id}
+                      href={`/retailer-products/${option.id}`}
+                      aria-current={option.current ? "page" : undefined}
+                      className={`rounded-xl border px-3 py-2 text-center transition-colors ${
+                        option.current
+                          ? "border-[#e08a7d] bg-[#fdf7f5] text-[#b8503f]"
+                          : "border-slate-200 text-slate-700 hover:border-[#e08a7d]"
+                      }`}
+                    >
+                      <span className="block text-[13px] font-semibold">{option.size}</span>
+                      {option.price ? (
+                        <span className="mt-0.5 block text-[11px] text-slate-500">
+                          ₹{Math.ceil(option.price).toLocaleString("en-IN")}
+                        </span>
+                      ) : null}
+                      {option.inStock ? null : (
+                        <span className="mt-0.5 block text-[10px] text-slate-400">Out of stock</span>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             ) : null}
 
             {product.rating ? (

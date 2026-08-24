@@ -57,7 +57,7 @@ const OCR_EDGE_LARGE = 2600
 // `threshold` additionally forces every pixel to pure black or white, which
 // reads cleanly on flat printed panels and badly on gradients, hence a pass of
 // its own rather than a change to the default.
-function renderForOcr(dataUrl, { edge = OCR_EDGE, threshold = null } = {}) {
+function renderForOcr(dataUrl, { edge = OCR_EDGE, threshold = null, preserveColor = false } = {}) {
     return new Promise((resolve) => {
         const img = new window.Image()
         img.onerror = () => resolve(dataUrl)
@@ -68,6 +68,11 @@ function renderForOcr(dataUrl, { edge = OCR_EDGE, threshold = null } = {}) {
             canvas.height = Math.round(img.height * scale)
             const context = canvas.getContext('2d')
             context.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+            if (preserveColor && threshold === null) {
+                resolve(canvas.toDataURL('image/png'))
+                return
+            }
 
             const frame = context.getImageData(0, 0, canvas.width, canvas.height)
             const pixels = frame.data
@@ -100,10 +105,11 @@ function renderForOcr(dataUrl, { edge = OCR_EDGE, threshold = null } = {}) {
 // 21%. They run in order of how often they pay off, so the common case still
 // finishes after pass one.
 const OCR_PASSES = [
-    { label: 'base', render: {}, sparse: false },
-    { label: 'sparse', render: {}, sparse: true },
-    { label: 'high-contrast', render: { threshold: 150 }, sparse: false },
-    { label: 'magnified', render: { edge: OCR_EDGE_LARGE }, sparse: false },
+    { label: 'color', render: { preserveColor: true }, psm: 'AUTO' },
+    { label: 'block', render: {}, psm: 'SINGLE_BLOCK' },
+    { label: 'sparse', render: {}, psm: 'SPARSE_TEXT' },
+    { label: 'high-contrast', render: { threshold: 150 }, psm: 'AUTO' },
+    { label: 'magnified', render: { edge: OCR_EDGE_LARGE }, psm: 'SINGLE_BLOCK' },
 ]
 
 // Tesseract ships a few MB of wasm and language data, so it is imported only
@@ -118,16 +124,17 @@ async function createOcrReader(onProgress) {
             if (message.status === 'recognizing text') onProgress(message.progress)
         },
     })
-    let sparse = false
+    let pageMode = null
 
     return {
         async read(dataUrl, pass) {
             const image = await renderForOcr(dataUrl, pass.render)
-            if (pass.sparse !== sparse) {
+            const nextPageMode = PSM[pass.psm]
+            if (nextPageMode !== pageMode) {
                 await worker.setParameters({
-                    tessedit_pageseg_mode: pass.sparse ? PSM.SPARSE_TEXT : PSM.AUTO,
+                    tessedit_pageseg_mode: nextPageMode,
                 })
-                sparse = pass.sparse
+                pageMode = nextPageMode
             }
             const { data } = await worker.recognize(image)
             return data.text || ''
@@ -402,6 +409,10 @@ export default function VisualSearch({ onQuery }) {
                                                 {result.extracted.product_name}
                                             </p>
                                         </>
+                                    ) : result?.extracted?.scanned_text ? (
+                                        <p className="line-clamp-2 text-slate-500" title={result.extracted.scanned_text}>
+                                            Read text: {result.extracted.scanned_text}
+                                        </p>
                                     ) : (
                                         <span className="text-slate-500">Nothing readable on that pack.</span>
                                     )}

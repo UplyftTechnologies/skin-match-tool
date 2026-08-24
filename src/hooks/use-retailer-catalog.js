@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-function buildQuery({ search, filters, sort, page }) {
+function buildQuery({ search, filters, sort, page, profile }) {
     const params = new URLSearchParams()
     if (search.trim()) params.set('search', search.trim())
     for (const key of ['brand', 'category', 'site', 'price']) {
@@ -10,19 +10,38 @@ function buildQuery({ search, filters, sort, page }) {
     }
     if (sort) params.set('sort', sort)
     params.set('page', String(page))
+
+    // The skin-match score depends entirely on the quiz answers, so they travel
+    // with the request. Without a skinType the server returns the catalogue
+    // unscored rather than scoring it against a profile nobody chose.
+    if (profile?.selectedSkinType) {
+        params.set('skinType', profile.selectedSkinType)
+        params.set('sensitive', profile.selectedSensitive ? '1' : '0')
+        params.set('age', profile.age || 'Adult')
+        // The engine scores one concern at a time; the quiz collects a list.
+        const concern = [
+            ...(profile.selectedFaceBodyConcerns || []),
+            ...(profile.selectedLipsEyesConcerns || []),
+        ].find((item) => item && item !== 'None')
+        params.set('concern', concern || 'None')
+        for (const condition of profile.selectedSpecialConditions || []) {
+            if (condition) params.append('condition', condition)
+        }
+    }
     return params.toString()
 }
 
 // The catalogue is ~13k products, far too much to hand the browser and filter
 // client-side the way the scored catalogue did. Filtering, sorting, paging and
 // facet counts all happen on the server; this only ever holds one page.
-export function useRetailerCatalog({ search, filters, sort, page }) {
+export function useRetailerCatalog({ search, filters, sort, page, profile }) {
     const [state, setState] = useState({
         products: [],
         facets: { brand: [], category: [], site: [], price: [] },
         total: 0,
         catalogTotal: 0,
         totalPages: 1,
+        scored: false,
     })
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
@@ -30,7 +49,7 @@ export function useRetailerCatalog({ search, filters, sort, page }) {
     // does not collapse to empty on every keystroke.
     const loaded = useRef(false)
 
-    const query = buildQuery({ search, filters, sort, page })
+    const query = buildQuery({ search, filters, sort, page, profile })
 
     useEffect(() => {
         const controller = new AbortController()
@@ -49,6 +68,7 @@ export function useRetailerCatalog({ search, filters, sort, page }) {
                     total: payload.total || 0,
                     catalogTotal: payload.catalogTotal || 0,
                     totalPages: payload.totalPages || 1,
+                    scored: Boolean(payload.scored),
                 })
                 setError('')
                 loaded.current = true

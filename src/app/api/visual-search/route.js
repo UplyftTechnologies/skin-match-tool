@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { anthropic, hasAnthropicKey } from "@/lib/anthropic";
-import { loadProducts } from "@/lib/data";
+import { loadRetailerCatalog } from "@/lib/retailer-catalog";
 import { rankCatalogMatches, rankCatalogMatchesFromText } from "@/lib/visual-match";
 
 export const dynamic = "force-dynamic";
@@ -117,7 +117,7 @@ export async function POST(request) {
   // no upload, no per-search cost — the same matcher does the rest.
   const scannedText = String(body?.text || "").slice(0, 4000).trim();
   if (scannedText) {
-    const products = await loadProducts();
+    const products = await loadRetailerCatalog();
     const { brand, matches, confident } = rankCatalogMatchesFromText(products, scannedText);
     const extracted = { brand, product_name: "", scanned_text: scannedText };
 
@@ -126,7 +126,7 @@ export async function POST(request) {
         reason: brand ? "no_catalog_match" : "no_brand_read",
         message: brand
           ? "We read the brand but could not pin down which product. Try a closer photo of the front label."
-          : "We could not read that pack clearly. Try a straighter, closer photo of the front label.",
+          : "We read some text but could not identify the product. Try a straighter, closer photo of the front label.",
       });
     }
     // Brand-less matches rest on product words alone, so the UI says so rather
@@ -155,7 +155,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "That photo is too large." }, { status: 413 });
   }
 
-  const products = await loadProducts();
+  const products = await loadRetailerCatalog();
 
   let extracted;
   try {
