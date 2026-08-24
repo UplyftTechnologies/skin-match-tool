@@ -484,6 +484,21 @@ function ProductsPageContent() {
         })
     }, [appliedFilters, effectiveSort, hasQuizAnswers, scoredProducts, search])
 
+    useEffect(() => {
+        const term = search.trim()
+        if (!term) return undefined
+
+        const debounceTimer = window.setTimeout(() => {
+            trackingService.trackEvent(EVENTS.SEARCH_PERFORMED, {
+                query: term,
+                results_count: filteredProducts.length,
+                section: 'all_products',
+            })
+        }, 800)
+
+        return () => window.clearTimeout(debounceTimer)
+    }, [search, filteredProducts])
+
     const totalProducts = filteredProducts.length
     const totalPages = Math.max(Math.ceil(totalProducts / PRODUCTS_PER_PAGE), 1)
     const products = filteredProducts.slice(

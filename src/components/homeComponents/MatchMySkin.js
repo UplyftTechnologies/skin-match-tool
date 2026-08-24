@@ -291,17 +291,25 @@ export default function MatchMySkin() {
             <div className='bg-[#FFFFFF]'>
                 {hasCompletedQuiz && !isQuizEditing ? (
                     <div className="mx-auto max-w-md px-4 py-6 md:py-12 lg:max-w-6xl lg:px-8 xl:max-w-7xl">
-                        <section className="quiz-complete-panel" aria-label="Skin quiz completed">
-                            <div className="quiz-complete-message">
-                                <span className="quiz-complete-check" aria-hidden="true">&#10003;</span>
-                                <span>Skin quiz completed</span>
-                            </div>
+                        <section className="quiz-answers-disclosure" aria-label="Completed skin quiz answers">
                             <button
-                                className="quiz-update-btn"
-                                onClick={() => setIsQuizEditing(true)}
+                                className="quiz-answers-trigger"
                                 type="button"
+                                aria-expanded="false"
+                                onClick={() => setIsQuizEditing(true)}
                             >
-                                Update Quiz
+                                <span className="quiz-complete-message">
+                                    <span className="quiz-complete-check" aria-hidden="true">&#10003;</span>
+                                    <span>Quiz answers</span>
+                                </span>
+                                <svg
+                                    className="quiz-answers-chevron"
+                                    aria-hidden="true"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                >
+                                    <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
                             </button>
                         </section>
                     </div>
@@ -310,6 +318,31 @@ export default function MatchMySkin() {
                     <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
                         SKIN QUIZ
                     </h2>
+
+                    {hasCompletedQuiz ? (
+                        <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
+                            <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">
+                                Your selections
+                            </p>
+                            <div className="mt-2 flex flex-wrap justify-center gap-2">
+                                {[
+                                    ['Skin', skinType],
+                                    ['Sensitive', sensitive],
+                                    ...selectedConcerns.map((concern) => ['Concern', concern]),
+                                    ['Age', age],
+                                    ['Gender', gender],
+                                    ...conditions.map((condition) => ['Condition', condition]),
+                                ].filter(([, value]) => value).map(([label, value], index) => (
+                                    <span
+                                        key={`${label}-${value}-${index}`}
+                                        className="rounded-full bg-[#f8eeeb] px-3 py-1 text-xs font-medium text-slate-700"
+                                    >
+                                        <strong>{label}:</strong> {value}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    ) : null}
 
                     <div className="mt-2 lg:mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 lg:gap-x-8 lg:gap-y-5">
 
@@ -477,7 +510,7 @@ export default function MatchMySkin() {
                      text-[#ff7e67] border border-[#e08a7d] rounded-[10px] py-2 hover:bg-[#d17a6d] hover:text-white
                       transition-colors duration-300 disabled:cursor-wait disabled:opacity-60"
                         >
-                            {savingQuiz ? 'Saving your quiz…' : 'Find my match'}
+                            {savingQuiz ? 'Saving your quiz…' : hasCompletedQuiz ? 'Update Quiz' : 'Find my match'}
                         </button>
                     </div>
                     {saveError ? (

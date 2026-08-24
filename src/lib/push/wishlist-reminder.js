@@ -3,16 +3,7 @@
 import { getVisitorId, getSessionId } from '@/lib/tracking/identity'
 import { ensurePushSubscribed } from './subscribe'
 
-/**
- * Fires on every wishlist "add". Best-effort and non-blocking for the
- * caller — wishlist state updates regardless of whether push permission is
- * granted or the network call succeeds.
- *
- * Importantly, this must never open the browser's permission dialog. The
- * in-app notification card is the single, intentional place where a visitor
- * can choose to request permission. A wishlist click should only subscribe
- * when permission has already been granted.
- */
+
 export function triggerWishlistReminder(product) {
     const visitorId = getVisitorId()
     if (!visitorId) return

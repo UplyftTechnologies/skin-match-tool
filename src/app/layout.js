@@ -159,16 +159,26 @@ export default function RootLayout({ children }) {
 
           try {
               var visitorId = localStorage.getItem('app_visitor_id');
-              var sessionId = sessionStorage.getItem('app_session_id');
+              var sessionId = localStorage.getItem('app_session_id');
+              var sessionLastSeen = Number(localStorage.getItem('app_session_last_seen'));
+              var now = Date.now();
+              var sessionExpired = Number.isFinite(sessionLastSeen)
+                  && sessionLastSeen > 0
+                  && now - sessionLastSeen > 30 * 60 * 1000;
 
               if (!visitorId) {
                   visitorId = createId();
                   localStorage.setItem('app_visitor_id', visitorId);
               }
-              if (!sessionId) {
-                  sessionId = createId();
-                  sessionStorage.setItem('app_session_id', sessionId);
+              if (!sessionId && !sessionExpired) {
+                  sessionId = sessionStorage.getItem('app_session_id');
               }
+              if (!sessionId || sessionExpired) {
+                  sessionId = createId();
+              }
+              localStorage.setItem('app_session_id', sessionId);
+              localStorage.setItem('app_session_last_seen', String(now));
+              sessionStorage.setItem('app_session_id', sessionId);
 
               window.clarity('identify', visitorId, sessionId, window.location.pathname);
               window.clarity('set', 'visitor_id', visitorId);

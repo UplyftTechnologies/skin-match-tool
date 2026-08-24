@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -255,6 +255,22 @@ export default function Products() {
         return pickByScoreBands(withScore)
     }, [products, quizAnswers, search])
 
+    useEffect(() => {
+        const term = search.trim()
+        if (!term) return undefined
+
+        const debounceTimer = window.setTimeout(() => {
+            trackingService.trackEvent(EVENTS.SEARCH_PERFORMED, {
+                value: term,
+                query: term,
+                results_count: visibleProducts.length,
+                source: 'home_products_search',
+            })
+        }, 800)
+
+        return () => window.clearTimeout(debounceTimer)
+    }, [search, visibleProducts.length])
+
     return (
         <div id="products" className="scroll-mt-20 bg-[#FAF9F6]">
             <div className="max-w-6xl lg:max-w-[80%] mx-auto px-3 py-6">
@@ -274,35 +290,6 @@ export default function Products() {
                     </button>
                
                 </div>
-
-                {quizAnswers ? <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
-                    <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">
-                        Your selections
-                    </p>
-                    <div className="mt-2 flex flex-wrap justify-center gap-2">
-                        {[
-                            ['Skin', quizAnswers.skinType],
-                            ['Sensitive', quizAnswers.sensitive],
-                            ...(
-                                Array.isArray(quizAnswers.concerns)
-                                    ? quizAnswers.concerns
-                                    : quizAnswers.concern
-                                        ? [quizAnswers.concern]
-                                        : []
-                            ).map((concern) => ['Concern', concern]),
-                            ['Age', quizAnswers.age],
-                            ['Gender', quizAnswers.gender],
-                            ...(quizAnswers.conditions || []).map((condition) => ['Condition', condition]),
-                        ].filter(([, value]) => value).map(([label, value], index) => (
-                            <span
-                                key={`${label}-${value}-${index}`}
-                                className="rounded-full bg-[#f8eeeb] px-3 py-1 text-xs font-medium text-slate-700"
-                            >
-                                <strong>{label}:</strong> {value}
-                            </span>
-                        ))}
-                    </div>
-                </div> : null}
 
                 {activeView === 'products' ? <div className="relative max-w-xl mx-auto mb-2 mt-3 lg:mt-4">
                     <FiSearch

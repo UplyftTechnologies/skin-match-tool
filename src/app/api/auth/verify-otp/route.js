@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import crypto from 'crypto';
 import { supabaseAdmin, supabaseAuth } from '@/lib/supabase/server';
 
@@ -73,15 +73,37 @@ async function mintSession(formattedPhone, syntheticEmail, password) {
   const attempt = (credentials) =>
     supabaseAuth.auth.signInWithPassword(credentials).catch((err) => ({ data: null, error: err }));
 
-  const results = await Promise.all([
-    attempt({ email: syntheticEmail, password }),
-    attempt({ phone: formattedPhone, password }),
-    attempt({ phone: formattedPhone.replace('+', ''), password }),
-  ]);
+  const credentials = [
+    { email: syntheticEmail, password },
+    { phone: formattedPhone, password },
+    { phone: formattedPhone.replace('+', ''), password },
+  ];
 
-  const winner = results.find((res) => res?.data?.session);
-  if (winner) return { data: winner.data, error: null };
-  return { data: null, error: results.find((res) => res?.error)?.error || null };
+  // Resolve as soon as one credential shape succeeds. Promise.all made every
+  // OTP login wait for the two losing requests even when a session was ready.
+  return new Promise((resolve) => {
+    let remaining = credentials.length;
+    let firstError = null;
+    let settled = false;
+
+    credentials.forEach((candidate) => {
+      attempt(candidate).then((result) => {
+        if (settled) return;
+        if (result?.data?.session) {
+          settled = true;
+          resolve({ data: result.data, error: null });
+          return;
+        }
+
+        firstError ||= result?.error || null;
+        remaining -= 1;
+        if (remaining === 0) {
+          settled = true;
+          resolve({ data: null, error: firstError });
+        }
+      });
+    });
+  });
 }
 
 export async function POST(request) {
@@ -219,6 +241,7 @@ async function handleVerifyOtp(request) {
     let authUserId = publicUserId;
     let sessionData = null;
     let sessionError = null;
+    let createdAuthUser = false;
 
     if (knownExistingInPublicUsers) {
       const optimistic = await mintSession(formattedPhone, syntheticEmail, password);
@@ -242,7 +265,15 @@ async function handleVerifyOtp(request) {
         }
       }
 
-      if (!existingAuthUser) {
+      // Only fall back to the full paginated scan when we had a reason to
+      // believe an auth user exists (a public.users row pointed at one, but
+      // getUserById missed) — a genuinely first-time signup has no
+      // publicUserId at all, so skip straight to createUser below instead
+      // of scanning the entire auth.users table just to confirm "not found".
+      // createUser's own conflict handling already falls back to this same
+      // scan if it turns out the account exists under a different flow
+      // (e.g. Google OAuth with the same phone).
+      if (!existingAuthUser && publicUserId) {
         try {
           existingAuthUser = await findAuthUser(cleanTargetPhone, syntheticEmail);
         } catch (err) {
@@ -329,6 +360,7 @@ async function handleVerifyOtp(request) {
           }
         } else {
           authUserId = createRes.data.user.id;
+          createdAuthUser = true;
         }
       }
 
@@ -352,34 +384,25 @@ async function handleVerifyOtp(request) {
     // after the session is already minted so it never blocks the response —
     // its own failure is non-fatal and only logged.
     const now = new Date().toISOString();
-    let isNewUser = !knownExistingInPublicUsers;
-    if (!knownExistingInPublicUsers) {
-      try {
-        const { data } = await supabaseAdmin
-          .from('users')
-          .select('id')
-          .eq('id', authUserId)
-          .maybeSingle();
-        isNewUser = !data;
-      } catch (err) {
-        console.warn('Could not query public.users table:', err.message);
-      }
-    }
+    const isNewUser = createdAuthUser;
 
-    // Awaited (not fire-and-forget): this runs on Vercel's Node runtime,
-    // where the function can freeze immediately after the response is sent,
-    // so an un-awaited write here can get silently dropped.
-    const { error: upsertError } = await supabaseAdmin.from('users').upsert(
-      {
-        id: authUserId,
-        phone_no: formattedPhone,
-        phone_verified: true,
-        phone_verified_at: now,
-        updated_at: now,
-      },
-      { onConflict: 'id' }
-    );
-    if (upsertError) console.warn('Warning: Failed upserting to public.users table:', upsertError.message);
+    // Deferred via after(): the client only needs the session token to log
+    // in, not this bookkeeping write, so it no longer blocks the response.
+    // Unlike a bare fire-and-forget, after() keeps the Vercel function alive
+    // until this completes instead of letting it freeze/drop the write.
+    after(async () => {
+      const { error: upsertError } = await supabaseAdmin.from('users').upsert(
+        {
+          id: authUserId,
+          phone_no: formattedPhone,
+          phone_verified: true,
+          phone_verified_at: now,
+          updated_at: now,
+        },
+        { onConflict: 'id' }
+      );
+      if (upsertError) console.warn('Warning: Failed upserting to public.users table:', upsertError.message);
+    });
 
     return NextResponse.json({
       success: true,

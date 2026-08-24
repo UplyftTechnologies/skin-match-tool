@@ -7,6 +7,8 @@
 
 const VISITOR_ID_KEY = 'app_visitor_id';
 const SESSION_ID_KEY = 'app_session_id';
+const SESSION_LAST_SEEN_KEY = 'app_session_last_seen';
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 const USER_STORAGE_KEY = 'app_user'; // <-- point this at wherever your auth flow stores the logged-in user
 
 function safeUUID() {
@@ -35,17 +37,44 @@ export function getVisitorId() {
   }
 }
 
-/** Per-tab id. Regenerates on a fresh tab, cleared when the tab closes. */
+/**
+ * Shared browser session id. A session stays consistent across tabs and is
+ * renewed after 30 minutes without a tracked interaction.
+ */
 export function getSessionId() {
   try {
-    let id = sessionStorage.getItem(SESSION_ID_KEY);
-    if (!id) {
-      id = safeUUID();
-      sessionStorage.setItem(SESSION_ID_KEY, id);
+    const now = Date.now();
+    let id = localStorage.getItem(SESSION_ID_KEY);
+    const lastSeen = Number(localStorage.getItem(SESSION_LAST_SEEN_KEY));
+    const hasExpired = Number.isFinite(lastSeen)
+      && lastSeen > 0
+      && now - lastSeen > SESSION_TIMEOUT_MS;
+
+    // Migrate the current tab's pre-existing session before creating a new
+    // one, but always prefer the shared localStorage value when it exists.
+    if (!id && !hasExpired) {
+      id = sessionStorage.getItem(SESSION_ID_KEY);
     }
+
+    if (!id || hasExpired) {
+      id = safeUUID();
+    }
+
+    localStorage.setItem(SESSION_ID_KEY, id);
+    localStorage.setItem(SESSION_LAST_SEEN_KEY, String(now));
+    sessionStorage.setItem(SESSION_ID_KEY, id);
     return id;
   } catch {
-    return null;
+    try {
+      let id = sessionStorage.getItem(SESSION_ID_KEY);
+      if (!id) {
+        id = safeUUID();
+        sessionStorage.setItem(SESSION_ID_KEY, id);
+      }
+      return id;
+    } catch {
+      return null;
+    }
   }
 }
 

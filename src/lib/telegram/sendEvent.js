@@ -218,8 +218,6 @@ const EXTRA_DATA_IGNORED_FIELDS = new Set([
   'referrer',
   'value',
   'timestamp',
-  'retailer',
-  'site',
 ]);
 
 const buildExtraData = (body = {}) => {
@@ -467,7 +465,10 @@ export const buildVisitorEventFromRequest = async (body, headers) => {
     referrer: body?.referrer || '',
     eventName: body?.eventName || 'website_visitor',
 
-    value: body?.value ?? body?.answer ?? '',
+    // Retailer click events send the readable retailer name separately so it
+    // can still be used in Telegram's retailer field. Mirror it into the
+    // canonical event_log.value column as well for Supabase reporting.
+    value: body?.value ?? body?.answer ?? body?.retailer ?? body?.site ?? '',
 
     productName: body?.productName || '',
     productId: body?.productId || '',
