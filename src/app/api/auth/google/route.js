@@ -13,6 +13,26 @@ function generateDeterministicPassword(email, serviceKey) {
     .digest('hex');
 }
 
+// listUsers() without pagination only returns its first page, so a match
+// past that page was being missed entirely -- mirrors the full paginated
+// scan verify-otp/route.js already uses for the same reason. Case-insensitive
+// since Google/Supabase don't guarantee matching casing round-trips.
+async function findAuthUserByEmail(email) {
+  const perPage = 1000;
+  const target = email.toLowerCase();
+
+  for (let page = 1; ; page += 1) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+    if (error) throw error;
+
+    const users = data?.users || [];
+    const match = users.find((u) => u.email?.toLowerCase() === target);
+    if (match) return match;
+
+    if (users.length < perPage) return null;
+  }
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -66,8 +86,7 @@ export async function POST(request) {
     let existingAuthUser = null;
 
     try {
-      const { data: listUsers } = await supabaseAdmin.auth.admin.listUsers();
-      existingAuthUser = listUsers?.users?.find((u) => u.email === email);
+      existingAuthUser = await findAuthUserByEmail(email);
     } catch (err) {
       console.warn('Error listing auth.users:', err.message);
     }
@@ -98,8 +117,7 @@ export async function POST(request) {
 
       if (createRes.error) {
         if (createRes.error.message?.toLowerCase()?.includes('already exists') || createRes.error.status === 422) {
-          const { data: listUsers } = await supabaseAdmin.auth.admin.listUsers();
-          const matched = listUsers?.users?.find((u) => u.email === email);
+          const matched = await findAuthUserByEmail(email);
           if (matched) {
             authUserId = matched.id;
             await supabaseAdmin.auth.admin.updateUserById(authUserId, { password });
