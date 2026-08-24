@@ -1,25 +1,30 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import RequireQuizModal from '@/components/RequireQuizModal'
 
+const SHOWN_KEY = 'roopsee-quiz-prompt-shown'
+
 export default function GlobalQuizPrompt() {
+    const pathname = usePathname()
     const quizAnswers = useQuizAnswers()
     const [open, setOpen] = useState(false)
-    const [reminderCount, setReminderCount] = useState(0)
+
+    const skipPage = pathname?.startsWith('/login')
 
     useEffect(() => {
-        if (quizAnswers !== null) return undefined
+        if (skipPage || quizAnswers !== null) return undefined
+        if (sessionStorage.getItem(SHOWN_KEY)) return undefined
 
-        const delay = reminderCount === 0 ? 15000 : 10000
-        const timer = window.setTimeout(() => setOpen(true), delay)
+        const timer = window.setTimeout(() => setOpen(true), 15000)
         return () => window.clearTimeout(timer)
-    }, [quizAnswers, reminderCount])
+    }, [skipPage, quizAnswers])
 
     const handleClose = () => {
         setOpen(false)
-        setReminderCount((count) => count + 1)
+        sessionStorage.setItem(SHOWN_KEY, '1')
     }
 
     return <RequireQuizModal open={open && !quizAnswers} onClose={handleClose} />
