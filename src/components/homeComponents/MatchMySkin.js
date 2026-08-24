@@ -289,32 +289,42 @@ export default function MatchMySkin() {
             <div id="match-my-skin">
             </div>
             <div className='bg-[#FFFFFF]'>
-                {hasCompletedQuiz && !isQuizEditing ? (
-                    <div className="mx-auto max-w-md px-4 py-6 md:py-12 lg:max-w-6xl lg:px-8 xl:max-w-7xl">
-                        <section className="quiz-answers-disclosure" aria-label="Completed skin quiz answers">
-                            <button
-                                className="quiz-answers-trigger"
-                                type="button"
-                                aria-expanded="false"
-                                onClick={() => setIsQuizEditing(true)}
-                            >
+                {hasCompletedQuiz ? (
+                    <div className={`mx-auto max-w-md px-4 lg:max-w-6xl lg:px-8 xl:max-w-7xl ${isQuizEditing ? 'pt-6 pb-0 md:pt-12' : 'py-6 md:py-12'}`}>
+                        <section className={`quiz-answers-disclosure ${isQuizEditing ? 'quiz-answers-disclosure-open' : ''}`} aria-label="Completed skin quiz answers">
+                            <div className="quiz-answers-bar">
                                 <span className="quiz-complete-message">
                                     <span className="quiz-complete-check" aria-hidden="true">&#10003;</span>
                                     <span>Quiz answers</span>
                                 </span>
-                                <svg
-                                    className="quiz-answers-chevron"
-                                    aria-hidden="true"
-                                    viewBox="0 0 20 20"
-                                    fill="none"
+                                <div className="flex items-center gap-1 lg:gap-2">
+                                <button
+                                    className="quiz-update-btn"
+                                    type="button"
+                                    disabled={savingQuiz}
+                                    onClick={() => setIsQuizEditing(true)}
                                 >
-                                    <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                            </button>
+                                    Update Quiz
+                                </button>
+                                <button
+                                    className="quiz-answers-toggle"
+                                    type="button"
+                                    aria-expanded={isQuizEditing}
+                                    aria-label={isQuizEditing ? 'Collapse quiz answers' : 'Expand quiz answers'}
+                                    onClick={() => setIsQuizEditing((expanded) => !expanded)}
+                                >
+                                    <svg className="quiz-answers-chevron" aria-hidden="true" viewBox="0 0 20 20" fill="none">
+                                        <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </button>
+                                </div>
+                            </div>
                         </section>
                     </div>
-                ) : (
-                <div className="max-w-md mx-auto px-4 py-6 md:py-12 lg:max-w-6xl xl:max-w-7xl lg:px-8">
+                ) : null}
+                {!hasCompletedQuiz || isQuizEditing ? (
+                <div className={`max-w-md mx-auto px-4 lg:max-w-6xl xl:max-w-7xl lg:px-8 ${hasCompletedQuiz ? 'pt-0 pb-6 md:pb-12' : 'py-6 md:py-12'}`}>
+                    <div className={hasCompletedQuiz ? 'quiz-expanded-content-panel' : ''}>
                     <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
                         SKIN QUIZ
                     </h2>
@@ -518,8 +528,9 @@ export default function MatchMySkin() {
                             {saveError}
                         </p>
                     ) : null}
+                    </div>
                 </div>
-                )}
+                ) : null}
             </div>
         </div>
     )

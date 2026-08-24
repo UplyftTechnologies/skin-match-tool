@@ -7,6 +7,7 @@ import SiteExitTracker from "@/components/tracking/site-exit-tracker";
 import ScrollRestoreGuard from "@/components/scroll-restore-guard";
 import ScrollTracker from "@/components/tracking/scroll-tracker";
 import QuizRehydrator from "@/components/tracking/quiz-rehydrator";
+import InteractionTracker from "@/components/tracking/interaction-tracker";
 import BottomNav from "@/components/bottom-nav";
 import GlobalQuizPrompt from "@/components/global-quiz-prompt";
 import { Cormorant_Garamond, Lato } from 'next/font/google'
@@ -102,6 +103,7 @@ export default function RootLayout({ children }) {
         <SiteExitTracker />
         <ScrollTracker />
         <QuizRehydrator />
+        <InteractionTracker />
         <GlobalQuizPrompt />
         <WishlistProvider>
           <div className="pb-14 md:pb-0">
