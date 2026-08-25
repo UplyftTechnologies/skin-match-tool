@@ -827,3 +827,17 @@ Error: kill EPERM
 }
 ✓ Compiled in 1231ms
  GET /products/Roopsee-B-LO-19?score=85 200 in 1641ms (next.js: 731ms, generate-params: 141ms, application-code: 909ms)
+⨯ upstream image response failed for https://celimax.us/cdn/shop/files/celimax-the-real-noni-hydra-firming-lotion-150ml-pdp1-828X828.jpg 404
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 1422ms (next.js: 533ms, application-code: 889ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 781ms (next.js: 10ms, application-code: 771ms)
+⨯ upstream image response failed for https://www.fixderma.com/cdn/shop/files/brightening_body_lotion.webp?v=1770033372 404
+ POST /api/events 200 in 459ms (next.js: 8ms, application-code: 451ms)
