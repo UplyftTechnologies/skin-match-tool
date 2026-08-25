@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -11,38 +10,17 @@ import {
   IoPersonCircle,
   IoPersonCircleOutline,
 } from "react-icons/io5";
-import { supabase } from "@/lib/supabase/client";
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
 
 const ACTIVE_COLOR = "#ff00e6";
 
 export default function BottomNav() {
-  const [userSession, setUserSession] = useState(null);
-  const [sessionLoaded, setSessionLoaded] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUserSession(session);
-      setSessionLoaded(true);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserSession(session);
-      setSessionLoaded(true);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   const isHomeActive = pathname === "/";
   const isShopActive = pathname?.startsWith("/AllProducts");
   const isProfileActive = pathname?.startsWith("/profile");
-
-  if (!sessionLoaded || !userSession) return null;
 
   return (
     <nav

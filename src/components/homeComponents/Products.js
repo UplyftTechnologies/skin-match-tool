@@ -271,6 +271,8 @@ export default function Products() {
         return () => window.clearTimeout(debounceTimer)
     }, [search, visibleProducts.length])
 
+    if (!quizAnswers) return null
+
     return (
         <div id="products" className="scroll-mt-20 bg-[#FAF9F6]">
             <div className="max-w-6xl lg:max-w-[80%] mx-auto px-3 py-6">
