@@ -105,7 +105,7 @@ function ProductPicker({ label, products, selectedId, disabledId, onChange }) {
             </button>
 
             {open ? (
-                <div role="listbox" className="absolute left-0 right-0 top-full z-30 mt-1 max-h-72 overflow-y-auto border border-gray-200 bg-white py-1 shadow-xl">
+                <div role="listbox" className="relative z-30 mt-1 max-h-60 w-full overflow-y-auto overscroll-contain border border-gray-200 bg-white py-1 shadow-xl sm:absolute sm:left-0 sm:right-0 sm:top-full sm:max-h-72">
                     {products.map((product) => {
                         const disabled = product.product_uid === disabledId
                         const active = product.product_uid === selectedId
@@ -133,7 +133,7 @@ function ProductPicker({ label, products, selectedId, disabledId, onChange }) {
                                 </span>
                                 <span className="min-w-0 flex-1">
                                     <span className="block truncate text-[10px] font-semibold uppercase text-[#9a6b62]">{product.brand_name}</span>
-                                    <span className="block text-[13px] font-medium leading-snug text-gray-800 sm:text-sm">{product.product_name}</span>
+                                    <span className="block line-clamp-2 text-[13px] font-medium leading-snug text-gray-800 sm:text-sm">{product.product_name}</span>
                                 </span>
                                 {active ? <FiCheck aria-hidden="true" className="shrink-0 text-[#c76557]" /> : null}
                             </button>
@@ -216,7 +216,7 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
     const scoreGap = left && right ? Math.abs(Number(left.score) - Number(right.score)) : 0
 
     return (
-        <section aria-labelledby="playground-title" className="mx-auto mt-8 max-w-5xl overflow-hidden border border-[#e7ded9] bg-[#f7f5f2] px-3 py-7 font-lato shadow-[0_8px_30px_rgba(70,55,50,0.06)] sm:px-7 sm:py-9">
+        <section aria-labelledby="playground-title" className="mx-auto mt-8 w-full max-w-5xl overflow-hidden border border-[#e7ded9] bg-[#f7f5f2] px-3 py-7 font-lato shadow-[0_8px_30px_rgba(70,55,50,0.06)] sm:px-7 sm:py-9">
             <div className="text-center">
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#ead8d3] bg-white text-[#c76557]">
                     <FiGitMerge aria-hidden="true" size={17} />
@@ -229,7 +229,7 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
                 </p>
             </div>
 
-            <div className="relative mt-6 grid grid-cols-[1fr_auto_1fr] items-end gap-2 bg-white p-3 sm:gap-5 sm:p-5">
+            <div className="relative mt-6 grid grid-cols-1 items-stretch gap-3 bg-white p-3 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-end sm:gap-5 sm:p-5">
                 <ProductPicker
                     label="Product one"
                     products={productsWithPeers}
@@ -237,7 +237,7 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
                     disabledId={selectedRightId}
                     onChange={setLeftId}
                 />
-                <span className="mb-3.5 flex h-7 w-7 items-center justify-center rounded-full bg-[#f8eeeb] text-[9px] font-bold uppercase text-[#c76557] sm:mb-4 sm:h-8 sm:w-8">vs</span>
+                <span className="mx-auto flex h-7 w-7 items-center justify-center rounded-full bg-[#f8eeeb] text-[9px] font-bold uppercase text-[#c76557] sm:mb-4 sm:h-8 sm:w-8">vs</span>
                 <ProductPicker
                     label="Product two"
                     products={sameCategoryProducts}
@@ -252,7 +252,7 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
                     <p className="mt-5 text-center text-[9px] font-bold uppercase tracking-[0.16em] text-[#9a6b62]">
                         Comparing {comparisonCategory(left)} products
                     </p>
-                    <div className="relative mt-3 grid grid-cols-2 gap-px overflow-hidden border border-gray-200 bg-gray-200">
+                    <div className="relative mt-3 grid min-w-0 grid-cols-2 gap-px overflow-hidden border border-gray-200 bg-gray-200">
                         <ProductSummary product={left} isWinner={leftWins} />
                         <ProductSummary product={right} isWinner={rightWins} />
                     </div>
@@ -263,7 +263,7 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
                                 ? `${winner.product_name} leads by ${scoreGap} points`
                                 : 'Both products are an equal match'}
                         </p>
-                        <div className="mx-auto mt-5 grid max-w-3xl grid-cols-[1fr_0.72fr_1fr] overflow-hidden border border-gray-200 bg-white text-[11px] sm:text-xs">
+                        <div className="mx-auto mt-5 grid min-w-0 max-w-3xl grid-cols-[minmax(0,1fr)_minmax(72px,0.72fr)_minmax(0,1fr)] overflow-hidden border border-gray-200 bg-white text-[10px] sm:text-xs">
                             <IngredientComparison product={left} />
                             <p className="flex items-center justify-center border-x border-gray-200 bg-[#faf8f6] px-2 py-4 text-center font-bold text-gray-500 sm:px-4">Key ingredients</p>
                             <IngredientComparison product={right} />

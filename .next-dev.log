@@ -266,3 +266,564 @@ Import trace:
 [browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
 [browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
  POST /api/events 200 in 410ms (next.js: 23ms, application-code: 387ms)
+ POST /api/events 200 in 1099ms (next.js: 134ms, application-code: 965ms)
+ GET / 200 in 4.8s (next.js: 249ms, application-code: 4.6s)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 670ms (next.js: 11ms, application-code: 659ms)
+ GET /api/products 200 in 3.3s (next.js: 3.3s, application-code: 62ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 754ms (next.js: 27ms, application-code: 726ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 893ms (next.js: 218ms, application-code: 675ms)
+ POST /api/events 200 in 901ms (next.js: 44ms, application-code: 857ms)
+○ Compiling /brands ...
+ GET /brands 200 in 9.1s (next.js: 8.6s, application-code: 506ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /api/products 200 in 184ms (next.js: 21ms, application-code: 163ms)
+ POST /api/events 200 in 869ms (next.js: 128ms, application-code: 740ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 806ms (next.js: 85ms, application-code: 721ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /AllProducts?brand=Physiogel 200 in 170ms (next.js: 54ms, application-code: 116ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /api/products 200 in 65ms (next.js: 19ms, application-code: 46ms)
+ POST /api/events 200 in 695ms (next.js: 11ms, application-code: 683ms)
+ POST /api/events 200 in 735ms (next.js: 108ms, application-code: 628ms)
+ POST /api/events 200 in 986ms (next.js: 43ms, application-code: 943ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 440ms (next.js: 9ms, application-code: 431ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-F-MO-88 200 in 270ms (next.js: 76ms, generate-params: 36ms, application-code: 194ms)
+ POST /api/events 200 in 360ms (next.js: 6ms, application-code: 354ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /api/product-offers?uid=Roopsee-F-MO-88 200 in 129ms (next.js: 26ms, application-code: 103ms)
+ GET /api/products 200 in 64ms (next.js: 13ms, application-code: 51ms)
+ GET /api/products 200 in 132ms (next.js: 64ms, application-code: 67ms)
+ POST /api/events 200 in 961ms (next.js: 6ms, application-code: 954ms)
+ POST /api/events 200 in 412ms (next.js: 14ms, application-code: 397ms)
+ GET /api/product-offers?uid=Roopsee-F-MO-88 200 in 648ms (next.js: 44ms, application-code: 604ms)
+[browser] Invalid event name: undefined 
+    at TrackingService.trackEvent (src/lib/tracking/trackingClient.js:246:15)
+    at loadOffers (src/components/retailer-price-compare.js:330:37)
+  244 |   async trackEvent(eventName, properties = {}) {
+  245 |     if (!eventName || typeof eventName !== 'string') {
+> 246 |       console.error('Invalid event name:', eventName);
+      |               ^
+  247 |       return;
+  248 |     }
+  249 | (src/lib/tracking/trackingClient.js:246:15)
+[browser] Image with src "/_next/static/media/nyka.17_yl_zh_-cq0.webp" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 426ms (next.js: 14ms, application-code: 412ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-F-MO-68 200 in 155ms (next.js: 25ms, generate-params: 14ms, application-code: 130ms)
+ GET /api/product-offers?uid=Roopsee-F-MO-68 200 in 59ms (next.js: 33ms, application-code: 26ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /api/products 200 in 76ms (next.js: 11ms, application-code: 65ms)
+ GET /api/products 200 in 70ms (next.js: 14ms, application-code: 56ms)
+ POST /api/events 200 in 834ms (next.js: 10ms, application-code: 824ms)
+ POST /api/events 200 in 815ms (next.js: 5ms, application-code: 809ms)
+ GET /api/product-offers?uid=Roopsee-F-MO-68 200 in 869ms (next.js: 75ms, application-code: 794ms)
+ POST /api/events 200 in 878ms (next.js: 13ms, application-code: 864ms)
+[browser] Invalid event name: undefined 
+    at TrackingService.trackEvent (src/lib/tracking/trackingClient.js:246:15)
+    at loadOffers (src/components/retailer-price-compare.js:330:37)
+  244 |   async trackEvent(eventName, properties = {}) {
+  245 |     if (!eventName || typeof eventName !== 'string') {
+> 246 |       console.error('Invalid event name:', eventName);
+      |               ^
+  247 |       return;
+  248 |     }
+  249 | (src/lib/tracking/trackingClient.js:246:15)
+[browser] Image with src "/_next/static/media/tiira.37mvgz43e9y-s.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 365ms (next.js: 10ms, application-code: 355ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET / 200 in 127ms (next.js: 15ms, application-code: 112ms)
+ GET /api/products 200 in 58ms (next.js: 9ms, application-code: 48ms)
+ POST /api/events 200 in 874ms (next.js: 99ms, application-code: 776ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 358ms (next.js: 13ms, application-code: 346ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 690ms (next.js: 8ms, application-code: 682ms)
+ POST /api/events 200 in 711ms (next.js: 6ms, application-code: 706ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 359ms (next.js: 9ms, application-code: 350ms)
+ POST /api/events 200 in 436ms (next.js: 31ms, application-code: 405ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 429ms (next.js: 9ms, application-code: 420ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 3.6s (next.js: 6ms, application-code: 3.6s)
+ POST /api/events 200 in 1826ms (next.js: 10ms, application-code: 1816ms)
+ POST /api/events 200 in 1828ms (next.js: 5ms, application-code: 1822ms)
+ POST /api/events 200 in 937ms (next.js: 16ms, application-code: 921ms)
+ POST /api/events 200 in 971ms (next.js: 16ms, application-code: 955ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/recommend?limit=1000 200 in 144ms (next.js: 40ms, application-code: 104ms)
+ POST /api/quiz-results 201 in 933ms (next.js: 714ms, application-code: 219ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-F-CL-70?score=100 200 in 168ms (next.js: 26ms, generate-params: 17ms, application-code: 142ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 3.5s (next.js: 12ms, application-code: 3.5s)
+ POST /api/events 200 in 3.7s (next.js: 4ms, application-code: 3.7s)
+ POST /api/events 200 in 2.5s (next.js: 134ms, application-code: 2.4s)
+ POST /api/events 200 in 2.4s (next.js: 605ms, application-code: 1810ms)
+ POST /api/recommend?limit=1000 200 in 83ms (next.js: 11ms, application-code: 72ms)
+ POST /api/events 200 in 937ms (next.js: 7ms, application-code: 931ms)
+ POST /api/recommend?limit=1000 200 in 116ms (next.js: 17ms, application-code: 100ms)
+ GET /api/product-offers?uid=Roopsee-F-CL-70 200 in 249ms (next.js: 7ms, application-code: 242ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 5.6s (next.js: 10ms, application-code: 5.6s)
+ POST /api/events 200 in 6.0s (next.js: 10ms, application-code: 6.0s)
+ POST /api/events 200 in 1811ms (next.js: 8ms, application-code: 1803ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-F-CL-58?score=87 200 in 145ms (next.js: 38ms, generate-params: 10ms, application-code: 107ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 402ms (next.js: 7ms, application-code: 396ms)
+ POST /api/events 200 in 407ms (next.js: 6ms, application-code: 400ms)
+ POST /api/recommend?limit=1000 200 in 92ms (next.js: 14ms, application-code: 77ms)
+ POST /api/recommend?limit=1000 200 in 246ms (next.js: 102ms, application-code: 144ms)
+ GET /api/product-offers?uid=Roopsee-F-CL-58 200 in 883ms (next.js: 250ms, application-code: 633ms)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 41',
+  parameters: { retry_after: 41 }
+}
+ POST /api/events 200 in 1056ms (next.js: 38ms, application-code: 1018ms)
+[browser] Invalid event name: undefined 
+    at TrackingService.trackEvent (src/lib/tracking/trackingClient.js:246:15)
+    at loadOffers (src/components/retailer-price-compare.js:330:37)
+  244 |   async trackEvent(eventName, properties = {}) {
+  245 |     if (!eventName || typeof eventName !== 'string') {
+> 246 |       console.error('Invalid event name:', eventName);
+      |               ^
+  247 |       return;
+  248 |     }
+  249 | (src/lib/tracking/trackingClient.js:246:15)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 40',
+  parameters: { retry_after: 40 }
+}
+ POST /api/events 200 in 366ms (next.js: 7ms, application-code: 359ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET / 200 in 115ms (next.js: 11ms, application-code: 104ms)
+ POST /api/recommend?limit=1000 200 in 156ms (next.js: 13ms, application-code: 143ms)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 32',
+  parameters: { retry_after: 32 }
+}
+ POST /api/events 200 in 1171ms (next.js: 6ms, application-code: 1165ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 31',
+  parameters: { retry_after: 31 }
+}
+ POST /api/events 200 in 368ms (next.js: 11ms, application-code: 357ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /AllProducts 200 in 114ms (next.js: 13ms, application-code: 100ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/recommend?limit=1000 200 in 81ms (next.js: 10ms, application-code: 71ms)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 26',
+  parameters: { retry_after: 26 }
+}
+ POST /api/events 200 in 744ms (next.js: 28ms, application-code: 716ms)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 26',
+  parameters: { retry_after: 26 }
+}
+ POST /api/events 200 in 769ms (next.js: 8ms, application-code: 761ms)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 26',
+  parameters: { retry_after: 26 }
+}
+ POST /api/events 200 in 732ms (next.js: 24ms, application-code: 708ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 24',
+  parameters: { retry_after: 24 }
+}
+ POST /api/events 200 in 353ms (next.js: 9ms, application-code: 344ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-B-LO-17?score=99 200 in 120ms (next.js: 21ms, generate-params: 11ms, application-code: 100ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /api/product-offers?uid=Roopsee-B-LO-17 200 in 100ms (next.js: 52ms, application-code: 48ms)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 23',
+  parameters: { retry_after: 23 }
+}
+ POST /api/events 200 in 412ms (next.js: 6ms, application-code: 407ms)
+ POST /api/recommend?limit=1000 200 in 180ms (next.js: 60ms, application-code: 120ms)
+ POST /api/recommend?limit=1000 200 in 283ms (next.js: 188ms, application-code: 95ms)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 23',
+  parameters: { retry_after: 23 }
+}
+ POST /api/events 200 in 461ms (next.js: 8ms, application-code: 453ms)
+ GET /api/product-offers?uid=Roopsee-B-LO-17 200 in 1107ms (next.js: 314ms, application-code: 794ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 20',
+  parameters: { retry_after: 20 }
+}
+ POST /api/events 200 in 499ms (next.js: 11ms, application-code: 488ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+⨯ upstream image response failed for https://celimax.us/cdn/shop/files/celimax-the-real-noni-hydra-firming-lotion-150ml-pdp1-828X828.jpg 404
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 13',
+  parameters: { retry_after: 13 }
+}
+ POST /api/events 200 in 931ms (next.js: 6ms, application-code: 924ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 12',
+  parameters: { retry_after: 12 }
+}
+ POST /api/events 200 in 376ms (next.js: 14ms, application-code: 361ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+⨯ upstream image response failed for https://celimax.us/cdn/shop/files/celimax-the-real-noni-hydra-firming-lotion-150ml-pdp1-828X828.jpg 404
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 10',
+  parameters: { retry_after: 10 }
+}
+ POST /api/events 200 in 349ms (next.js: 5ms, application-code: 344ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+Telegram event group notification failed: {
+  ok: false,
+  error_code: 429,
+  description: 'Too Many Requests: retry after 9',
+  parameters: { retry_after: 9 }
+}
+ POST /api/events 200 in 385ms (next.js: 18ms, application-code: 367ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 6.6s (next.js: 18ms, application-code: 6.6s)
+ POST /api/events 200 in 5.6s (next.js: 8ms, application-code: 5.6s)
+ POST /api/events 200 in 3.8s (next.js: 8ms, application-code: 3.8s)
+ POST /api/events 200 in 2.6s (next.js: 7ms, application-code: 2.6s)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-B-LO-19?score=85 200 in 157ms (next.js: 22ms, generate-params: 11ms, application-code: 135ms)
+ GET /api/product-offers?uid=Roopsee-B-LO-19 200 in 95ms (next.js: 24ms, application-code: 71ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 442ms (next.js: 40ms, application-code: 402ms)
+ POST /api/recommend?limit=1000 200 in 181ms (next.js: 55ms, application-code: 126ms)
+ POST /api/recommend?limit=1000 200 in 394ms (next.js: 302ms, application-code: 91ms)
+ POST /api/events 200 in 1183ms (next.js: 9ms, application-code: 1174ms)
+ POST /api/events 200 in 1231ms (next.js: 34ms, application-code: 1197ms)
+ GET /api/product-offers?uid=Roopsee-B-LO-19 200 in 1379ms (next.js: 188ms, application-code: 1192ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 349ms (next.js: 11ms, application-code: 337ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+⨯ upstream image response failed for https://www.fixderma.com/cdn/shop/files/brightening_body_lotion.webp?v=1770033372 404
+ POST /api/events 200 in 768ms (next.js: 18ms, application-code: 750ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 374ms (next.js: 16ms, application-code: 358ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-B-LO-20?score=93 200 in 180ms (next.js: 31ms, generate-params: 21ms, application-code: 149ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/recommend?limit=1000 200 in 310ms (next.js: 185ms, application-code: 126ms)
+ POST /api/recommend?limit=1000 200 in 453ms (next.js: 323ms, application-code: 130ms)
+ POST /api/events 200 in 975ms (next.js: 6ms, application-code: 969ms)
+ POST /api/events 200 in 1147ms (next.js: 10ms, application-code: 1138ms)
+ GET /api/product-offers?uid=Roopsee-B-LO-20 200 in 1040ms (next.js: 468ms, application-code: 572ms)
+ POST /api/events 200 in 1203ms (next.js: 496ms, application-code: 707ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 436ms (next.js: 6ms, application-code: 430ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-B-LO-19?score=85 200 in 179ms (next.js: 22ms, generate-params: 12ms, application-code: 157ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/recommend?limit=1000 200 in 200ms (next.js: 87ms, application-code: 112ms)
+ POST /api/recommend?limit=1000 200 in 314ms (next.js: 213ms, application-code: 101ms)
+ POST /api/events 200 in 760ms (next.js: 6ms, application-code: 754ms)
+ GET /api/product-offers?uid=Roopsee-B-LO-19 200 in 1051ms (next.js: 120ms, application-code: 931ms)
+ POST /api/events 200 in 1449ms (next.js: 91ms, application-code: 1358ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 377ms (next.js: 22ms, application-code: 354ms)
+ POST /api/events 200 in 4.0s (next.js: 10ms, application-code: 4.0s)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-B-LO-23?score=98 200 in 196ms (next.js: 45ms, generate-params: 10ms, application-code: 151ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/recommend?limit=1000 200 in 186ms (next.js: 34ms, application-code: 151ms)
+ POST /api/recommend?limit=1000 200 in 337ms (next.js: 203ms, application-code: 134ms)
+ POST /api/events 200 in 1106ms (next.js: 7ms, application-code: 1099ms)
+ POST /api/events 200 in 1341ms (next.js: 7ms, application-code: 1334ms)
+ GET /api/product-offers?uid=Roopsee-B-LO-23 200 in 809ms (next.js: 10ms, application-code: 799ms)
+[browser] Invalid event name: undefined 
+    at TrackingService.trackEvent (src/lib/tracking/trackingClient.js:246:15)
+    at loadOffers (src/components/retailer-price-compare.js:330:37)
+  244 |   async trackEvent(eventName, properties = {}) {
+  245 |     if (!eventName || typeof eventName !== 'string') {
+> 246 |       console.error('Invalid event name:', eventName);
+      |               ^
+  247 |       return;
+  248 |     }
+  249 | (src/lib/tracking/trackingClient.js:246:15)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 3.1s (next.js: 23ms, application-code: 3.1s)
+ POST /api/events 200 in 4.7s (next.js: 407ms, application-code: 4.3s)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-B-LO-19?score=85 200 in 220ms (next.js: 42ms, generate-params: 15ms, application-code: 177ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 451ms (next.js: 7ms, application-code: 444ms)
+ POST /api/recommend?limit=1000 200 in 333ms (next.js: 161ms, application-code: 172ms)
+ POST /api/recommend?limit=1000 200 in 423ms (next.js: 342ms, application-code: 82ms)
+ POST /api/events 200 in 770ms (next.js: 433ms, application-code: 338ms)
+ POST /api/events 200 in 1267ms (next.js: 26ms, application-code: 1241ms)
+ GET /api/product-offers?uid=Roopsee-B-LO-19 200 in 633ms (next.js: 10ms, application-code: 623ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 697ms (next.js: 7ms, application-code: 690ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 1006ms (next.js: 11ms, application-code: 995ms)
+ POST /api/events 200 in 756ms (next.js: 7ms, application-code: 749ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 372ms (next.js: 6ms, application-code: 365ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 372ms (next.js: 11ms, application-code: 362ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 389ms (next.js: 5ms, application-code: 385ms)
+✓ Compiled in 2.1s
+ GET /products/Roopsee-B-LO-19?score=85 200 in 2.5s (next.js: 1109ms, generate-params: 21ms, application-code: 1341ms)
+Error: kill EPERM
+    at ignore-listed frames {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'kill'
+}
+⨯ uncaughtException: Error: kill EPERM
+    at ignore-listed frames {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'kill'
+}
+⨯ uncaughtException:  Error: kill EPERM
+    at ignore-listed frames {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'kill'
+}
+✓ Compiled in 1231ms
+ GET /products/Roopsee-B-LO-19?score=85 200 in 1641ms (next.js: 731ms, generate-params: 141ms, application-code: 909ms)
