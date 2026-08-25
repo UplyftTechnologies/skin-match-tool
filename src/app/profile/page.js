@@ -72,6 +72,7 @@ export default function ProfilePage() {
     const [savedProfile, setSavedProfile] = useState(null);
     const [profileLoaded, setProfileLoaded] = useState(false);
     const [userSession, setUserSession] = useState(null);
+    const [authChecked, setAuthChecked] = useState(false);
     const [linkingGoogle, setLinkingGoogle] = useState(false);
     const [linkGoogleError, setLinkGoogleError] = useState(() => {
         if (typeof window === "undefined") return "";
@@ -92,10 +93,26 @@ export default function ProfilePage() {
     }, []);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUserSession(session);
-        });
-    }, []);
+        let active = true;
+
+        supabase.auth.getSession()
+            .then(({ data: { session } }) => {
+                if (!active) return;
+                if (!session) {
+                    router.replace("/login?redirect=%2Fprofile");
+                    return;
+                }
+                setUserSession(session);
+                setAuthChecked(true);
+            })
+            .catch(() => {
+                if (active) router.replace("/login?redirect=%2Fprofile");
+            });
+
+        return () => {
+            active = false;
+        };
+    }, [router]);
 
     useEffect(() => {
         if (!window.location.search.includes("googleError")) return;
@@ -103,7 +120,7 @@ export default function ProfilePage() {
     }, [router]);
 
     useEffect(() => {
-        if (!profileLoaded) return;
+        if (!authChecked || !userSession || !profileLoaded) return;
 
         trackingService.trackPageLoad(EVENTS.PAGE_VIEWED_PROFILE, {
             page_type: "profile",
@@ -111,7 +128,7 @@ export default function ProfilePage() {
             wishlist_count: wishlistItems.length,
             phone_number: savedProfile?.phone || savedProfile?.profile?.phone || undefined,
         });
-    }, [profileLoaded, savedProfile, wishlistItems.length]);
+    }, [authChecked, profileLoaded, savedProfile, userSession, wishlistItems.length]);
 
     const profile = savedProfile?.profile;
     const avatarUrl = userSession?.user?.user_metadata?.avatar_url || null;
@@ -183,6 +200,8 @@ export default function ProfilePage() {
 
         router.push("/");
     }
+
+    if (!authChecked || !userSession) return null;
 
     return (
         <div className="min-h-screen bg-[#FAFAF8]">

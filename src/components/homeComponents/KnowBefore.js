@@ -1,5 +1,6 @@
 'use client'
 
+import { BsPatchCheckFill } from 'react-icons/bs'
 import BrandSlider from '../BrandSlider'
 
 const announcements = [
@@ -48,12 +49,18 @@ export default function KnowBefore() {
   return (
     <div>
       <AnnouncementBar />
-
       <section className="bg-[#FAF9F6] px-3 pt-7 sm:pt-9">
         <div className="mx-auto max-w-7xl text-center">
           <h2 className="font-cormorant text-[25px] leading-none tracking-[0.17em] text-black sm:text-[34px] md:text-[42px]">
             Skin <em className="italic">match</em> tool
           </h2>
+
+          <div className="mt-2 flex items-center justify-center gap-1.5 rounded-full border border-[#197a4d]/25 bg-[#eaf5ef] px-3 py-1 mx-auto w-fit">
+            <BsPatchCheckFill className="text-[#197a4d] text-[11px] sm:text-[13px]" />
+            <span className="font-lato text-[11px] font-semibold uppercase tracking-[0.05em] text-[#197a4d] sm:text-[13px] md:text-sm">
+              Doctor Verified Scores
+            </span>
+          </div>
 
           <p className="mt-1.5 font-lato text-[8px] leading-tight text-black sm:text-[10px] md:text-xs">
             Skincare Products scored for your skin across 500+ brands

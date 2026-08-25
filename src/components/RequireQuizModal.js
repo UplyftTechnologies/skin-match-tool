@@ -19,10 +19,12 @@ export default function RequireQuizModal({ open, onClose }) {
     const handleTakeQuiz = () => {
         onClose()
         requestAnimationFrame(() => {
-            document.getElementById('match-my-skin')?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start',
-            })
+            const quiz = document.getElementById('match-my-skin')
+            if (quiz) {
+                quiz.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            } else {
+                window.location.href = '/MatchStudio#match-my-skin'
+            }
         })
     }
 
@@ -41,10 +43,10 @@ export default function RequireQuizModal({ open, onClose }) {
                 </button>
 
                 <h2 className="font-cormorant italic text-2xl md:text-3xl text-gray-900 mb-2 pr-6">
-                    Take the skin quiz first
+                    Find the products to avoid
                 </h2>
                 <p className="text-sm text-gray-600 mb-6">
-                    We need a few quick answers about your skin to show you matched products.
+                    Fill in the quiz to know which product you should NOT buy as per your skin.
                 </p>
 
                 <button

@@ -60,6 +60,10 @@ export const EVENTS = {
   CLICKED_INDIAN_ROCKSTAR_BRAND: 'clicked_indian_rockstar_brand',
   CLICKED_VIEW_ALL_PRODUCTS: 'clicked_view_all_products',
 
+  // All brands page
+  PAGE_VIEWED_ALL_BRANDS: 'page_viewed_all_brands',
+  CLICKED_BRAND_TILE: 'clicked_brand_tile',
+
   // How it works page
   PAGE_VIEWED_HOW_IT_WORKS: 'page_viewed_how_it_works',
   CLICKED_HOW_IT_WORKS_CTA: 'clicked_how_it_works_cta',

@@ -17,7 +17,7 @@ function siteName(site) {
 }
 
 function roopseeStoreUrl(productUid) {
-    return `https://roopsee.com/products/${encodeURIComponent(productUid)}`
+    return `https://shop.roopsee.com/products/${encodeURIComponent(productUid)}`
 }
 
 function RetailerLogo({ site, height = 18, className = '' }) {
@@ -78,9 +78,11 @@ function Rating({ offer }) {
 
 function BuyButton({ offer, productName, primary, compact }) {
     function handleBuy() {
+        const retailerName = siteName(offer.site)
         trackingService.trackEvent(EVENTS.CLICKED_BUY_FROM_RETAILER, {
+            value: retailerName,
             site: offer.site,
-            retailer: siteName(offer.site),
+            retailer: retailerName,
             productName,
             retailerProductName: offer.product_name,
             price: offer.price,

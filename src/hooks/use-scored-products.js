@@ -37,12 +37,14 @@ export function useScoredProducts() {
         async function loadScoredProducts() {
             try {
                 setLoading(true)
-                const response = await fetch('/api/recommend?limit=1000', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(quizAnswersToScoringProfile(quizAnswers)),
-                    signal: controller.signal,
-                })
+                const response = quizAnswers
+                    ? await fetch('/api/recommend?limit=1000', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(quizAnswersToScoringProfile(quizAnswers)),
+                        signal: controller.signal,
+                    })
+                    : await fetch('/api/products', { signal: controller.signal })
                 const payload = await response.json()
 
                 if (!response.ok) {

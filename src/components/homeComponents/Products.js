@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -276,6 +276,24 @@ export default function Products() {
     }, [products, search])
 
     // Nothing to show until the quiz has actually been completed.
+    // Ported from the design branch during the merge. Declared before the
+    // early return below, because a hook cannot run conditionally.
+    useEffect(() => {
+        const term = search.trim()
+        if (!term) return undefined
+
+        const debounceTimer = window.setTimeout(() => {
+            trackingService.trackEvent(EVENTS.SEARCH_PERFORMED, {
+                value: term,
+                query: term,
+                results_count: visibleProducts.length,
+                source: 'home_products_search',
+            })
+        }, 800)
+
+        return () => window.clearTimeout(debounceTimer)
+    }, [search, visibleProducts.length])
+
     if (!quizAnswers) {
         return null
     }

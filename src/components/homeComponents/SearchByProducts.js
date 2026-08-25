@@ -1,14 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { FreeMode } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/free-mode'
-import { useQuizAnswers } from '@/hooks/use-quiz-answers'
-import RequireQuizModal from '@/components/RequireQuizModal'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
 import P1 from '@/assets/Shopbyproducts/p1.png'
@@ -35,8 +32,6 @@ function productTypeHref(type) {
 
 export default function SearchByProducts() {
     const router = useRouter()
-    const quizAnswers = useQuizAnswers()
-    const [showQuizModal, setShowQuizModal] = useState(false)
 
     const handleProductClick = (product) => {
         trackingService.trackEvent(EVENTS.CLICKED_SEARCH_BY_PRODUCT_TYPE, {
@@ -45,16 +40,11 @@ export default function SearchByProducts() {
             section: 'search_by_products',
         })
 
-        if (!quizAnswers) {
-            setShowQuizModal(true)
-            return
-        }
         router.push(productTypeHref(product.type))
     }
 
     return (
         <div className="bg-[#f8eeeb] py-6 px-4 md:py-10">
-            <RequireQuizModal open={showQuizModal} onClose={() => setShowQuizModal(false)} />
             <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
                 Search by Product
             </h2>

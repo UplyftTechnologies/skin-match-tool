@@ -1,14 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { FreeMode } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/free-mode'
-import { useQuizAnswers } from '@/hooks/use-quiz-answers'
-import RequireQuizModal from '@/components/RequireQuizModal'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
 import Face from '@/assets/images/face.webp'
@@ -37,11 +34,7 @@ function categoryHref(filters) {
 
 export default function SearchByCategory() {
     const router = useRouter()
-    const quizAnswers = useQuizAnswers()
-    const [showQuizModal, setShowQuizModal] = useState(false)
 
-    // Browsing by category still routes to the results page, but a category
-    // tile is only actionable once the skin quiz has been completed.
     const handleCategoryClick = (category) => {
         trackingService.trackEvent(EVENTS.CLICKED_SEARCH_BY_CATEGORY, {
             category: category.name,
@@ -49,16 +42,11 @@ export default function SearchByCategory() {
             section: 'search_by_category',
         })
 
-        if (!quizAnswers) {
-            setShowQuizModal(true)
-            return
-        }
         router.push(categoryHref(category.filters))
     }
 
     return (
         <div className="bg-[#dbe6e2] py-6 px-4">
-            <RequireQuizModal open={showQuizModal} onClose={() => setShowQuizModal(false)} />
             <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
                 Search by Category
             </h2>

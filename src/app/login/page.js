@@ -112,8 +112,8 @@ function LoginPageContent() {
   } = useOtpAuth({
     active: true,
     onSuccess: async () => {
-      await uploadAvatarIfNeeded()
       router.push(redirectTo)
+      uploadAvatarIfNeeded()
     },
   })
 

@@ -278,6 +278,11 @@ export default async function ProductPage({ params }) {
               />
             </div>
 
+            <p className="mt-3 flex items-start gap-1.5 text-[11.5px] leading-relaxed text-slate-400 sm:text-[12px]">
+              <FiAlertTriangle aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+              It is always advised that products shall be patch tested before use.
+            </p>
+
             {/* Signature: catalog spec "label" card */}
             {/* <div className="mt-4 rounded-none border-y border-slate-100 bg-white px-2 py-3 sm:mt-6 sm:rounded-[14px] sm:border sm:bg-slate-50/60 sm:px-5 sm:py-4">
               <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-400 sm:text-[10.5px]">

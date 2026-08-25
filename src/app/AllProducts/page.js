@@ -585,6 +585,24 @@ function ProductsPageContent() {
         setFilterOpen(false)
     }
 
+    // Ported from the design branch during the merge: one event per settled
+    // search, not one per keystroke. `total` is the server's count for the
+    // whole result set, not just the page on screen.
+    useEffect(() => {
+        const term = search.trim()
+        if (!term) return undefined
+
+        const debounceTimer = window.setTimeout(() => {
+            trackingService.trackEvent(EVENTS.SEARCH_PERFORMED, {
+                query: term,
+                results_count: totalProducts,
+                section: 'all_products',
+            })
+        }, 800)
+
+        return () => window.clearTimeout(debounceTimer)
+    }, [search, totalProducts])
+
     const firstProductNumber = totalProducts ? (currentPage - 1) * PRODUCTS_PER_PAGE + 1 : 0
     const lastProductNumber = Math.min(currentPage * PRODUCTS_PER_PAGE, totalProducts)
     const firstPageButton = Math.max(1, Math.min(currentPage - 2, totalPages - 4))

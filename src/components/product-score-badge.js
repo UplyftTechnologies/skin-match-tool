@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useQuizAnswers } from "@/hooks/use-quiz-answers";
 
 function clampScore(score) {
   if (score < 0) return 0;
@@ -38,17 +39,26 @@ function scoreColor(score) {
 
 export default function ProductScoreBadge() {
   const [score, setScore] = useState(null);
+  const quizAnswers = useQuizAnswers();
 
   useEffect(() => {
     const updateTimer = window.setTimeout(() => {
-      const raw = Number(new URLSearchParams(window.location.search).get("score"));
+      if (!quizAnswers) {
+        setScore(null);
+        return;
+      }
+
+      const rawValue = new URLSearchParams(window.location.search).get("score");
+      const raw = rawValue === null || rawValue.trim() === "" ? NaN : Number(rawValue);
       if (Number.isFinite(raw)) {
         setScore(clampScore(raw));
+      } else {
+        setScore(null);
       }
     }, 0);
 
     return () => window.clearTimeout(updateTimer);
-  }, []);
+  }, [quizAnswers]);
 
   if (score === null) return null;
 
