@@ -12,6 +12,7 @@ import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
 import { useRetailerCatalog } from '@/hooks/use-retailer-catalog'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
+import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import ScoreBadge from '@/components/score-badge'
 import VisualSearch from '@/components/visual-search'
 
@@ -227,23 +228,23 @@ export default function Products() {
     const [activeView, setActiveView] = useState('products')
     const [search, setSearch] = useState('')
     const quizAnswers = useQuizAnswers()
-    const profile = quizAnswers
-        ? {
-            selectedSkinType: quizAnswers.skinType,
-            selectedSensitive: quizAnswers.sensitive,
-            age: quizAnswers.age,
-            selectedGender: quizAnswers.gender,
-            selectedFaceBodyConcerns: quizAnswers.concerns || [],
-            selectedLipsEyesConcerns: quizAnswers.lipsEyesConcerns || [],
-            selectedSpecialConditions: quizAnswers.conditions || quizAnswers.specialConditions || [],
-        }
-        : null
+    // Must go through quizAnswersToScoringProfile, not be assembled by hand:
+    // the quiz stores raw widget answers (concern "redness", sensitive "no",
+    // condition "excessive dryness") while the engine keys on its own column
+    // names ("Redness/Irritation", boolean, "Excessive Dryness"). Hand-building
+    // it sent an unmatchable concern, which scored every product at the
+    // missing-value default and kept the 90+ band permanently empty.
+    const profile = quizAnswers ? quizAnswersToScoringProfile(quizAnswers) : null
     const { products: catalogProducts, loading, error } = useRetailerCatalog({
         search: '',
         filters: { brand: [], category: [], site: [], price: [] },
         sort: 'score_desc',
         page: 1,
         profile,
+        // One row per score band. A plain page-one fetch returns only the
+        // highest scores, which left the 'Fits With Caution' and 'Not
+        // Recommended' rows permanently empty.
+        bands: PRODUCTS_PER_ROW,
     })
     const products = catalogProducts.map((product) => ({
         ...product,

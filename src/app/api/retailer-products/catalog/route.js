@@ -5,6 +5,30 @@ import { attachScores } from "@/lib/scoring/catalog-scores";
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 20;
+const PUBLIC_CATALOG_CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600",
+};
+
+const PROFILE_CATALOG_CACHE_HEADERS = {
+  // A profile can include sensitive selections, so retain its short cache only
+  // in the visitor's browser rather than a shared CDN.
+  "Cache-Control": "private, max-age=60, stale-while-revalidate=600",
+};
+
+function catalogResponse(payload, hasProfile) {
+  return NextResponse.json(payload, {
+    headers: hasProfile ? PROFILE_CATALOG_CACHE_HEADERS : PUBLIC_CATALOG_CACHE_HEADERS,
+  });
+}
+
+// The home page shows a row per score band rather than a single ranked page.
+// Sorting by score and taking page one only ever returns the top band, so the
+// bands are filled here, where the whole scored set is in hand.
+const SCORE_BANDS = [
+  { min: 90, max: Infinity },
+  { min: 50, max: 90 },
+  { min: -Infinity, max: 50 },
+];
 
 
 const PRICE_BUCKETS = [
@@ -125,6 +149,30 @@ function weightedRating(product) {
   );
 }
 
+/** Up to `perBand` products from each score band, best first within each. */
+function pickAcrossBands(products, perBand) {
+  const used = new Set();
+  const picked = [];
+
+  for (const band of SCORE_BANDS) {
+    const row = products
+      .filter((product) => {
+        const scoring = product.scoring;
+        // A hard block is a safety veto, not a low score — it does not
+        // belong in a 'below 50' row, and would render as -100.
+        if (!scoring || scoring.blocked) return false;
+        if (used.has(product.product_uid)) return false;
+        return scoring.score >= band.min && scoring.score < band.max;
+      })
+      .sort((left, right) => right.scoring.score - left.scoring.score)
+      .slice(0, perBand);
+
+    for (const product of row) used.add(product.product_uid);
+    picked.push(...row);
+  }
+  return picked;
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
 
@@ -163,6 +211,28 @@ export async function GET(request) {
   }
 
   const matching = applyFilters(catalog, filters);
+
+  // Band mode: the caller wants a spread across score bands, not a page.
+  // Sorting by score and taking page one only ever returns the top band, which
+  // left the home page's "Fits With Caution" and "Not Recommended" rows empty.
+  const perBand = Math.min(12, Number(searchParams.get("bands")) || 0);
+  if (perBand > 0) {
+    // Without a profile there are no scores to band on, so this returns nothing
+    // rather than an arbitrary slice the caller would mis-render as bands.
+    const banded = profile ? pickAcrossBands(attachScores(matching, profile), perBand) : [];
+    return catalogResponse({
+      products: banded,
+      scored: Boolean(profile),
+      total: banded.length,
+      catalogTotal: catalog.length,
+      requiredSites: TARGET_RETAILERS,
+      page: 1,
+      totalPages: 1,
+      pageSize: banded.length,
+      facets: { brand: [], category: [], site: [], price: [] },
+    }, Boolean(profile));
+  }
+
   // Scores must be attached BEFORE sorting when sorting by score, since a
   // product's score is not a property of the catalogue row.
   const scored = sort === "score_desc" ? attachScores(matching, profile) : matching;
@@ -175,7 +245,7 @@ export async function GET(request) {
   const forSite = applyFilters(catalog, filters, { except: "site" });
   const forPrice = applyFilters(catalog, filters, { except: "price" });
 
-  return NextResponse.json({
+  return catalogResponse({
     products: attachScores(sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE), profile),
     scored: Boolean(profile),
     total: sorted.length,
@@ -194,5 +264,5 @@ export async function GET(request) {
         count: forPrice.filter((product) => bucket.test(priceOf(product))).length,
       })),
     },
-  });
+  }, Boolean(profile));
 }

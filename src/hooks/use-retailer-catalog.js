@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-function buildQuery({ search, filters, sort, page, profile }) {
+function buildQuery({ search, filters, sort, page, profile, bands }) {
     const params = new URLSearchParams()
     if (search.trim()) params.set('search', search.trim())
     for (const key of ['brand', 'category', 'site', 'price']) {
@@ -10,6 +10,8 @@ function buildQuery({ search, filters, sort, page, profile }) {
     }
     if (sort) params.set('sort', sort)
     params.set('page', String(page))
+    // Asks for a spread across score bands instead of one ranked page.
+    if (bands) params.set('bands', String(bands))
 
     // The skin-match score depends entirely on the quiz answers, so they travel
     // with the request. Without a skinType the server returns the catalogue
@@ -34,7 +36,7 @@ function buildQuery({ search, filters, sort, page, profile }) {
 // The catalogue is ~13k products, far too much to hand the browser and filter
 // client-side the way the scored catalogue did. Filtering, sorting, paging and
 // facet counts all happen on the server; this only ever holds one page.
-export function useRetailerCatalog({ search, filters, sort, page, profile }) {
+export function useRetailerCatalog({ search, filters, sort, page, profile, bands }) {
     const [state, setState] = useState({
         products: [],
         facets: { brand: [], category: [], site: [], price: [] },
@@ -49,7 +51,7 @@ export function useRetailerCatalog({ search, filters, sort, page, profile }) {
     // does not collapse to empty on every keystroke.
     const loaded = useRef(false)
 
-    const query = buildQuery({ search, filters, sort, page, profile })
+    const query = buildQuery({ search, filters, sort, page, profile, bands })
 
     useEffect(() => {
         const controller = new AbortController()

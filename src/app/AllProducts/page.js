@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -443,6 +443,9 @@ function ProductsPageContent() {
     const [sortOpen, setSortOpen] = useState(false)
     const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'rating')
     const [currentPage, setCurrentPage] = useState(() => restoredState?.currentPage || 1)
+    // A remembered sort is a deliberate choice; a brand-new visit should
+    // switch to Match score as soon as its saved/quiz profile is available.
+    const hasChosenSort = useRef(Boolean(restoredState?.selectedSort))
 
     // Live quiz answers, so retaking the quiz rescores this page immediately.
     const quizAnswers = useQuizAnswers()
@@ -468,6 +471,12 @@ function ProductsPageContent() {
         // superset of quizAnswersToScoringProfile.
         return savedProfile?.selectedSkinType ? savedProfile : null
     }, [quizAnswers, savedProfile])
+
+    useEffect(() => {
+        if (scoringProfile && !hasChosenSort.current) {
+            setSelectedSort('score_desc')
+        }
+    }, [scoringProfile])
 
     // Offering "Match score" with no profile gives a sort that changes nothing.
     const availableSortOptions = scoringProfile
@@ -637,6 +646,7 @@ function ProductsPageContent() {
                 selectedSort={selectedSort}
                 options={availableSortOptions}
                 onSelectSort={(sort) => {
+                    hasChosenSort.current = true
                     setSelectedSort(sort)
                     setCurrentPage(1)
                 }}

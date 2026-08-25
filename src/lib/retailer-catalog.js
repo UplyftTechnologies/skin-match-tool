@@ -4,6 +4,7 @@
 // appears up to six times (nykaa, tira, amazon, purplle, broadway, kindlife).
 // Listing those as separate cards would make the grid look broken, so rows are
 // collapsed to one card per product and the cheapest offer is what we show.
+import { unstable_cache } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { detectRestrictedActives } from "@/lib/scoring/ingredient-safety";
 import { listingSize, variantBaseKey } from "@/lib/variant-sizes";
@@ -245,8 +246,9 @@ async function fetchActiveRows() {
 // wire per page view, so it is held in module scope and refreshed on a timer.
 const CACHE_TTL_MS = 10 * 60 * 1000;
 let cache = null;
+let refreshPromise = null;
 
-export async function loadRetailerCatalog() {
+async function buildRetailerCatalog() {
   if (cache && Date.now() - cache.builtAt < CACHE_TTL_MS) return cache.products;
 
   try {
@@ -289,4 +291,21 @@ export async function loadRetailerCatalog() {
     if (cache) return cache.products;
     throw error;
   }
+}
+
+const loadPersistedRetailerCatalog = unstable_cache(
+  buildRetailerCatalog,
+  ["retailer-catalog-v1"],
+  { revalidate: CACHE_TTL_MS / 1000 },
+);
+
+export function loadRetailerCatalog() {
+  // Cache misses can arrive concurrently (for example, a page render and its
+  // client request). Share the one persisted-cache lookup/rebuild per process.
+  if (!refreshPromise) {
+    refreshPromise = loadPersistedRetailerCatalog().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
 }
