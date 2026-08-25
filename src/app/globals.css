@@ -1621,3 +1621,49 @@ details.payload-details summary {
   color: #dc2626;
   border-color: #fca5a5;
 }
+
+.product-slider {
+  padding: 0 34px;
+}
+
+.product-slider-nav {
+  position: absolute;
+  top: 38%;
+  transform: translateY(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 1px solid rgba(17, 17, 17, 0.06);
+  box-shadow: 0 2px 10px rgba(17, 17, 17, 0.14);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.product-slider-nav:hover {
+  box-shadow: 0 4px 14px rgba(17, 17, 17, 0.2);
+  transform: translateY(-50%) scale(1.06);
+}
+
+.product-slider-nav:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.product-slider-prev {
+  left: 0;
+}
+
+.product-slider-next {
+  right: 0;
+}
+
+.product-slider-nav-disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+  box-shadow: none;
+}

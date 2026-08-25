@@ -188,7 +188,7 @@ function ProductCard({ product, showScore }) {
                 style={{ fontSize: '11px' }}
                 className="mt-auto w-[90%] mx-auto font-semibold border rounded-full py-[8px] transition-colors duration-200 text-white bg-[#e08a7d] border-[#e08a7d] hover:bg-[#d17a6d]"
             >
-                Buy Now
+                View Products
             </button>
         </div>
     )

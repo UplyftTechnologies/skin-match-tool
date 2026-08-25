@@ -1,0 +1,97 @@
+
+> roopsee-match-studio@2.0.0 dev
+> next dev
+
+▲ Next.js 16.2.11 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://172.22.112.1:3000
+- Environments: .env
+✓ Ready in 3.2s
+Creating turbopack project { dir: 'D:\\RoopseeCompany\\skin-match-tool', testMode: true }
+- Experiments (use with caution):
+  ✓ optimizeCss
+
+○ Compiling /products/[uid] ...
+ GET /products/Roopsee-F-CL-18 200 in 14.3s (next.js: 11.5s, generate-params: 5.0s, application-code: 2.9s)
+ GET /products/Roopsee-F-CL-70?score=100 200 in 15.2s (next.js: 10.2s, generate-params: 3.8s, application-code: 5.0s)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/recommend?limit=1000 200 in 1416ms (next.js: 192ms, application-code: 1224ms)
+ POST /api/recommend?limit=1000 200 in 1412ms (next.js: 248ms, application-code: 1163ms)
+ POST /api/events 200 in 1144ms (next.js: 120ms, application-code: 1024ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 391ms (next.js: 14ms, application-code: 377ms)
+ GET /api/product-offers?uid=Roopsee-F-CL-70 200 in 2.9s (next.js: 732ms, application-code: 2.2s)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-F-CL-41?score=75 200 in 244ms (next.js: 56ms, generate-params: 30ms, application-code: 189ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/recommend?limit=1000 200 in 222ms (next.js: 87ms, application-code: 134ms)
+ POST /api/recommend?limit=1000 200 in 413ms (next.js: 296ms, application-code: 118ms)
+ POST /api/events 200 in 1072ms (next.js: 13ms, application-code: 1059ms)
+ POST /api/events 200 in 1081ms (next.js: 54ms, application-code: 1027ms)
+ GET /api/product-offers?uid=Roopsee-F-CL-41 200 in 657ms (next.js: 62ms, application-code: 595ms)
+ POST /api/events 200 in 1268ms (next.js: 77ms, application-code: 1191ms)
+[browser] Invalid event name: undefined 
+    at TrackingService.trackEvent (src/lib/tracking/trackingClient.js:246:15)
+    at loadOffers (src/components/retailer-price-compare.js:330:37)
+  244 |   async trackEvent(eventName, properties = {}) {
+  245 |     if (!eventName || typeof eventName !== 'string') {
+> 246 |       console.error('Invalid event name:', eventName);
+      |               ^
+  247 |       return;
+  248 |     }
+  249 | (src/lib/tracking/trackingClient.js:246:15)
+[browser] Image with src "/_next/static/media/nyka.17_yl_zh_-cq0.webp" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "/_next/static/media/tiira.37mvgz43e9y-s.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 370ms (next.js: 12ms, application-code: 358ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 765ms (next.js: 10ms, application-code: 756ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 363ms (next.js: 9ms, application-code: 354ms)
+✓ Compiled in 1336ms
+ GET /products/Roopsee-F-CL-41?score=75 200 in 2.3s (next.js: 801ms, generate-params: 71ms, application-code: 1515ms)
+ GET /products/Roopsee-F-CL-41?score=75 200 in 3.0s (next.js: 48ms, generate-params: 28ms, application-code: 2.9s)
+ POST /api/events 200 in 1996ms (next.js: 1028ms, application-code: 969ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 363ms (next.js: 7ms, application-code: 355ms)
+ POST /api/recommend?limit=1000 200 in 1632ms (next.js: 159ms, application-code: 1473ms)
+ POST /api/recommend?limit=1000 200 in 1634ms (next.js: 184ms, application-code: 1450ms)
+ GET /api/product-offers?uid=Roopsee-F-CL-41 200 in 2.5s (next.js: 128ms, application-code: 2.4s)
+[browser] Invalid event name: undefined 
+    at TrackingService.trackEvent (src/lib/tracking/trackingClient.js:246:15)
+    at loadOffers (src/components/retailer-price-compare.js:330:37)
+  244 |   async trackEvent(eventName, properties = {}) {
+  245 |     if (!eventName || typeof eventName !== 'string') {
+> 246 |       console.error('Invalid event name:', eventName);
+      |               ^
+  247 |       return;
+  248 |     }
+  249 | (src/lib/tracking/trackingClient.js:246:15)
+[browser] Image with src "/_next/static/media/tiira.37mvgz43e9y-s.png" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Image with src "/_next/static/media/nyka.17_yl_zh_-cq0.webp" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 357ms (next.js: 11ms, application-code: 346ms)
+✓ Compiled in 1460ms
+ GET /products/Roopsee-F-CL-41?score=75 200 in 1833ms (next.js: 629ms, generate-params: 31ms, application-code: 1204ms)
+ GET /products/Roopsee-F-CL-41?score=75 200 in 2.2s (next.js: 554ms, generate-params: 38ms, application-code: 1684ms)

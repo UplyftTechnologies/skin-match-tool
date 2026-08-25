@@ -8,18 +8,18 @@ import { quizAnswersToResultProfile } from '@/lib/quiz-profile'
 import { supabase } from '@/lib/supabase/client'
 import { saveSkinProfile } from '@/lib/profile-storage'
 
-const skinTypes = ['Oily', 'Dry', 'Normal', 'Combination', 'I dont know']
+const skinTypes = ['Oily', 'Dry', 'Normal', 'Combination', "I don't know"]
 const sensitiveOptions = ['Yes', 'No']
 const faceConcerns = [
     'Acne', 'Dryness',
     'Open pores', 'Dark spots', 'Melasma',
     'Barrier repair', 'Uneven skin', 'Comedones',
-    'Wrinkles', 'redness', 'Dehydration',
+    'Wrinkles', 'Redness', 'Dehydration',
     'Dullness', 'Tanning', 'None',
 ]
 const bodyConcerns = [
     'Body acne', 'Dryness', 'Dark spots',
-    'Barrier repair', 'Uneven skin', 'redness',
+    'Barrier repair', 'Uneven skin', 'Redness',
     'Dehydration', 'Dullness', 'Tanning', 'None',
 ]
 const specialConditions = ['Excessive dryness', 'Pregnancy', 'Breast feeding', 'None']
@@ -147,7 +147,7 @@ export default function MatchMySkin() {
     }
 
     const handleSkinTypeSelect = (type) => {
-        if (type === 'I dont know') {
+        if (type === "I don't know") {
             setShowGuideModal(true)
             return
         }
