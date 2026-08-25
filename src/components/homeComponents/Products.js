@@ -4,9 +4,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { FiSearch } from 'react-icons/fi'
+import { FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import { BsHeartFill } from 'react-icons/bs'
 import { BiHeart } from 'react-icons/bi'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { FreeMode, Navigation } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/free-mode'
+import 'swiper/css/navigation'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
@@ -28,11 +33,12 @@ const SCORE_BANDS = [
 ]
 
 const PRODUCTS_PER_ROW = 3
+const SECTION_SLIDE_COUNT = 12
 
 const DISPLAY_SCORE_BANDS = [
-    { min: 90, max: Infinity },
-    { min: 50, max: 90 },
-    { min: -Infinity, max: 50 },
+    { min: 90, max: Infinity, count: SECTION_SLIDE_COUNT },
+    { min: 50, max: 90, count: SECTION_SLIDE_COUNT },
+    { min: -Infinity, max: 50, count: SECTION_SLIDE_COUNT },
 ].slice(0, SCORE_BANDS.length)
 
 const PRODUCT_SCORE_SECTIONS = [
@@ -58,11 +64,12 @@ function pickByScoreBands(products) {
     const picked = []
 
     for (const band of DISPLAY_SCORE_BANDS) {
-        const row = productsInRange(products, band, used, PRODUCTS_PER_ROW)
+        const bandCount = band.count || PRODUCTS_PER_ROW
+        const row = productsInRange(products, band, used, bandCount)
         for (const product of row) used.add(product.product_uid)
 
-        if (band.fallback && row.length < PRODUCTS_PER_ROW) {
-            const topUp = productsInRange(products, band.fallback, used, PRODUCTS_PER_ROW - row.length)
+        if (band.fallback && row.length < bandCount) {
+            const topUp = productsInRange(products, band.fallback, used, bandCount - row.length)
             for (const product of topUp) used.add(product.product_uid)
             row.push(...topUp)
         }
@@ -217,7 +224,7 @@ function ProductCard({ product }) {
                 style={{ fontSize: '11px' }}
                 className="mt-auto w-[90%] mx-auto font-semibold border rounded-full py-[8px] transition-colors duration-200 text-white bg-[#e08a7d] border-[#e08a7d] hover:bg-[#d17a6d]"
             >
-                Buy Now
+                View Products
             </button>
         </div>
     )
@@ -403,16 +410,48 @@ export default function Products() {
                                             {section.subtitle}
                                         </span>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-6">
-                                        {sectionProducts.map((product, index) => (
-                                            <div
-                                                key={product.product_uid}
-                                                className={index === 2 ? 'hidden h-full md:block' : 'h-full'}
-                                            >
+                                    <Swiper
+                                        modules={[FreeMode, Navigation]}
+                                        slidesPerView={2.2}
+                                        spaceBetween={12}
+                                        freeMode={true}
+                                        navigation={sectionProducts.length > 1 ? {
+                                            prevEl: '.product-slider-prev',
+                                            nextEl: '.product-slider-next',
+                                            disabledClass: 'product-slider-nav-disabled',
+                                        } : false}
+                                        className="product-slider"
+                                        breakpoints={{
+                                            640: { slidesPerView: 3.2, spaceBetween: 16 },
+                                            1024: { slidesPerView: 4.2, spaceBetween: 20 },
+                                        }}
+                                    >
+                                        {sectionProducts.map((product) => (
+                                            <SwiperSlide key={product.product_uid} className="!h-auto">
                                                 <ProductCard product={product} />
-                                            </div>
+                                            </SwiperSlide>
                                         ))}
-                                    </div>
+                                        {sectionProducts.length > 1 ? (
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    aria-label="Previous products"
+                                                    className="product-slider-prev product-slider-nav"
+                                                    style={{ color: section.color }}
+                                                >
+                                                    <FiChevronLeft size={18} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    aria-label="Next products"
+                                                    className="product-slider-next product-slider-nav"
+                                                    style={{ color: section.color }}
+                                                >
+                                                    <FiChevronRight size={18} />
+                                                </button>
+                                            </>
+                                        ) : null}
+                                    </Swiper>
                                 </section>
                             )
                         })}

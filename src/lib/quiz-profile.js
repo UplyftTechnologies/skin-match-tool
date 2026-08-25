@@ -56,9 +56,14 @@ export function quizAnswersToResultProfile(answers) {
     }
 }
 
-const reverseConcernLabels = Object.fromEntries(
-    Object.entries(concernLabels).map(([key, label]) => [label, key]),
-)
+const reverseConcernLabels = {
+    ...Object.fromEntries(
+        Object.entries(concernLabels).map(([key, label]) => [label, key]),
+    ),
+    // Pill label is capitalized ("Redness"); the map key must stay lowercase for
+    // normalizedLabel() lookups, so override the reverse value here.
+    'Redness/Irritation': 'Redness',
+}
 const reverseConditionLabels = Object.fromEntries(
     Object.entries(conditionLabels).map(([key, label]) => [label, key]),
 )

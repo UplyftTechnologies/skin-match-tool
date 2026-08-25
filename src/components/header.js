@@ -44,6 +44,7 @@ export default function Header({ className = "" }) {
   const { wishlistIds } = useWishlist();
   const router = useRouter();
   const pathname = usePathname();
+  const showNavigationFlow = pathname === "/";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -91,11 +92,12 @@ export default function Header({ className = "" }) {
   }
 
   return (
-    <div className={`sticky top-0 z-[999] w-full max-w-none !mt-0 bg-[#faf7f2] border-b border-gray-100 ${className}`}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-6 py-2">
-        <Logo dark={false} onClick={handleLogoClick} />
+    <>
+      <div className={`sticky top-0 z-[999] w-full max-w-none !mt-0 bg-[#faf7f2] border-b border-gray-100 ${className}`}>
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-6 py-2">
+          <Logo dark={false} onClick={handleLogoClick} />
 
-        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
           {sessionLoaded && userSession && wishlistIds.length > 0 && (
             <Link
               href="/wishlist"
@@ -148,8 +150,33 @@ export default function Header({ className = "" }) {
               Login
             </button>
           )}
+          </div>
         </div>
       </div>
-    </div>
+      {showNavigationFlow && (
+        <nav
+          aria-label="How Roopsee works"
+          className="border-t border-black/5 bg-white px-4"
+        >
+          <ol className="relative mx-auto grid max-w-2xl grid-cols-4 py-2.5 sm:py-3">
+            <span
+              aria-hidden="true"
+              className="absolute left-[12.5%] right-[12.5%] top-[17px] h-px bg-[#ead8d3] sm:top-[19px]"
+            />
+            {["Take Quiz", "See Scores", "Finalise Product", "Buy"].map((label) => (
+              <li
+                key={label}
+                className="relative flex min-w-0 flex-col items-center gap-1.5 px-1 text-center text-[10px] font-medium leading-tight text-gray-600 sm:text-xs"
+              >
+                <span className="relative z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#d9aaa2] bg-white sm:h-4 sm:w-4">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#e8c8c2]" />
+                </span>
+                <span className="block max-w-full">{label}</span>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+    </>
   );
 }

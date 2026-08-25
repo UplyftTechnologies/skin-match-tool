@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -24,6 +22,7 @@ import RetailerPriceCompare from "@/components/retailer-price-compare";
 import SimilarProducts from "@/components/similar-products";
 import MobileProductDetails from "@/components/mobile-product-details";
 import ProductViewTracker from "@/components/tracking/product-view-tracker";
+import ProductDetailsPlayground from "@/components/product-details-playground";
 
 export const dynamicParams = false;
 
@@ -215,7 +214,7 @@ export default async function ProductPage({ params }) {
                  focus-visible:outline-[#e08a7d] sm:w-[100%] sm:px-5
                  sm:py-3.5 sm:text-[13.5px]"
               >
-                Buy Now
+                View Products
               </a>
             </div> */}
 
@@ -303,6 +302,8 @@ export default async function ProductPage({ params }) {
         {/* ------------------------------------------------- Retailer price compare */}
         {/* Renders nothing unless the strict matcher is confident this exact SKU
             (same brand, strength and size) exists at a retailer. */}
+
+        <ProductDetailsPlayground productUid={product.product_uid} />
 
         <SimilarProducts product={product} />
 
