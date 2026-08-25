@@ -95,3 +95,174 @@ Creating turbopack project { dir: 'D:\\RoopseeCompany\\skin-match-tool', testMod
 ✓ Compiled in 1460ms
  GET /products/Roopsee-F-CL-41?score=75 200 in 1833ms (next.js: 629ms, generate-params: 31ms, application-code: 1204ms)
  GET /products/Roopsee-F-CL-41?score=75 200 in 2.2s (next.js: 554ms, generate-params: 38ms, application-code: 1684ms)
+ GET /products/Roopsee-F-CL-41?score=75 200 in 2.9s (next.js: 766ms, generate-params: 45ms, application-code: 2.2s)
+ GET /products/Roopsee-F-CL-41?score=75 200 in 2.5s (next.js: 1105ms, generate-params: 667µs, application-code: 1398ms)
+ GET /products/Roopsee-F-CL-41?score=75 200 in 1260ms (next.js: 363ms, generate-params: 318µs, application-code: 897ms)
+ GET /products/Roopsee-F-CL-41?score=75 200 in 297ms (next.js: 31ms, generate-params: 18ms, application-code: 266ms)
+[browser] ./src/components/homeComponents/MatchMySkin.js:246:59
+Expected ';', '}' or <eof>
+  244 | ...
+  245 | ...ationFrame(() => {
+> 246 | ...AnimationFrame(() => {r                document.getElementById('products')?.scrollInto...
+      |                                           ^^^^^^^^
+  247 | ... behavior: 'smooth',
+  248 | ... block: 'start',
+  249 | ...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/homeComponents/MatchMySkin.js
+    ./src/app/MatchStudio/page.js
+    ./src/app/page.js 
+[browser] ./src/components/homeComponents/MatchMySkin.js:246:59
+Expected ';', '}' or <eof>
+  244 | ...
+  245 | ...ationFrame(() => {
+> 246 | ...AnimationFrame(() => {r                document.getElementById('products')?.scrollInto...
+      |                                           ^^^^^^^^
+  247 | ... behavior: 'smooth',
+  248 | ... block: 'start',
+  249 | ...
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/homeComponents/MatchMySkin.js
+    ./src/app/MatchStudio/page.js
+    ./src/app/page.js 
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /AllProducts 200 in 727ms (next.js: 563ms, application-code: 164ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 1420ms (next.js: 312ms, application-code: 1108ms)
+ POST /api/events 200 in 1147ms (next.js: 20ms, application-code: 1127ms)
+ POST /api/recommend?limit=1000 200 in 1783ms (next.js: 196ms, application-code: 1587ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 853ms (next.js: 32ms, application-code: 821ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-B-LO-13?score=99 200 in 157ms (next.js: 34ms, generate-params: 22ms, application-code: 122ms)
+ POST /api/events 200 in 342ms (next.js: 7ms, application-code: 335ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/recommend?limit=1000 200 in 101ms (next.js: 28ms, application-code: 73ms)
+ POST /api/recommend?limit=1000 200 in 304ms (next.js: 105ms, application-code: 199ms)
+ POST /api/events 200 in 676ms (next.js: 44ms, application-code: 632ms)
+ GET /api/product-offers?uid=Roopsee-B-LO-13 200 in 1598ms (next.js: 210ms, application-code: 1388ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 425ms (next.js: 12ms, application-code: 413ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET /products/Roopsee-B-LO-05?score=91 200 in 165ms (next.js: 46ms, generate-params: 12ms, application-code: 119ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/recommend?limit=1000 200 in 110ms (next.js: 14ms, application-code: 96ms)
+ POST /api/recommend?limit=1000 200 in 293ms (next.js: 124ms, application-code: 169ms)
+ POST /api/events 200 in 797ms (next.js: 7ms, application-code: 791ms)
+ POST /api/events 200 in 1366ms (next.js: 8ms, application-code: 1358ms)
+ GET /api/product-offers?uid=Roopsee-B-LO-05 200 in 1312ms (next.js: 12ms, application-code: 1299ms)
+[browser] Invalid event name: undefined 
+    at TrackingService.trackEvent (src/lib/tracking/trackingClient.js:246:15)
+    at loadOffers (src/components/retailer-price-compare.js:330:37)
+  244 |   async trackEvent(eventName, properties = {}) {
+  245 |     if (!eventName || typeof eventName !== 'string') {
+> 246 |       console.error('Invalid event name:', eventName);
+      |               ^
+  247 |       return;
+  248 |     }
+  249 | (src/lib/tracking/trackingClient.js:246:15)
+ POST /api/events 200 in 2.1s (next.js: 49ms, application-code: 2.1s)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 433ms (next.js: 35ms, application-code: 398ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 784ms (next.js: 18ms, application-code: 767ms)
+ POST /api/events 200 in 971ms (next.js: 41ms, application-code: 930ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 744ms (next.js: 10ms, application-code: 734ms)
+⨯ upstream image response failed for https://www.fixderma.com/cdn/shop/files/brightening_body_lotion.webp?v=1770033372 404
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 356ms (next.js: 8ms, application-code: 348ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 370ms (next.js: 6ms, application-code: 364ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+⨯ upstream image response failed for https://celimax.us/cdn/shop/files/celimax-the-real-noni-hydra-firming-lotion-150ml-pdp1-828X828.jpg 404
+ POST /api/events 200 in 443ms (next.js: 35ms, application-code: 407ms)
+⨯ upstream image response timed out for https://innovist.com/cdn/shop/files/Artboard2_69.jpg?v=1764073787&width=720
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+⨯ upstream image response failed for https://celimax.us/cdn/shop/files/celimax-the-real-noni-hydra-firming-lotion-150ml-pdp1-828X828.jpg 404
+ POST /api/events 200 in 355ms (next.js: 5ms, application-code: 350ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 380ms (next.js: 10ms, application-code: 370ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+⨯ upstream image response failed for https://celimax.us/cdn/shop/files/celimax-the-real-noni-hydra-firming-lotion-150ml-pdp1-828X828.jpg 404
+ POST /api/events 200 in 360ms (next.js: 6ms, application-code: 355ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 1635ms (next.js: 7ms, application-code: 1627ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+⨯ upstream image response failed for https://celimax.us/cdn/shop/files/celimax-the-real-noni-hydra-firming-lotion-150ml-pdp1-828X828.jpg 404
+ POST /api/events 200 in 719ms (next.js: 6ms, application-code: 713ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 373ms (next.js: 15ms, application-code: 359ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+⨯ upstream image response failed for https://celimax.us/cdn/shop/files/celimax-the-real-noni-hydra-firming-lotion-150ml-pdp1-828X828.jpg 404
+ POST /api/events 200 in 379ms (next.js: 11ms, application-code: 368ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 372ms (next.js: 8ms, application-code: 364ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ GET / 200 in 770ms (next.js: 272ms, application-code: 498ms)
+ POST /api/events 200 in 1263ms (next.js: 9ms, application-code: 1254ms)
+ POST /api/recommend?limit=1000 200 in 300ms (next.js: 176ms, application-code: 124ms)
+[browser] Google Analytics not loaded (src/lib/tracking/trackingClient.js:356:19)
+[browser] Clarity not loaded (src/lib/tracking/trackingClient.js:402:19)
+[browser] Amplitude not loaded (src/lib/tracking/trackingClient.js:442:19)
+ POST /api/events 200 in 410ms (next.js: 23ms, application-code: 387ms)
