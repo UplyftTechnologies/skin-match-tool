@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-function buildQuery({ search, filters, sort, page, profile, bands }) {
+function buildQuery({ search, filters, sort, page, profile, bands, productUids }) {
     const params = new URLSearchParams()
     if (search.trim()) params.set('search', search.trim())
+    for (const productUid of productUids || []) params.append('productUid', productUid)
     for (const key of ['brand', 'category', 'site', 'price']) {
         for (const value of filters[key] || []) params.append(key, value)
     }
@@ -36,7 +37,7 @@ function buildQuery({ search, filters, sort, page, profile, bands }) {
 // The catalogue is ~13k products, far too much to hand the browser and filter
 // client-side the way the scored catalogue did. Filtering, sorting, paging and
 // facet counts all happen on the server; this only ever holds one page.
-export function useRetailerCatalog({ search, filters, sort, page, profile, bands }) {
+export function useRetailerCatalog({ search, filters, sort, page, profile, bands, productUids }) {
     const [state, setState] = useState({
         products: [],
         facets: { brand: [], category: [], site: [], price: [] },
@@ -51,7 +52,7 @@ export function useRetailerCatalog({ search, filters, sort, page, profile, bands
     // does not collapse to empty on every keystroke.
     const loaded = useRef(false)
 
-    const query = buildQuery({ search, filters, sort, page, profile, bands })
+    const query = buildQuery({ search, filters, sort, page, profile, bands, productUids })
 
     useEffect(() => {
         const controller = new AbortController()

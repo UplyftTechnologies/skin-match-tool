@@ -193,6 +193,21 @@ export default function VisualSearch({ onQuery }) {
         }
     }, [open, close])
 
+    function showInProductGrid(payload) {
+        const topMatch = payload.matches?.[0]
+        // `product_name` in the retailer catalogue often already starts with
+        // its brand. Adding the brand again created a duplicated, exact phrase
+        // that the normal catalogue filter could not find.
+        const query = topMatch?.product_name || payload.query
+
+        if (!query || !onQuery) return false
+        onQuery(query, {
+            productUids: (payload.matches || []).map((item) => String(item.product_uid)),
+        })
+        close()
+        return true
+    }
+
     async function handleFile(event, source) {
         const file = event.target.files?.[0]
         event.target.value = ''
@@ -257,9 +272,6 @@ export default function VisualSearch({ onQuery }) {
                 payload = await askServer({ image: dataUrl })
             }
 
-            setResult(payload)
-            setStatus('done')
-
             if (payload.matched) {
                 trackingService.trackEvent(EVENTS.VISUAL_SEARCH_MATCHED, {
                     source,
@@ -269,6 +281,9 @@ export default function VisualSearch({ onQuery }) {
                     matchCount: payload.matches.length,
                     topMatch: payload.matches[0]?.product_name,
                 })
+                // Successful matches belong in the standard catalogue grid,
+                // where shoppers can sort, filter and compare them normally.
+                if (showInProductGrid(payload)) return
             } else {
                 trackingService.trackEvent(EVENTS.VISUAL_SEARCH_NO_MATCH, {
                     source,
@@ -277,6 +292,9 @@ export default function VisualSearch({ onQuery }) {
                     brand: payload.extracted?.brand,
                 })
             }
+
+            setResult(payload)
+            setStatus('done')
         } catch (requestError) {
             setStatus('idle')
             setError(requestError.message)
@@ -289,7 +307,7 @@ export default function VisualSearch({ onQuery }) {
     }
 
     function searchByText() {
-        if (result?.query && onQuery) onQuery(result.query)
+        if (result?.query && onQuery) onQuery(result.query, { productUids: [] })
         close()
     }
 

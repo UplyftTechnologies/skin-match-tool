@@ -443,6 +443,7 @@ function ProductsPageContent() {
     const [sortOpen, setSortOpen] = useState(false)
     const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'rating')
     const [currentPage, setCurrentPage] = useState(() => restoredState?.currentPage || 1)
+    const [visualProductUids, setVisualProductUids] = useState(() => restoredState?.visualProductUids || [])
     // A remembered sort is a deliberate choice; a brand-new visit should
     // switch to Match score as soon as its saved/quiz profile is available.
     const hasChosenSort = useRef(Boolean(restoredState?.selectedSort))
@@ -516,6 +517,7 @@ function ProductsPageContent() {
         sort: selectedSort,
         page: currentPage,
         profile: scoringProfile,
+        productUids: visualProductUids,
     })
 
     const facetOptions = useMemo(() => ({
@@ -535,8 +537,9 @@ function ProductsPageContent() {
             appliedFilters: copyFilters(appliedFilters),
             selectedSort,
             currentPage,
+            visualProductUids,
         }
-    }, [appliedFilters, currentPage, routeStateKey, search, selectedSort])
+    }, [appliedFilters, currentPage, routeStateKey, search, selectedSort, visualProductUids])
 
     const openFilters = () => {
         setDraftFilters(Object.fromEntries(
@@ -664,14 +667,16 @@ function ProductsPageContent() {
                         value={search}
                         onChange={(e) => {
                             setSearch(e.target.value)
+                            setVisualProductUids([])
                             setCurrentPage(1)
                         }}
                         placeholder="Search products or brands"
                         className="w-full pl-11 pr-12 py-3 rounded-full border border-gray-200 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-[#e08a7d] shadow-sm"
                     />
                     <VisualSearch
-                        onQuery={(value) => {
+                        onQuery={(value, visualSearch) => {
                             setSearch(value)
+                            setVisualProductUids(visualSearch?.productUids || [])
                             setCurrentPage(1)
                         }}
                     />

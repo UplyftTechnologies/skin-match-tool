@@ -74,12 +74,16 @@ function matchesSearch(product, query) {
 // count never reads as zero for something the shopper can actually still pick.
 function applyFilters(products, filters, { except } = {}) {
   return products.filter((product) => {
+    const isVisualMatch = filters.productUid.includes(String(product.product_uid));
     // The editorial both-retailers rule. Applied here rather than in the
     // shared catalogue loader, so visual search can still find products this
     // listing chooses not to show. Never exempted by `except`: it defines the
     // listing rather than narrowing it, so facet counts sit inside it too.
-    if (!product.on_target_retailers) return false;
-    if (!matchesSearch(product, filters.query)) return false;
+    // A photo search passes exact catalogue IDs and intentionally bypasses this
+    // browse-only rule: a genuine visual match should appear in the same grid
+    // even when only one retailer currently carries it.
+    if (!isVisualMatch && !product.on_target_retailers) return false;
+    if (!isVisualMatch && !matchesSearch(product, filters.query)) return false;
     if (except !== "brand" && filters.brand.length && !filters.brand.includes(product.brand_name)) {
       return false;
     }
@@ -178,6 +182,7 @@ export async function GET(request) {
 
   const filters = {
     query: (searchParams.get("search") || "").trim().toLowerCase(),
+    productUid: searchParams.getAll("productUid").filter(Boolean),
     brand: searchParams.getAll("brand").filter(Boolean),
     category: searchParams.getAll("category").filter(Boolean),
     site: searchParams.getAll("site").filter(Boolean),
