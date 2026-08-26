@@ -18,6 +18,14 @@
   --amber: #ac741b;
   --red: #b83232;
   --shadow: 0 22px 54px rgba(77, 57, 72, 0.13);
+
+  /* Stacking tiers. Everything that can overlap something else belongs on one
+     of these — the bottom nav and the photo-search sheet were both hand-set to
+     999, and because the nav is rendered after the page content in layout.js it
+     won that tie and painted over the sheet. */
+  --z-header: 100;
+  --z-bottom-nav: 200;
+  --z-overlay: 1000;
 }
 
 * {
@@ -39,6 +47,27 @@ body {
 
 html {
   overflow-x: clip;
+}
+
+/* Phones with gesture navigation reserve a strip along the bottom of the screen.
+   Anything anchored to the bottom edge — the nav bar, the last control in a
+   bottom sheet — ends with one of these so it is never half-covered. Declared
+   with @utility rather than as plain classes so `sm:pb-safe-7` and friends work
+   and so they order against Tailwind's own pb-* the way you would expect. */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility pb-safe-4 {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+@utility pb-safe-5 {
+  padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+}
+
+@utility pb-safe-7 {
+  padding-bottom: calc(1.75rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* body {
@@ -817,7 +846,7 @@ details.payload-details summary {
 .modal {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: var(--z-overlay);
   display: none;
   align-items: center;
   justify-content: center;

@@ -344,14 +344,14 @@ export default function VisualSearch({ onQuery }) {
 
             {open ? (
                 <div
-                    className="fixed inset-0 z-[999] flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+                    className="fixed inset-0 z-[var(--z-overlay)] flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
                     role="dialog"
                     aria-modal="true"
                     aria-label="Search by photo"
                     onClick={close}
                 >
                     <div
-                        className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-5 shadow-xl sm:rounded-3xl"
+                        className="max-h-[88dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-3xl bg-white p-5 pb-safe-5 shadow-xl sm:rounded-3xl"
                         onClick={(event) => event.stopPropagation()}
                     >
                         <div className="mb-4 flex items-center justify-between">

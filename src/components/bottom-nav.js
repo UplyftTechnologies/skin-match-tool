@@ -24,8 +24,7 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-[999] bg-white border-t border-gray-200"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      className="md:hidden fixed bottom-0 left-0 right-0 z-[var(--z-bottom-nav)] pb-safe bg-white border-t border-gray-200"
     >
       <div className="flex items-stretch justify-around">
         <Link

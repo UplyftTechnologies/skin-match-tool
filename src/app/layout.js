@@ -15,6 +15,9 @@ import { Cormorant_Garamond, Lato } from 'next/font/google'
 export const viewport = {
   width: "device-width",
   initialScale: 1,
+  // Without this, env(safe-area-inset-*) is always 0 and the fixed bottom nav
+  // stops short of the home indicator instead of painting behind it.
+  viewportFit: "cover",
 };
 
 export const metadata = {
@@ -106,7 +109,7 @@ export default function RootLayout({ children }) {
         <InteractionTracker />
         <GlobalQuizPrompt />
         <WishlistProvider>
-          <div className="pb-14 md:pb-0">
+          <div className="pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
             {children}
           </div>
           <BottomNav />

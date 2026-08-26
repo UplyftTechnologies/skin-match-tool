@@ -254,9 +254,9 @@ function FilterPanel({
     if (!open) return null
 
     return (
-        <div className="fixed inset-0 z-[1000] bg-black/40" onClick={onClose}>
+        <div className="fixed inset-0 z-[var(--z-overlay)] bg-black/40" onClick={onClose}>
             <div
-                className="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:right-auto md:bottom-auto md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[420px] max-h-[85vh] flex flex-col"
+                className="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:right-auto md:bottom-auto md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[420px] max-h-[85dvh] flex flex-col overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -328,7 +328,7 @@ function FilterPanel({
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 px-5 py-4 border-t border-gray-100">
+                <div className="flex items-center gap-3 px-5 pt-4 pb-safe-4 border-t border-gray-100">
                     <button
                         onClick={onClose}
                         className="flex-1 text-sm font-medium text-[#e08a7d] border border-[#e08a7d] rounded-full py-3 hover:bg-[#fdf0ee] transition-colors"
@@ -351,9 +351,9 @@ function SortPanel({ open, onClose, onApply, selectedSort, onSelectSort, options
     if (!open) return null
 
     return (
-        <div className="fixed inset-0 z-[1000] bg-black/40" onClick={onClose}>
+        <div className="fixed inset-0 z-[var(--z-overlay)] bg-black/40" onClick={onClose}>
             <div
-                className="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:right-auto md:bottom-auto md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[380px] max-h-[70vh] flex flex-col"
+                className="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:right-auto md:bottom-auto md:-translate-x-1/2 md:-translate-y-1/2 bg-white rounded-t-2xl md:rounded-2xl w-full md:w-[380px] max-h-[70dvh] flex flex-col overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -378,7 +378,7 @@ function SortPanel({ open, onClose, onApply, selectedSort, onSelectSort, options
                     ))}
                 </div>
 
-                <div className="px-5 py-4 border-t border-gray-100">
+                <div className="px-5 pt-4 pb-safe-4 border-t border-gray-100">
                     <button
                         onClick={onApply}
                         className="w-full text-sm font-medium text-white bg-[#f3a99a] rounded-full py-3 hover:bg-[#e08a7d] transition-colors"

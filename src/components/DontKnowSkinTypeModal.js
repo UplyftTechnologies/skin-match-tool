@@ -62,9 +62,9 @@ export default function DontKnowSkinTypeModal({ open, onClose }) {
     if (!open) return null
 
     return (
-        <div className="fixed inset-0 z-[1000] bg-black/40 flex items-center justify-center px-4" onClick={onClose}>
+        <div className="fixed inset-0 z-[var(--z-overlay)] bg-black/40 flex items-center justify-center px-4" onClick={onClose}>
             <div
-                className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto p-6 relative"
+                className="bg-white rounded-2xl w-full max-w-md max-h-[85dvh] overflow-y-auto overscroll-contain p-6 relative"
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
