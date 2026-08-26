@@ -89,12 +89,17 @@ const COMFORT_CLEANSER_TERMS = [
  * Scores every product in the dataset against one quiz profile.
  *
  * @param {object} profile { skinType, sensitive, age, gender, concern, specialConditions }
+ * @param {Array}  [subset] score only these dataset products. Rank fusion
+ *   computes percentiles across whatever it is given, so passing the
+ *   products the catalogue can actually show both cuts the work and ranks
+ *   against the visible set rather than 14k rows most of which are hidden.
+ *   Scores themselves do not depend on other products, only tie-breaks do.
  * @returns {Array} rows sorted best first: { product, score, evidenceScore, featureScores, rankingScore }
  */
-export function scoreAll(profile) {
+export function scoreAll(profile, subset) {
   const loaded = SCORED_DATASET();
   const scoreColumnIndex = loaded.scoreColumnIndex;
-  const products = loaded.products;
+  const products = subset?.length ? subset : loaded.products;
   // The block reads weights off dataset.metadata; the trimmed file stores them
   // at the top level, so they are re-nested here rather than edited in-block.
   const dataset = {

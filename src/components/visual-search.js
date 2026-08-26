@@ -11,8 +11,8 @@ import { productPath } from '@/lib/site'
 // Phone cameras produce 3-5MB frames. The label text survives a downscale to
 // 1280px easily, and shrinking before upload is the difference between a
 // request that feels instant on mobile data and one that times out.
-const MAX_EDGE = 1280
-const JPEG_QUALITY = 0.82
+const MAX_EDGE = 1024
+const JPEG_QUALITY = 0.78
 
 function readAsDataUrl(file) {
     return new Promise((resolve, reject) => {

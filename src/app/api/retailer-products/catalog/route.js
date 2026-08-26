@@ -224,7 +224,7 @@ export async function GET(request) {
   if (perBand > 0) {
     // Without a profile there are no scores to band on, so this returns nothing
     // rather than an arbitrary slice the caller would mis-render as bands.
-    const banded = profile ? pickAcrossBands(attachScores(matching, profile), perBand) : [];
+    const banded = profile ? pickAcrossBands(attachScores(matching, profile, matching), perBand) : [];
     return catalogResponse({
       products: banded,
       scored: Boolean(profile),
@@ -240,7 +240,7 @@ export async function GET(request) {
 
   // Scores must be attached BEFORE sorting when sorting by score, since a
   // product's score is not a property of the catalogue row.
-  const scored = sort === "score_desc" ? attachScores(matching, profile) : matching;
+  const scored = sort === "score_desc" ? attachScores(matching, profile, matching) : matching;
   const sorted = sortProducts(scored, sort);
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -251,7 +251,7 @@ export async function GET(request) {
   const forPrice = applyFilters(catalog, filters, { except: "price" });
 
   return catalogResponse({
-    products: attachScores(sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE), profile),
+    products: attachScores(sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE), profile, matching),
     scored: Boolean(profile),
     total: sorted.length,
     catalogTotal: catalog.length,

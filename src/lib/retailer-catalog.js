@@ -299,6 +299,19 @@ const loadPersistedRetailerCatalog = unstable_cache(
   { revalidate: CACHE_TTL_MS / 1000 },
 );
 
+/**
+ * Populates the in-process cache without going through unstable_cache.
+ *
+ * unstable_cache needs Next's request-scoped incremental cache, which does
+ * not exist during instrumentation.register() — calling loadRetailerCatalog()
+ * there throws "Invariant: incrementalCache missing". Building directly fills
+ * the module-scope cache that buildRetailerCatalog checks first, so the first
+ * real request still returns immediately.
+ */
+export function warmRetailerCatalog() {
+  return buildRetailerCatalog();
+}
+
 export function loadRetailerCatalog() {
   // Cache misses can arrive concurrently (for example, a page render and its
   // client request). Share the one persisted-cache lookup/rebuild per process.

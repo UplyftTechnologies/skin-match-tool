@@ -3,7 +3,7 @@
 > next dev
 
 ▲ Next.js 16.2.11 (Turbopack)
-- Local:         http://localhost:3000
+- Local:         http://localhost:3001
 - Network:       http://172.22.112.1:3000
 - Environments: .env
 ✓ Ready in 3.2s

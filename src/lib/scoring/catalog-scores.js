@@ -23,13 +23,29 @@ function profileKey(profile) {
   ]);
 }
 
+// The dataset holds 14,119 products; the catalogue can only ever show the
+// ones it joined to. Scoring the rest was ~15x wasted work on every cold
+// pass — the first scoreAll measured 12.6s against 610ms warm, and both
+// numbers scale with how many products are scored.
+let subsetCache = null;
+
+function datasetSubsetFor(urlKeys) {
+  if (subsetCache?.source === urlKeys) return subsetCache.subset;
+  const { products } = SCORED_DATASET();
+  const subset = products.filter((product) => urlKeys.has(product.urlKey));
+  subsetCache = { source: urlKeys, subset };
+  return subset;
+}
+
 /** Map of dataset urlKey -> score record, for one profile. */
-export function scoresByUrlKey(profile) {
-  const key = profileKey(profile);
+export function scoresByUrlKey(profile, urlKeys) {
+  // The key includes the catalogue size so a rebuilt catalogue does not
+  // keep serving scores ranked against the previous one.
+  const key = `${profileKey(profile)}|${urlKeys ? urlKeys.size : 0}`;
   const hit = memo.get(key);
   if (hit && Date.now() - hit.builtAt < MEMO_TTL_MS) return hit.map;
 
-  const rows = scoreAll(profile);
+  const rows = scoreAll(profile, urlKeys ? datasetSubsetFor(urlKeys) : undefined);
   const map = new Map();
   rows.forEach((row, index) => {
     if (!row.product.urlKey) return;
@@ -78,9 +94,16 @@ function overriddenByIngredients(product, risk) {
 }
 
 /** Attaches a score to each catalogue card that has one. */
-export function attachScores(products, profile) {
+export function attachScores(products, profile, scope) {
   if (!profile) return products.map((product) => ({ ...product, scoring: null }));
-  const scores = scoresByUrlKey(profile);
+  // `scope` is the set the ranks are computed against — the whole filtered
+  // result set, not just the page being annotated. Deriving it from
+  // `products` would rescore on every page and rank 20 products against
+  // each other instead of against the full list.
+  const urlKeys = new Set(
+    (scope || products).map((product) => retailerUrlKey(product.product_url)).filter(Boolean),
+  );
+  const scores = scoresByUrlKey(profile, urlKeys);
   const risk = riskyProfile(profile);
 
   return products.map((product) => {

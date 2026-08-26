@@ -28,7 +28,11 @@ export function retailerUrlKey(value) {
   }
 }
 
-let cache = null;
+// Held on globalThis, not in module scope. Next bundles instrumentation,
+// route handlers and server components separately, so a module-scope cache
+// is filled once per bundle — the startup warm-up populated its own copy
+// and the API route still paid the full read on its first request.
+const CACHE_KEY = Symbol.for("__roopseeScoringDataset");
 
 /**
  * Parsed once per server process. The engine reads it on every scoring pass,
@@ -36,7 +40,8 @@ let cache = null;
  * every caller has to thread through.
  */
 export function SCORED_DATASET() {
-  if (cache) return cache;
+  const shared = globalThis[CACHE_KEY];
+  if (shared) return shared;
 
   const raw = JSON.parse(fs.readFileSync(DATASET_PATH, "utf8"));
 
@@ -64,7 +69,7 @@ export function SCORED_DATASET() {
     if (product.urlKey && !byUrlKey.has(product.urlKey)) byUrlKey.set(product.urlKey, product);
   }
 
-  cache = {
+  const cache = {
     products,
     byUrlKey,
     scoreColumns: raw.scoreColumns || [],
@@ -74,5 +79,6 @@ export function SCORED_DATASET() {
     generatedAt: raw.generatedAt,
     sourceGeneratedAt: raw.sourceGeneratedAt,
   };
+  globalThis[CACHE_KEY] = cache;
   return cache;
 }
