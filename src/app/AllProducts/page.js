@@ -409,6 +409,15 @@ function ProductsPageContent() {
     const [sortOpen, setSortOpen] = useState(false)
     const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'score_desc')
     const [currentPage, setCurrentPage] = useState(() => restoredState?.currentPage || 1)
+    const [isMobile, setIsMobile] = useState(false)
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(max-width: 639px)')
+        const updateIsMobile = () => setIsMobile(mediaQuery.matches)
+        updateIsMobile()
+        mediaQuery.addEventListener('change', updateIsMobile)
+        return () => mediaQuery.removeEventListener('change', updateIsMobile)
+    }, [])
 
     const availableFilterTabs = hasQuizAnswers ? filterTabs : filterTabs.filter((tab) => tab.key !== 'score')
     const availableSortOptions = hasQuizAnswers ? sortOptions : sortOptions.filter((option) => !option.value.startsWith('score_'))
@@ -571,9 +580,10 @@ function ProductsPageContent() {
 
     const firstProductNumber = totalProducts ? (currentPage - 1) * PRODUCTS_PER_PAGE + 1 : 0
     const lastProductNumber = Math.min(currentPage * PRODUCTS_PER_PAGE, totalProducts)
-    const firstPageButton = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
+    const maxPageButtons = isMobile ? 4 : 5
+    const firstPageButton = Math.max(1, Math.min(currentPage - 2, totalPages - maxPageButtons + 1))
     const pageNumbers = Array.from(
-        { length: Math.min(5, totalPages) },
+        { length: Math.min(maxPageButtons, totalPages) },
         (_, index) => Math.max(1, firstPageButton) + index,
     )
 
