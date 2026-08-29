@@ -13,7 +13,7 @@ import {
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
 
-const ACTIVE_COLOR = "#ff00e6";
+const ACTIVE_COLOR = "#D60B86";
 
 export default function BottomNav() {
   const pathname = usePathname();
