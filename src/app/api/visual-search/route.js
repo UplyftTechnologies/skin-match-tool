@@ -9,12 +9,24 @@ export const maxDuration = 60;
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MEDIA = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
-// Product-label extraction is a short vision task. Haiku is Anthropic's
-// fastest vision-capable current model; deployments can still override this
-// without a code change if they need to trade latency for more reasoning.
-const VISUAL_MODEL = process.env.ANTHROPIC_VISUAL_MODEL || "claude-haiku-4-5";
+// Reading a stylised logo off a hand-held photo is not the easy vision task it
+// looks like, and Haiku was the wrong trade here. Measured over 24 packs shot
+// with tilt, glare and a cluttered background: Haiku 4.5 returned a *different*
+// brand on 3 of 10 packs across repeat runs and got the brand right 21/30,
+// against 1 of 10 and 24/30 for Opus 5. Its failure mode is the damaging one —
+// asked for a brand it cannot read, it picks a plausible neighbour out of the
+// supplied list (an Aqualogica pack came back as ACICARE, then AESTURA, then
+// AMOREPACIFIC), and a wrong brand sends every downstream rule confidently to
+// the wrong product rather than to no product. Opus 5 also reads names far more
+// precisely ("Vinoperfect Glycolic Peel Mask", not "Vinoperfect"), which is
+// what the matcher actually scores on.
+//
+// The cost is real and deliberate: ~4.5s median instead of ~2.3s, and ~$0.017
+// per search instead of ~$0.003. Deployments that would rather have the latency
+// back can still set ANTHROPIC_VISUAL_MODEL.
+const VISUAL_MODEL = process.env.ANTHROPIC_VISUAL_MODEL || "claude-opus-5";
 
-// The catalog is small enough (~400 products, ~65 brands) to hand Claude the
+// The catalog is small enough (~1,900 products, 127 brands) to hand Claude the
 // full brand list. Constraining the brand to something we actually stock is
 // what turns a free-text guess into a value the matcher below can use — brand
 // is the one attribute every downstream rule keys on.
@@ -80,6 +92,8 @@ function systemPrompt(brands) {
     brands.join(" | "),
     "",
     "If the brand on the package is genuinely not in that list, return what is printed on the package instead.",
+    "That list is for spelling a brand you have already read, never a menu to choose from.",
+    "If you cannot actually read the brand off this package, return an empty brand. Never substitute a similar-looking or alphabetically nearby name from the list.",
   ].join("\n");
 }
 
@@ -142,7 +156,16 @@ export async function POST(request) {
   // no upload, no per-search cost — the same matcher does the rest.
   const scannedText = String(body?.text || "").slice(0, 4000).trim();
   if (scannedText) {
-    const products = await loadRetailerCatalog();
+    let products;
+    try {
+      products = await loadRetailerCatalog();
+    } catch (error) {
+      console.error("Visual search could not load the catalogue:", error?.message || error);
+      return NextResponse.json(
+        { error: "Product search is warming up. Please try again in a moment." },
+        { status: 503 },
+      );
+    }
     const { brand, matches: rawMatches, confident } = rankCatalogMatchesFromText(products, scannedText);
     const matches = dedupeMatches(rawMatches);
     const extracted = { brand, product_name: "", scanned_text: scannedText };
@@ -181,18 +204,38 @@ export async function POST(request) {
     return NextResponse.json({ error: "That photo is too large." }, { status: 413 });
   }
 
-  const products = await loadRetailerCatalog();
+  // Loading the catalogue is the one step before this that can reject. Left
+  // unguarded it surfaced as an unhandled rejection mid-response — a 500 with
+  // no JSON body, which the dialog could only render as a generic failure.
+  let products;
+  try {
+    products = await loadRetailerCatalog();
+  } catch (error) {
+    console.error("Visual search could not load the catalogue:", error?.message || error);
+    return NextResponse.json(
+      { error: "Product search is warming up. Please try again in a moment." },
+      { status: 503 },
+    );
+  }
 
   let extracted;
   try {
-    const response = await anthropic.messages.create({
+    // messages.parse(), not messages.create(): `parsed_output` below is only
+    // populated by parse(). Under create() it was undefined on every single
+    // request, so the JSON.parse fallback had quietly been doing all the work —
+    // and that fallback throws the whole request into a 502 the moment the
+    // model puts anything at all around the JSON.
+    const response = await anthropic.messages.parse({
       model: VISUAL_MODEL,
-      // The JSON extraction response is tiny. A small cap lets the API finish
-      // promptly and prevents verbose output from delaying the result.
-      max_tokens: 512,
+      // The extraction JSON is tiny, but Opus 5 thinks by default and that
+      // shares the budget — 512 truncated it mid-object. Effort stays low
+      // because reading a label is not a reasoning problem.
+      max_tokens: 4096,
       // cache_control marks the brand list as a stable prefix: it is the same
       // on every request, so after the first it is served from cache instead
-      // of re-read, which is most of the time-to-first-token here.
+      // of re-read. Note this only bites above the model's minimum cacheable
+      // prefix — the prompt is ~1.1k tokens, which cached on Opus 5 but was
+      // silently below Haiku 4.5's floor and never produced a single hit.
       system: [
         {
           type: "text",
@@ -201,6 +244,7 @@ export async function POST(request) {
         },
       ],
       output_config: {
+        effort: "low",
         format: { type: "json_schema", schema: EXTRACTION_SCHEMA },
       },
       messages: [

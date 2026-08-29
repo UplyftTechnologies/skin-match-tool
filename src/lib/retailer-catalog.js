@@ -4,7 +4,6 @@
 // appears up to six times (nykaa, tira, amazon, purplle, broadway, kindlife).
 // Listing those as separate cards would make the grid look broken, so rows are
 // collapsed to one card per product and the cheapest offer is what we show.
-import { unstable_cache } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { detectRestrictedActives } from "@/lib/scoring/ingredient-safety";
 import { listingSize, variantBaseKey } from "@/lib/variant-sizes";
@@ -293,30 +292,29 @@ async function buildRetailerCatalog() {
   }
 }
 
-const loadPersistedRetailerCatalog = unstable_cache(
-  buildRetailerCatalog,
-  ["retailer-catalog-v1"],
-  { revalidate: CACHE_TTL_MS / 1000 },
-);
-
 /**
- * Populates the in-process cache without going through unstable_cache.
+ * Populates the in-process cache before the first request arrives.
  *
- * unstable_cache needs Next's request-scoped incremental cache, which does
- * not exist during instrumentation.register() — calling loadRetailerCatalog()
- * there throws "Invariant: incrementalCache missing". Building directly fills
- * the module-scope cache that buildRetailerCatalog checks first, so the first
- * real request still returns immediately.
+ * Identical to loadRetailerCatalog() now that there is only one cache layer;
+ * kept as its own name because instrumentation.register() reads better calling
+ * a "warm" function, and because it documents that the warm-up is deliberate.
  */
 export function warmRetailerCatalog() {
-  return buildRetailerCatalog();
+  return loadRetailerCatalog();
 }
 
 export function loadRetailerCatalog() {
+  // This used to also go through unstable_cache. Next's data cache refuses any
+  // entry over 2MB and the built catalogue is ~8.6MB, so every attempt to
+  // persist it threw — as an unhandled rejection that took the whole response
+  // down with a 500. It was redundant regardless: buildRetailerCatalog already
+  // holds the catalogue in module scope on the same TTL, nothing ever tagged or
+  // revalidated the entry, and instrumentation.js warms the process at boot.
+  //
   // Cache misses can arrive concurrently (for example, a page render and its
-  // client request). Share the one persisted-cache lookup/rebuild per process.
+  // client request). Share the one rebuild per process.
   if (!refreshPromise) {
-    refreshPromise = loadPersistedRetailerCatalog().finally(() => {
+    refreshPromise = buildRetailerCatalog().finally(() => {
       refreshPromise = null;
     });
   }
