@@ -27,6 +27,8 @@ const CATALOG_FIELDS = [
   "image_url",
   "gtin",
   "ingredients",
+  "product_attributes",
+  "key_ingredients",
 ].join(",");
 
 const PAGE_SIZE = 1000;
@@ -126,6 +128,50 @@ function isBetterOffer(candidate, current) {
   return candidatePrice < currentPrice;
 }
 
+// Retailers scrape their own spec tables into `product_attributes`, so the
+// key casing and wording drift ("Skin type" vs "Skin Type") and any one
+// listing may have scraped nothing at all. Scanning every sibling listing in
+// the family for the first retailer that *did* capture the field finds real
+// data far more often than trusting whichever row happens to be primary.
+function pickListedAttribute(rows, keyNames) {
+  const wanted = new Set(keyNames.map((name) => name.toLowerCase()));
+  for (const row of rows) {
+    const attributes = row?.product_attributes || {};
+    for (const [key, value] of Object.entries(attributes)) {
+      if (!wanted.has(key.trim().toLowerCase())) continue;
+      const formatted = Array.isArray(value) ? value.join(", ") : String(value || "").trim();
+      if (formatted) return formatted;
+    }
+  }
+  return "";
+}
+
+// Shared by the retailer product page's price-compare panel and the Product
+// Playground comparison table, so both read the same facts the same way.
+export function deriveSkinFacts(rows, categoryRow) {
+  const skinType = pickListedAttribute(rows, ["skin type"]);
+  const concern = pickListedAttribute(rows, ["concern", "skin concern"]);
+  const activeIngredient =
+    pickListedAttribute(rows, ["active ingredients", "active ingredient"]) ||
+    rows.find((row) => row?.key_ingredients?.length)?.key_ingredients?.join(", ") ||
+    "";
+  const hasIngredientList = rows.some((row) => Boolean(row?.ingredients));
+  const sensitivity = skinType.toLowerCase().includes("sensitive")
+    ? "Suitable for sensitive skin"
+    : "";
+  const suitableFor = [skinType, concern].filter(Boolean).join(" · ");
+
+  return {
+    baseType: categoryRow ? canonicalCategory(categoryRow) : "",
+    skinType,
+    concern,
+    activeIngredient,
+    sensitivity,
+    suitableFor,
+    hasIngredientList,
+  };
+}
+
 function toCard(primary, group) {
   const prices = group.map(priceOf).filter((value) => value !== null);
   const rated = group.filter((row) => Number(row.rating) > 0);
@@ -141,6 +187,7 @@ function toCard(primary, group) {
       group.flatMap((row) => detectRestrictedActives(row).map((rule) => rule.id)),
     ),
   ];
+  const skinFacts = deriveSkinFacts(group, primary);
 
   return {
     product_uid: String(primary.id),
@@ -162,6 +209,12 @@ function toCard(primary, group) {
     sites: [...new Set(group.map((row) => row.site))],
     lowest_price: prices.length ? Math.min(...prices) : null,
     gtin: normalizeGtin(primary.gtin),
+    skin_type: skinFacts.skinType,
+    concern: skinFacts.concern,
+    active_ingredient: skinFacts.activeIngredient,
+    sensitivity: skinFacts.sensitivity,
+    suitable_for: skinFacts.suitableFor,
+    has_ingredient_list: skinFacts.hasIngredientList,
   };
 }
 

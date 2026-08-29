@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { FiArrowRight, FiCheck, FiChevronDown, FiGitMerge } from 'react-icons/fi'
 
@@ -26,6 +26,9 @@ function keyIngredients(product) {
         ...(Array.isArray(product.secondary_hero_ingredients)
             ? product.secondary_hero_ingredients
             : String(product.secondary_hero_ingredients || '').split(/[,;|]/)),
+        // Retailer-catalogue products carry no curated hero ingredient, only
+        // whatever a retailer's own spec table scraped as "Active Ingredients".
+        ...String(product.active_ingredient || '').split(/[,;|]/),
     ]
         .map((value) => String(value || '').trim())
         .filter(Boolean)
@@ -37,6 +40,21 @@ function keyIngredients(product) {
         .map((value) => value.trim())
         .filter(Boolean)
         .slice(0, 4)
+}
+
+// Retailer-catalogue products carry these (scraped from a retailer's own spec
+// table — see deriveSkinFacts in lib/retailer-catalog.js); Roopsee-catalogue
+// products never do, so a row is only rendered when at least one side has a
+// real value rather than showing "Not specified" pairs by default.
+function specRows(left, right) {
+    return [
+        ['Base type', left.product_type, right.product_type],
+        ['Skin type', left.skin_type, right.skin_type],
+        ['Skin concern', left.concern, right.concern],
+        ['Sensitivity', left.sensitivity, right.sensitivity],
+        ['Suitable for', left.suitable_for, right.suitable_for],
+        ['Ingredients listed', left.has_ingredient_list ? 'Yes' : '', right.has_ingredient_list ? 'Yes' : ''],
+    ].filter(([, leftValue, rightValue]) => leftValue || rightValue)
 }
 
 function suitability(product, skinType) {
@@ -287,14 +305,6 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
                             <p className="flex items-center justify-center border-x border-gray-200 bg-[#faf8f6] px-2 py-4 text-center font-bold text-gray-500 sm:px-4">Key ingredients</p>
                             <IngredientComparison product={right} />
 
-                            <p className="border-t border-gray-200 px-2 py-4 text-center font-medium text-gray-700 sm:px-4">
-                                {left.when_to_use || left.base_when_to_use || 'Follow product instructions'}
-                            </p>
-                            <p className="flex items-center justify-center border border-b-0 border-gray-200 bg-[#faf8f6] px-2 py-4 text-center font-bold text-gray-500 sm:px-4">When to use</p>
-                            <p className="border-t border-gray-200 px-2 py-4 text-center font-medium text-gray-700 sm:px-4">
-                                {right.when_to_use || right.base_when_to_use || 'Follow product instructions'}
-                            </p>
-
                             <p className="border-t border-gray-200 px-2 py-4 text-center leading-5 text-gray-700 sm:px-4">
                                 {suitability(left, quizAnswers?.skinType)}
                             </p>
@@ -302,6 +312,20 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
                             <p className="border-t border-gray-200 px-2 py-4 text-center leading-5 text-gray-700 sm:px-4">
                                 {suitability(right, quizAnswers?.skinType)}
                             </p>
+
+                            {specRows(left, right).map(([label, leftValue, rightValue]) => (
+                                <Fragment key={label}>
+                                    <p className="border-t border-gray-200 px-2 py-4 text-center leading-5 text-gray-700 sm:px-4">
+                                        {leftValue || 'Not listed'}
+                                    </p>
+                                    <p className="flex items-center justify-center border border-b-0 border-gray-200 bg-[#faf8f6] px-2 py-4 text-center font-bold text-gray-500 sm:px-4">
+                                        {label}
+                                    </p>
+                                    <p className="border-t border-gray-200 px-2 py-4 text-center leading-5 text-gray-700 sm:px-4">
+                                        {rightValue || 'Not listed'}
+                                    </p>
+                                </Fragment>
+                            ))}
                         </div>
                         {winner ? (
                             <p className="mx-auto mt-4 flex max-w-2xl items-start gap-2 border-l-2 border-[#d77465] bg-white px-3 py-3 text-[11px] leading-5 text-gray-600 sm:text-xs">
