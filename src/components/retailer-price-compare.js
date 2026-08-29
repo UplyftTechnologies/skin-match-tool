@@ -3,48 +3,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { FiChevronUp, FiExternalLink, FiStar, FiTag, FiThumbsUp, FiX } from 'react-icons/fi'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
-import Amazon from '@/assets/images/amazon.png'
-import Tira from '@/assets/images/tiira.png'
-import Nyka from '@/assets/images/nyka.webp'
-import Image from 'next/image'
-
-
-const SITE_LOGOS = { nykaa: Nyka, tira: Tira, amazon: Amazon }
-const SITE_NAMES = { nykaa: 'Nykaa', tira: 'Tira', amazon: 'Amazon', roopsee: 'Roopsee' }
-
-function siteName(site) {
-    return SITE_NAMES[site] || site
-}
+import RetailerLogo, { siteName } from '@/components/retailer-logo'
 
 function roopseeStoreUrl(productUid) {
     return `https://shop.roopsee.com/products/${encodeURIComponent(productUid)}`
-}
-
-function RetailerLogo({ site, height = 18, className = '' }) {
-    if (site === 'roopsee') {
-        return (
-            <span
-                className={`font-semibold text-black ${className}`}
-                style={{ fontSize: height * 0.62, letterSpacing: '-0.02em' }}
-            >
-                roopsee<span style={{ color: '#ff00e6' }}>.</span>
-            </span>
-        )
-    }
-    const logo = SITE_LOGOS[site]
-    if (!logo) {
-        return <span className={`font-bold ${className}`}>{siteName(site)}</span>
-    }
-    return (
-        <Image
-            src={logo}
-            alt={siteName(site)}
-            height={height}
-            width={height * 3}
-            style={{ height, width: 'auto' }}
-            className={`object-contain ${className}`}
-        />
-    )
 }
 
 function formatPrice(value) {

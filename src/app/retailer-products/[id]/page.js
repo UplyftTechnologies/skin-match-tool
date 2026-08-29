@@ -23,6 +23,7 @@ import { detectRestrictedActives } from "@/lib/scoring/ingredient-safety";
 import RetailerSimilarProducts from "@/components/retailer-similar-products";
 import RetailerProductPlayground from "@/components/retailer-product-playground";
 import TypicalPriceRange from "@/components/typical-price-range";
+import RetailerLogo, { siteName } from "@/components/retailer-logo";
 
 export const dynamic = "force-dynamic";
 
@@ -476,9 +477,9 @@ export default async function RetailerProductPage({ params }) {
                 </span>
               </div>
 
-              <h1 className="mt-1 break-words font-lato text-[16px] font-semibold leading-tight text-slate-950 sm:mt-2 sm:text-3xl">
+              <h2 className="mt-1 break-words font-lato text-[16px] font-semibold leading-tight text-slate-950 sm:mt-2 sm:text-3xl">
                 {product.product_name}
-              </h1>
+              </h2>
 
 
               {/* Size selector — unchanged. */}
@@ -561,10 +562,8 @@ export default async function RetailerProductPage({ params }) {
                             className={`flex items-center gap-3 px-3 py-3 sm:px-4 ${isLowest ? "bg-rose-50/60" : "bg-white"}`}
                           >
                             <div className="min-w-0 flex-1">
-                              <p className="truncate text-[13px] font-extrabold uppercase tracking-wide text-slate-800">
-                                {item.site}
-                              </p>
-                              <p className="mt-0.5 truncate text-[11px] text-slate-400">
+                              <RetailerLogo site={item.site} height={16} />
+                              <p className="mt-1 truncate text-[11px] text-slate-400">
                                 {item.id === product.id ? "You are viewing this" : item.variant || canonicalSize(item.product_name) || "Standard size"}
                               </p>
                             </div>
@@ -603,7 +602,7 @@ export default async function RetailerProductPage({ params }) {
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f3a99a] px-7 py-3 text-sm font-bold text-white transition hover:bg-[#e08a7d]"
                   >
-                    View on {product.site}
+                    View on {siteName(product.site)}
                     <FiExternalLink aria-hidden="true" />
                   </a>
                 ) : null}
