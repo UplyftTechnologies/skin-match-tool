@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 
 function buildQuery({ search, filters, sort, page, profile, bands, productUids }) {
     const params = new URLSearchParams()
+    // Bump when the public catalogue card shape changes so the browser does
+    // not reuse a previously cached response that is missing new fields.
+    params.set('schema', '2')
     if (search.trim()) params.set('search', search.trim())
     for (const productUid of productUids || []) params.append('productUid', productUid)
     for (const key of ['brand', 'category', 'site', 'price']) {

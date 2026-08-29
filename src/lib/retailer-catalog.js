@@ -196,6 +196,7 @@ function toCard(primary, group) {
     brand_name: primary.brand,
     category: canonicalCategory(primary),
     product_type: canonicalCategory(primary),
+    size: listingSize(primary) || primary.variant || "",
     site: primary.site,
     image: primary.image_url || "",
     product_url: primary.product_url || "",
@@ -215,6 +216,9 @@ function toCard(primary, group) {
     sensitivity: skinFacts.sensitivity,
     suitable_for: skinFacts.suitableFor,
     has_ingredient_list: skinFacts.hasIngredientList,
+    ingredient_cautions: restricted
+      .map((item) => String(item).replace(/[_-]+/g, " "))
+      .join(", "),
   };
 }
 
@@ -349,7 +353,7 @@ async function buildRetailerCatalog() {
 
 const loadPersistedRetailerCatalog = unstable_cache(
   buildRetailerCatalog,
-  ["retailer-catalog-v1"],
+  ["retailer-catalog-v2-comparison-fields"],
   { revalidate: CACHE_TTL_MS / 1000 },
 );
 

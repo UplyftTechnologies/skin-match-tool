@@ -43,12 +43,55 @@ function keyIngredients(product) {
         .slice(0, 4)
 }
 
+function listedValue(value) {
+    if (Array.isArray(value)) return value.filter(Boolean).join(', ')
+    return String(value || '').trim()
+}
+
+function productSize(product) {
+    return listedValue(product.size || product.sku_size || product.variant)
+}
+
+function mrpPerUnit(product) {
+    const size = productSize(product)
+    const match = size.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(ml|g|gm|grams?|l|kg)\b/)
+    const mrp = numericPrice(product)
+    if (!match || !mrp) return ''
+
+    let quantity = Number(match[1])
+    let unit = match[2]
+    if (unit === 'l') {
+        quantity *= 1000
+        unit = 'ml'
+    } else if (unit === 'kg') {
+        quantity *= 1000
+        unit = 'g'
+    } else if (['gm', 'gram', 'grams'].includes(unit)) {
+        unit = 'g'
+    }
+    if (!quantity) return ''
+
+    return `Rs. ${(mrp / quantity).toLocaleString('en-IN', { maximumFractionDigits: 2 })}/${unit}`
+}
+
+function targetConcerns(product) {
+    return listedValue(product.addresses_skin_concerns || product.concern)
+}
+
+function ingredientCautions(product) {
+    return listedValue(product.ingredient_cautions || product.warnings || product.donts)
+}
+
 // Retailer-catalogue products carry these (scraped from a retailer's own spec
 // table — see deriveSkinFacts in lib/retailer-catalog.js); Roopsee-catalogue
 // products never do, so a row is only rendered when at least one side has a
 // real value rather than showing "Not specified" pairs by default.
 function specRows(left, right) {
     return [
+        ['Size', productSize(left), productSize(right)],
+        ['MRP per ml/g', mrpPerUnit(left), mrpPerUnit(right)],
+        ['Target concerns', targetConcerns(left), targetConcerns(right)],
+        ['Ingredient cautions', ingredientCautions(left), ingredientCautions(right)],
         ['Base type', left.product_type, right.product_type],
         ['Skin type', left.skin_type, right.skin_type],
         ['Skin concern', left.concern, right.concern],

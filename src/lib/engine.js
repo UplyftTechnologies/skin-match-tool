@@ -272,6 +272,8 @@ function scoreProduct(product, profile) {
       : product.when_to_use || "Morning and Night",
     dos: product.dos,
     donts: product.donts,
+    addresses_skin_concerns: product.addresses_skin_concerns,
+    ingredient_cautions: product.ingredient_cautions,
     usage_instructions: product.usage_instructions,
     ingredients: product.ingredients,
     routine_notes: routineNotes(product, profile),
