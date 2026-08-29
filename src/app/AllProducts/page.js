@@ -647,7 +647,7 @@ function ProductsPageContent() {
                                         type="button"
                                         onClick={() => setQuizEditorOpen(true)}
                                     >
-                                        Take Quiz
+                                        Update Quiz
                                     </button>
                                     <button
                                         className="quiz-answers-toggle !h-8 !w-8"
@@ -686,6 +686,7 @@ function ProductsPageContent() {
             {quizEditorOpen ? (
                 <div className="border-y border-[#ead8d3] bg-white">
                     <MatchMySkin
+                        hideCompletedHeader
                         startEditing
                         onComplete={() => setQuizEditorOpen(false)}
                     />
