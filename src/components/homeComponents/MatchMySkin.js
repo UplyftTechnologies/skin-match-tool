@@ -47,7 +47,7 @@ function Pill({ disabled = false, label, selected, onClick }) {
     )
 }
 
-export default function MatchMySkin() {
+export default function MatchMySkin({ onComplete, startEditing = false }) {
     const [skinType, setSkinType] = useState(null)
     const [sensitive, setSensitive] = useState(null)
     const [concernArea, setConcernArea] = useState('face')
@@ -79,7 +79,7 @@ export default function MatchMySkin() {
             if (!savedAnswers) return
 
             setHasCompletedQuiz(true)
-            setIsQuizEditing(false)
+            setIsQuizEditing(startEditing || new URLSearchParams(window.location.search).get('editQuiz') === '1')
             setSkinType(savedAnswers.skinType || null)
             setSensitive(savedAnswers.sensitive || null)
             const savedConcerns = Array.isArray(savedAnswers.concerns)
@@ -120,7 +120,7 @@ export default function MatchMySkin() {
             clearTimeout(timer)
             window.removeEventListener('roopsee-quiz-answers-updated', onAnswersUpdated)
         }
-    }, [])
+    }, [startEditing])
 
     const trackOption = (question, value) => {
         trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
@@ -242,7 +242,9 @@ export default function MatchMySkin() {
             detail: answers,
         }))
 
-        requestAnimationFrame(() => {
+        onComplete?.(answers)
+
+        if (!onComplete) requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 document.getElementById('products')?.scrollIntoView({
                     behavior: 'smooth',

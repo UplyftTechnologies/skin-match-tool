@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { FiArrowRight, FiCheck, FiChevronDown, FiGitMerge } from 'react-icons/fi'
 
 function numericPrice(product) {
-    const value = Number(String(product?.selling_price || product?.mrp || '').replace(/[^\d.]/g, ''))
+    const value = Number(String(product?.mrp || '').replace(/[^\d.]/g, ''))
     return Number.isFinite(value) ? value : null
 }
 
@@ -47,8 +47,25 @@ function suitability(product, skinType) {
     return `Not recommended for your ${profile}`
 }
 
-function comparisonCategory(product) {
-    return product?.product_type || product?.category || 'Skincare'
+function comparisonProductType(product) {
+    const type = String(product?.product_type || '').trim().toLowerCase()
+    if (type === 'other' || type === 'skincare') return ''
+
+    if (type !== 'moisturizer') return type
+
+    const name = String(product?.product_name || '').toLowerCase()
+    const subtype = [
+        ['moisturizer', /\bmoisturi[sz]ers?\b/],
+        ['cream', /\bcreams?\b/],
+        ['lotion', /\blotions?\b/],
+        ['gel', /\bgels?\b/],
+    ].find(([, pattern]) => pattern.test(name))?.[0]
+
+    return subtype ? `${type}:${subtype}` : type
+}
+
+function productTypeLabel(product) {
+    return String(product?.product_type || '').trim() || 'Product'
 }
 
 function IngredientComparison({ product }) {
@@ -183,7 +200,9 @@ function ProductSummary({ product, isWinner }) {
 
 export default function ProductPlayground({ products, quizAnswers, initialProductId = '' }) {
     const comparableProducts = useMemo(
-        () => products.filter((product) => Number.isFinite(Number(product.score))),
+        () => products.filter((product) =>
+            Number.isFinite(Number(product.score)) && comparisonProductType(product),
+        ),
         [products],
     )
     const [leftId, setLeftId] = useState('')
@@ -192,7 +211,7 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
     const productsWithPeers = comparableProducts.filter((product) =>
         comparableProducts.some((candidate) =>
             candidate.product_uid !== product.product_uid
-            && comparisonCategory(candidate) === comparisonCategory(product),
+            && comparisonProductType(candidate) === comparisonProductType(product),
         ),
     )
     const preferredLeftId = leftId || initialProductId
@@ -200,13 +219,13 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
         ? preferredLeftId
         : productsWithPeers[0]?.product_uid || ''
     const left = comparableProducts.find((product) => product.product_uid === selectedLeftId)
-    const sameCategoryProducts = comparableProducts.filter((product) =>
-        comparisonCategory(product) === comparisonCategory(left),
+    const sameProductTypeProducts = comparableProducts.filter((product) =>
+        comparisonProductType(product) === comparisonProductType(left),
     )
-    const selectedRightId = sameCategoryProducts.some((product) => product.product_uid === rightId && product.product_uid !== selectedLeftId)
+    const selectedRightId = sameProductTypeProducts.some((product) => product.product_uid === rightId && product.product_uid !== selectedLeftId)
         ? rightId
-        : sameCategoryProducts.find((product) => product.product_uid !== selectedLeftId)?.product_uid || ''
-    const right = sameCategoryProducts.find((product) => product.product_uid === selectedRightId)
+        : sameProductTypeProducts.find((product) => product.product_uid !== selectedLeftId)?.product_uid || ''
+    const right = sameProductTypeProducts.find((product) => product.product_uid === selectedRightId)
 
     if (productsWithPeers.length < 2) return null
 
@@ -240,7 +259,7 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
                 <span className="mx-auto flex h-7 w-7 items-center justify-center rounded-full bg-[#f8eeeb] text-[9px] font-bold uppercase text-[#c76557] sm:mb-4 sm:h-8 sm:w-8">vs</span>
                 <ProductPicker
                     label="Product two"
-                    products={sameCategoryProducts}
+                    products={sameProductTypeProducts}
                     selectedId={selectedRightId}
                     disabledId={selectedLeftId}
                     onChange={setRightId}
@@ -250,7 +269,7 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
             {left && right ? (
                 <>
                     <p className="mt-5 text-center text-[9px] font-bold uppercase tracking-[0.16em] text-[#9a6b62]">
-                        Comparing {comparisonCategory(left)} products
+                        Comparing {productTypeLabel(left)} products
                     </p>
                     <div className="relative mt-3 grid min-w-0 grid-cols-2 gap-px overflow-hidden border border-gray-200 bg-gray-200">
                         <ProductSummary product={left} isWinner={leftWins} />

@@ -42,7 +42,7 @@ const PRICE_BUCKETS = [
 ];
 
 function priceOf(product) {
-  const value = Number(product.selling_price ?? product.mrp);
+  const value = Number(product.mrp);
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 

@@ -36,7 +36,7 @@ export function variantBaseKey(row) {
 }
 
 function priceOf(row) {
-  const value = Number(row.selling_price ?? row.mrp);
+  const value = Number(row.mrp);
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 

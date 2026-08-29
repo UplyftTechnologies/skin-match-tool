@@ -8,6 +8,8 @@ const announcements = [
   'Save Skin Profile',
   'Save Wishlist',
   'Price Drop Alert',
+  'Compare Prices',
+  'Choose Shop & Buy',
 ]
 
 function AnnouncementBar() {
@@ -55,7 +57,7 @@ export default function KnowBefore() {
             Skin <em className="italic">match</em> tool
           </h2>
 
-          <div className="mt-2 flex items-center justify-center gap-1.5 rounded-full border border-[#197a4d]/25 bg-[#eaf5ef] px-3 py-1 mx-auto w-fit">
+          <div className="mt-2 flex items-center justify-center gap-1.5 rounded-full  px-3 py-1 mx-auto w-fit">
             <BsPatchCheckFill className="text-[#197a4d] text-[11px] sm:text-[13px]" />
             <span className="font-lato text-[11px] font-semibold uppercase tracking-[0.05em] text-[#197a4d] sm:text-[13px] md:text-sm">
               Doctor Verified Scores

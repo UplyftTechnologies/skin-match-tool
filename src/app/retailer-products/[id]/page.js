@@ -282,8 +282,8 @@ function dedupeByRetailer(matches) {
 
   matches.forEach((item) => {
     const existing = bestByRetailer.get(item.site);
-    const itemPrice = Number(item.selling_price ?? item.mrp ?? Number.POSITIVE_INFINITY);
-    const existingPrice = Number(existing?.selling_price ?? existing?.mrp ?? Number.POSITIVE_INFINITY);
+    const itemPrice = Number(item.mrp ?? Number.POSITIVE_INFINITY);
+    const existingPrice = Number(existing?.mrp ?? Number.POSITIVE_INFINITY);
 
     if (!existing || itemPrice < existingPrice) {
       bestByRetailer.set(item.site, item);
@@ -291,8 +291,8 @@ function dedupeByRetailer(matches) {
   });
 
   return [...bestByRetailer.values()].sort((left, right) => {
-      const leftPrice = Number(left.selling_price ?? left.mrp ?? Number.POSITIVE_INFINITY);
-      const rightPrice = Number(right.selling_price ?? right.mrp ?? Number.POSITIVE_INFINITY);
+      const leftPrice = Number(left.mrp ?? Number.POSITIVE_INFINITY);
+      const rightPrice = Number(right.mrp ?? Number.POSITIVE_INFINITY);
       return leftPrice - rightPrice;
     });
 }
@@ -402,15 +402,11 @@ export default async function RetailerProductPage({ params }) {
   ]);
   const sizeOptions = buildSizeOptions(product, sizeSiblings);
 
-  const sellingPrice = formatPrice(product.selling_price);
   const mrp = formatPrice(product.mrp);
-  const hasDiscount = product.mrp !== null
-    && product.selling_price !== null
-    && Number(product.mrp) > Number(product.selling_price);
   const attributes = Object.entries(product.product_attributes || {})
     .filter(([, value]) => value !== null && value !== "" && formatAttribute(value));
   const availablePrices = comparableProducts
-    .map((item) => Number(item.selling_price ?? item.mrp))
+    .map((item) => Number(item.mrp))
     .filter((price) => Number.isFinite(price));
   const lowestPrice = availablePrices.length ? Math.min(...availablePrices) : null;
   const highestPrice = availablePrices.length ? Math.max(...availablePrices) : null;
@@ -529,21 +525,13 @@ export default async function RetailerProductPage({ params }) {
 
               <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1 sm:mt-5">
                 <span className="text-[15px] font-extrabold leading-none text-slate-900 sm:text-[1.9rem]">
-                  {sellingPrice || mrp || "Price unavailable"}
+                  {mrp || "Price unavailable"}
                 </span>
-                {hasDiscount ? (
-                  <span className="pb-1 text-[13px] text-slate-400 line-through sm:text-base">{mrp}</span>
-                ) : null}
-                {product.discount_pct ? (
-                  <span className="mb-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-bold text-[#d77465]">
-                    {Math.round(Number(product.discount_pct))}% off
-                  </span>
-                ) : null}
               </div>
               <p className="mt-1 hidden text-[12px] text-slate-400 sm:block">Inclusive of all taxes</p>
 
               <TypicalPriceRange
-                currentPrice={product.selling_price ?? product.mrp}
+                currentPrice={product.mrp}
                 prices={availablePrices}
               />
 
@@ -565,7 +553,7 @@ export default async function RetailerProductPage({ params }) {
 
                     <ul className="mt-2 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100">
                       {comparableProducts.map((item) => {
-                        const price = Number(item.selling_price ?? item.mrp);
+                        const price = Number(item.mrp);
                         const isLowest = lowestPrice !== null && price === lowestPrice;
                         return (
                           <li
@@ -583,7 +571,7 @@ export default async function RetailerProductPage({ params }) {
 
                             <div className="shrink-0 text-right">
                               <p className="text-[14px] font-bold text-slate-900">
-                                {formatPrice(item.selling_price ?? item.mrp) || "—"}
+                                {formatPrice(item.mrp) || "—"}
                               </p>
                               {isLowest ? (
                                 <p className="text-[10px] font-bold uppercase text-emerald-700">Lowest</p>

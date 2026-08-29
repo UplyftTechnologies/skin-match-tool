@@ -18,7 +18,7 @@ function formatPrice(value) {
 
 function SimilarProductCard({ product, score }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const price = formatPrice(product.sp || product.mrp);
+  const price = formatPrice(product.mrp);
   const wishlistProduct = {
     product_uid: product.product_uid,
     product_name: product.product_name,
