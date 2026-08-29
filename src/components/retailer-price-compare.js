@@ -163,7 +163,7 @@ function OfferModal({ offer, offers, productName, onClose }) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 
+            className="fixed inset-0 z-[var(--z-overlay)] flex items-end justify-center bg-slate-900/50
             p-0 backdrop-blur-sm sm:items-center sm:p-4"
             onClick={(event) => {
                 if (event.target === event.currentTarget) onClose()
@@ -173,7 +173,7 @@ function OfferModal({ offer, offers, productName, onClose }) {
                 role="dialog"
                 aria-modal="true"
                 aria-label={`${offer.product_name} on ${siteName(offer.site)}`}
-                className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-white p-5 shadow-xl sm:rounded-3xl sm:p-7"
+                className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-t-3xl bg-white p-5 pb-safe-5 shadow-xl sm:rounded-3xl sm:p-7 sm:pb-safe-7"
             >
                 <div className="flex items-start justify-between gap-4">
                     <span className="flex items-center rounded-full bg-rose-50 px-3 py-1.5">

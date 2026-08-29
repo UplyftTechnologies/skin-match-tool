@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
 import { anthropic, hasAnthropicKey } from "@/lib/anthropic";
-import { loadProducts } from "@/lib/data";
+import { loadRetailerCatalog } from "@/lib/retailer-catalog";
 import { rankCatalogMatches, rankCatalogMatchesFromText } from "@/lib/visual-match";
+import { variantBaseKey } from "@/lib/variant-sizes";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MEDIA = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+// Product-label extraction is a short vision task. Haiku is Anthropic's
+// fastest vision-capable current model; deployments can still override this
+// without a code change if they need to trade latency for more reasoning.
+const VISUAL_MODEL = process.env.ANTHROPIC_VISUAL_MODEL || "claude-haiku-4-5";
 
 // The catalog is small enough (~400 products, ~65 brands) to hand Claude the
 // full brand list. Constraining the brand to something we actually stock is
@@ -17,17 +22,16 @@ function brandVocabulary(products) {
   return [...new Set(products.map((item) => item.brand_name).filter(Boolean))].sort();
 }
 
+// Every field the model has to write costs latency. `confidence` was read by
+// nothing, and `is_product` is recoverable from an empty brand and name, so
+// both are gone; `visible_text` stays because the matcher scores on it.
 const EXTRACTION_SCHEMA = {
   type: "object",
   properties: {
-    is_product: {
-      type: "boolean",
-      description: "True only if the photo shows a skincare or beauty product package.",
-    },
     brand: {
       type: "string",
       description:
-        "Brand exactly as written in the supplied brand list, or as read off the package if it is not in that list. Empty string if unreadable.",
+        "Brand exactly as written in the supplied brand list, or as read off the package if it is not in that list. Empty string if unreadable, or if this is not a beauty product.",
     },
     product_name: {
       type: "string",
@@ -49,30 +53,28 @@ const EXTRACTION_SCHEMA = {
       type: "string",
       description: "Other prominent identifying text on the package, such as an SPF rating or key actives.",
     },
-    confidence: {
-      type: "string",
-      enum: ["high", "medium", "low"],
-      description: "How confident you are that brand and product_name were read correctly.",
-    },
   },
-  required: [
-    "is_product",
-    "brand",
-    "product_name",
-    "product_type",
-    "strength",
-    "size",
-    "visible_text",
-    "confidence",
-  ],
+  required: ["brand", "product_name", "product_type", "strength", "size", "visible_text"],
   additionalProperties: false,
 };
+
+let promptCache = null;
+
+/** The system prompt for this catalogue, built once and reused. */
+function cachedSystemPrompt(products) {
+  if (promptCache?.source === products) return promptCache.value;
+  const value = systemPrompt(brandVocabulary(products));
+  promptCache = { source: products, value };
+  return value;
+}
 
 function systemPrompt(brands) {
   return [
     "You identify skincare and beauty products from a photograph of the packaging.",
     "Read the text printed on the package. Do not guess a product you cannot actually read.",
-    "If the photo is blurry, shows a person, or shows something that is not a beauty product, set is_product to false.",
+    "A partial read is still useful. If the brand is legible but the product name is not, return the brand and leave product_name empty.",
+    "If neither is legible, put whatever words, numbers or claims you can make out into visible_text: a size, an SPF rating, an active, even a fragment of a word.",
+    "Return every field empty only when the photo shows no product packaging at all, such as a face, a landscape or a blank surface.",
     "",
     "These are the brands the catalogue stocks. If the package is one of them, return the brand string exactly as written here:",
     brands.join(" | "),
@@ -85,6 +87,29 @@ function systemPrompt(brands) {
 // the photo to Claude, without one the browser does the reading itself.
 export async function GET() {
   return NextResponse.json({ mode: hasAnthropicKey ? "vision" : "ocr" });
+}
+
+/**
+ * Collapses repeat listings of the same product out of a result list.
+ *
+ * Keyed on brand plus the size-stripped name, the same identity the
+ * catalogue groups sizes by — two rows differing only by a size, a brand's
+ * capitalisation or a missing barcode are one product to a shopper. The
+ * highest-scoring listing of each wins, so the ordering is unchanged apart
+ * from the repeats being removed.
+ */
+function dedupeMatches(matches) {
+  const seen = new Map();
+  for (const entry of matches) {
+    const key =
+      variantBaseKey(entry.product) ||
+      `uid:${entry.product.product_uid}`;
+    const current = seen.get(key);
+    if (!current || entry.score > current.score) seen.set(key, entry);
+  }
+  // rankCatalogMatches already sorted; re-sort because Map keeps insertion
+  // order and a later, higher-scoring listing can replace an earlier one.
+  return [...seen.values()].sort((left, right) => right.score - left.score);
 }
 
 function offerResults(matches, extracted, query, extra = {}) {
@@ -117,8 +142,9 @@ export async function POST(request) {
   // no upload, no per-search cost — the same matcher does the rest.
   const scannedText = String(body?.text || "").slice(0, 4000).trim();
   if (scannedText) {
-    const products = await loadProducts();
-    const { brand, matches, confident } = rankCatalogMatchesFromText(products, scannedText);
+    const products = await loadRetailerCatalog();
+    const { brand, matches: rawMatches, confident } = rankCatalogMatchesFromText(products, scannedText);
+    const matches = dedupeMatches(rawMatches);
     const extracted = { brand, product_name: "", scanned_text: scannedText };
 
     if (!matches.length) {
@@ -126,7 +152,7 @@ export async function POST(request) {
         reason: brand ? "no_catalog_match" : "no_brand_read",
         message: brand
           ? "We read the brand but could not pin down which product. Try a closer photo of the front label."
-          : "We could not read that pack clearly. Try a straighter, closer photo of the front label.",
+          : "We read some text but could not identify the product. Try a straighter, closer photo of the front label.",
       });
     }
     // Brand-less matches rest on product words alone, so the UI says so rather
@@ -155,18 +181,26 @@ export async function POST(request) {
     return NextResponse.json({ error: "That photo is too large." }, { status: 413 });
   }
 
-  const products = await loadProducts();
+  const products = await loadRetailerCatalog();
 
   let extracted;
   try {
     const response = await anthropic.messages.create({
-      model: "claude-opus-5",
-      max_tokens: 2048,
-      system: systemPrompt(brandVocabulary(products)),
-      // Reading a label is a simple extraction and the shopper is waiting on
-      // the result, so trade depth for latency rather than turning thinking off.
+      model: VISUAL_MODEL,
+      // The JSON extraction response is tiny. A small cap lets the API finish
+      // promptly and prevents verbose output from delaying the result.
+      max_tokens: 512,
+      // cache_control marks the brand list as a stable prefix: it is the same
+      // on every request, so after the first it is served from cache instead
+      // of re-read, which is most of the time-to-first-token here.
+      system: [
+        {
+          type: "text",
+          text: cachedSystemPrompt(products),
+          cache_control: { type: "ephemeral" },
+        },
+      ],
       output_config: {
-        effort: "low",
         format: { type: "json_schema", schema: EXTRACTION_SCHEMA },
       },
       messages: [
@@ -200,7 +234,18 @@ export async function POST(request) {
     );
   }
 
-  if (!extracted?.is_product) {
+  // Only a read with nothing at all in it means there was no product to see.
+  // Treating an empty brand+name as 'not a product' threw away photos where
+  // the brand was legible but the product name was not, which is the common
+  // case for a jar photographed at an angle.
+  const readAnything = [
+    extracted?.brand,
+    extracted?.product_name,
+    extracted?.product_type,
+    extracted?.visible_text,
+  ].some((value) => String(value || "").trim());
+
+  if (!readAnything) {
     return NextResponse.json({
       matched: false,
       reason: "not_a_product",
@@ -211,13 +256,45 @@ export async function POST(request) {
     });
   }
 
-  const scored = rankCatalogMatches(products, extracted);
+  // rankCatalogMatches needs a brand to anchor on. When the brand did not
+  // survive the photo, fall back to the brand-free text matcher built for the
+  // OCR path: it ranks on how much distinctive product wording was read, so a
+  // half-legible pack still returns the nearest products instead of nothing.
+  let scored = dedupeMatches(rankCatalogMatches(products, extracted));
+  let confident = scored.length > 0;
+
+  if (!scored.length) {
+    const readText = [
+      extracted.brand,
+      extracted.product_name,
+      extracted.product_type,
+      extracted.visible_text,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const fallback = rankCatalogMatchesFromText(products, readText);
+    scored = dedupeMatches(fallback.matches);
+    confident = false;
+  }
 
   // Even with no catalog hit the shopper gets something useful: the text read
   // off the pack drops straight into the existing keyword filter.
   const query = [extracted.brand, extracted.product_name].filter(Boolean).join(" ").trim();
 
   return offerResults(scored, extracted, query, {
-    reason: scored.length ? undefined : "no_catalog_match",
+    // `confident` is false when the brand did not survive the photo and these
+    // came from the text fallback. The dialog already renders a caveat for
+    // that, so the shopper is told these are nearest guesses.
+    confident,
+    reason: scored.length
+      ? undefined
+      : extracted.brand
+        ? "no_catalog_match"
+        : "no_brand_read",
+    message: scored.length
+      ? undefined
+      : extracted.brand
+        ? "We read the brand but could not pin down which product. Try a closer photo of the front label."
+        : "We could not read enough of that pack to find it. Try a straighter, closer photo of the front label.",
   });
 }

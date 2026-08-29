@@ -93,7 +93,7 @@ export default function Header({ className = "" }) {
 
   return (
     <>
-      <div className={`sticky top-0 z-[999] w-full max-w-none !mt-0 bg-[#faf7f2] border-b border-gray-100 ${className}`}>
+      <div className={`sticky top-0 z-[var(--z-header)] w-full max-w-none !mt-0 bg-[#faf7f2] border-b border-gray-100 ${className}`}>
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 lg:px-6 py-2">
           <Logo dark={false} onClick={handleLogoClick} />
 

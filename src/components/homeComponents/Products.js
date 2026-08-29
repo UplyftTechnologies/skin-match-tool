@@ -15,8 +15,9 @@ import 'swiper/css/navigation'
 import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
-import { productPath, scoredProductPath } from '@/lib/site'
-import { useScoredProducts } from '@/hooks/use-scored-products'
+import { useRetailerCatalog } from '@/hooks/use-retailer-catalog'
+import { useQuizAnswers } from '@/hooks/use-quiz-answers'
+import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import ScoreBadge from '@/components/score-badge'
 import VisualSearch from '@/components/visual-search'
 
@@ -111,15 +112,13 @@ function wishlistProduct(product) {
     }
 }
 
-function ProductCard({ product, showScore = true }) {
+function ProductCard({ product }) {
     const { isWishlisted, toggleWishlist } = useWishlist()
     const router = useRouter()
     const [imageFailed, setImageFailed] = useState(false)
     const savedProduct = wishlistProduct(product)
     const wishlisted = isWishlisted(savedProduct.product_uid)
-    const productHref = showScore
-        ? scoredProductPath(product.product_uid, product.score)
-        : productPath(product.product_uid)
+    const productHref = `/retailer-products/${encodeURIComponent(product.product_uid)}`
     const mrp = formatPrice(product.mrp)
 
     function handleSaveMatch(event) {
@@ -174,7 +173,7 @@ function ProductCard({ product, showScore = true }) {
             className="h-full bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
         >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/2] mb-3">
-                {showScore ? <ScoreBadge score={product.score} /> : null}
+                <ScoreBadge score={product.score} />
                 <button
                     type="button"
                     onClick={handleSaveMatch}
@@ -235,7 +234,30 @@ function ProductCard({ product, showScore = true }) {
 export default function Products() {
     const [activeView, setActiveView] = useState('products')
     const [search, setSearch] = useState('')
-    const { products, routine, loading, error, quizAnswers } = useScoredProducts()
+    const quizAnswers = useQuizAnswers()
+    // Must go through quizAnswersToScoringProfile, not be assembled by hand:
+    // the quiz stores raw widget answers (concern "redness", sensitive "no",
+    // condition "excessive dryness") while the engine keys on its own column
+    // names ("Redness/Irritation", boolean, "Excessive Dryness"). Hand-building
+    // it sent an unmatchable concern, which scored every product at the
+    // missing-value default and kept the 90+ band permanently empty.
+    const profile = quizAnswers ? quizAnswersToScoringProfile(quizAnswers) : null
+    const { products: catalogProducts, loading, error } = useRetailerCatalog({
+        search: '',
+        filters: { brand: [], category: [], site: [], price: [] },
+        sort: 'score_desc',
+        page: 1,
+        profile,
+        // One row per score band. A plain page-one fetch returns only the
+        // highest scores, which left the 'Fits With Caution' and 'Not
+        // Recommended' rows permanently empty.
+        bands: PRODUCTS_PER_ROW,
+    })
+    const products = catalogProducts.map((product) => ({
+        ...product,
+        score: product.scoring?.score,
+        size: product.sku_size,
+    }))
     const router = useRouter()
 
     const handleViewAll = () => {
@@ -256,12 +278,14 @@ export default function Products() {
             )
             : products
 
-        if (!quizAnswers) return filtered.slice(0, PRODUCTS_PER_ROW * 2)
-
         const withScore = filtered.filter((product) => Number.isFinite(Number(product.score)))
-        return pickByScoreBands(withScore)
-    }, [products, quizAnswers, search])
 
+        return pickByScoreBands(withScore)
+    }, [products, search])
+
+    // Nothing to show until the quiz has actually been completed.
+    // Ported from the design branch during the merge. Declared before the
+    // early return below, because a hook cannot run conditionally.
     useEffect(() => {
         const term = search.trim()
         if (!term) return undefined
@@ -278,7 +302,9 @@ export default function Products() {
         return () => window.clearTimeout(debounceTimer)
     }, [search, visibleProducts.length])
 
-    if (!quizAnswers) return null
+    if (!quizAnswers) {
+        return null
+    }
 
     return (
         <div id="products" className="scroll-mt-20 bg-[#FAF9F6]">
@@ -298,6 +324,35 @@ export default function Products() {
                         Products
                     </button>
                
+                </div>
+
+                <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
+                    <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">
+                        Your selections
+                    </p>
+                    <div className="mt-2 flex flex-wrap justify-center gap-2">
+                        {[
+                            ['Skin', quizAnswers.skinType],
+                            ['Sensitive', quizAnswers.sensitive],
+                            ...(
+                                Array.isArray(quizAnswers.concerns)
+                                    ? quizAnswers.concerns
+                                    : quizAnswers.concern
+                                        ? [quizAnswers.concern]
+                                        : []
+                            ).map((concern) => ['Concern', concern]),
+                            ['Age', quizAnswers.age],
+                            ['Gender', quizAnswers.gender],
+                            ...(quizAnswers.conditions || []).map((condition) => ['Condition', condition]),
+                        ].filter(([, value]) => value).map(([label, value], index) => (
+                            <span
+                                key={`${label}-${value}-${index}`}
+                                className="rounded-full bg-[#f8eeeb] px-3 py-1 text-xs font-medium text-slate-700"
+                            >
+                                <strong>{label}:</strong> {value}
+                            </span>
+                        ))}
+                    </div>
                 </div>
 
                 {activeView === 'products' ? <div className="relative max-w-xl mx-auto mb-2 mt-3 lg:mt-4">
@@ -325,22 +380,7 @@ export default function Products() {
                     <p className="py-8 text-center text-sm text-gray-500">No products found.</p>
                 ) : null}
 
-                {activeView === 'products' && !quizAnswers ? (
-                    <section className="mt-4 lg:mt-6">
-                        <div className="mb-3 flex items-center gap-3">
-                            <span className="h-px flex-1 bg-[#ead8d3]" />
-                            <h3 className="shrink-0 font-cormorant text-[20px] font-semibold italic tracking-wide text-[#7b625b] md:text-2xl">
-                                Explore Products
-                            </h3>
-                            <span className="h-px flex-1 bg-[#ead8d3]" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-6">
-                            {visibleProducts.map((product) => (
-                                <ProductCard key={product.product_uid} product={product} showScore={false} />
-                            ))}
-                        </div>
-                    </section>
-                ) : activeView === 'products' ? (
+                {activeView === 'products' ? (
                     <div className="mt-4 space-y-7 lg:mt-6">
                         {PRODUCT_SCORE_SECTIONS.map((section) => {
                             const sectionProducts = visibleProducts.filter((product) => {
@@ -470,7 +510,7 @@ export default function Products() {
                      capitalize text-[#ff7e67] border border-[#e08a7d] rounded-[10px] py-2
                       hover:bg-[#d17a6d] hover:text-white transition-colors duration-300"
                 >
-                    View all products
+                    View all
                 </button>
             </div>
         </div>

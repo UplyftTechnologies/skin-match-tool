@@ -29,7 +29,7 @@ export default function RequireQuizModal({ open, onClose }) {
     }
 
     return (
-        <div className="fixed inset-0 z-[1000] bg-black/40 flex items-center justify-center px-4" onClick={onClose}>
+        <div className="fixed inset-0 z-[var(--z-overlay)] bg-black/40 flex items-center justify-center px-4" onClick={onClose}>
             <div
                 className="bg-white rounded-2xl w-full max-w-sm p-6 relative text-center"
                 onClick={(e) => e.stopPropagation()}

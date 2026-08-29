@@ -11,8 +11,8 @@ import { productPath } from '@/lib/site'
 // Phone cameras produce 3-5MB frames. The label text survives a downscale to
 // 1280px easily, and shrinking before upload is the difference between a
 // request that feels instant on mobile data and one that times out.
-const MAX_EDGE = 1280
-const JPEG_QUALITY = 0.82
+const MAX_EDGE = 1024
+const JPEG_QUALITY = 0.78
 
 function readAsDataUrl(file) {
     return new Promise((resolve, reject) => {
@@ -57,7 +57,7 @@ const OCR_EDGE_LARGE = 2600
 // `threshold` additionally forces every pixel to pure black or white, which
 // reads cleanly on flat printed panels and badly on gradients, hence a pass of
 // its own rather than a change to the default.
-function renderForOcr(dataUrl, { edge = OCR_EDGE, threshold = null } = {}) {
+function renderForOcr(dataUrl, { edge = OCR_EDGE, threshold = null, preserveColor = false } = {}) {
     return new Promise((resolve) => {
         const img = new window.Image()
         img.onerror = () => resolve(dataUrl)
@@ -68,6 +68,11 @@ function renderForOcr(dataUrl, { edge = OCR_EDGE, threshold = null } = {}) {
             canvas.height = Math.round(img.height * scale)
             const context = canvas.getContext('2d')
             context.drawImage(img, 0, 0, canvas.width, canvas.height)
+
+            if (preserveColor && threshold === null) {
+                resolve(canvas.toDataURL('image/png'))
+                return
+            }
 
             const frame = context.getImageData(0, 0, canvas.width, canvas.height)
             const pixels = frame.data
@@ -100,10 +105,11 @@ function renderForOcr(dataUrl, { edge = OCR_EDGE, threshold = null } = {}) {
 // 21%. They run in order of how often they pay off, so the common case still
 // finishes after pass one.
 const OCR_PASSES = [
-    { label: 'base', render: {}, sparse: false },
-    { label: 'sparse', render: {}, sparse: true },
-    { label: 'high-contrast', render: { threshold: 150 }, sparse: false },
-    { label: 'magnified', render: { edge: OCR_EDGE_LARGE }, sparse: false },
+    { label: 'color', render: { preserveColor: true }, psm: 'AUTO' },
+    { label: 'block', render: {}, psm: 'SINGLE_BLOCK' },
+    { label: 'sparse', render: {}, psm: 'SPARSE_TEXT' },
+    { label: 'high-contrast', render: { threshold: 150 }, psm: 'AUTO' },
+    { label: 'magnified', render: { edge: OCR_EDGE_LARGE }, psm: 'SINGLE_BLOCK' },
 ]
 
 // Tesseract ships a few MB of wasm and language data, so it is imported only
@@ -118,16 +124,17 @@ async function createOcrReader(onProgress) {
             if (message.status === 'recognizing text') onProgress(message.progress)
         },
     })
-    let sparse = false
+    let pageMode = null
 
     return {
         async read(dataUrl, pass) {
             const image = await renderForOcr(dataUrl, pass.render)
-            if (pass.sparse !== sparse) {
+            const nextPageMode = PSM[pass.psm]
+            if (nextPageMode !== pageMode) {
                 await worker.setParameters({
-                    tessedit_pageseg_mode: pass.sparse ? PSM.SPARSE_TEXT : PSM.AUTO,
+                    tessedit_pageseg_mode: nextPageMode,
                 })
-                sparse = pass.sparse
+                pageMode = nextPageMode
             }
             const { data } = await worker.recognize(image)
             return data.text || ''
@@ -185,6 +192,21 @@ export default function VisualSearch({ onQuery }) {
             document.body.style.overflow = ''
         }
     }, [open, close])
+
+    function showInProductGrid(payload) {
+        const topMatch = payload.matches?.[0]
+        // `product_name` in the retailer catalogue often already starts with
+        // its brand. Adding the brand again created a duplicated, exact phrase
+        // that the normal catalogue filter could not find.
+        const query = topMatch?.product_name || payload.query
+
+        if (!query || !onQuery) return false
+        onQuery(query, {
+            productUids: (payload.matches || []).map((item) => String(item.product_uid)),
+        })
+        close()
+        return true
+    }
 
     async function handleFile(event, source) {
         const file = event.target.files?.[0]
@@ -250,9 +272,6 @@ export default function VisualSearch({ onQuery }) {
                 payload = await askServer({ image: dataUrl })
             }
 
-            setResult(payload)
-            setStatus('done')
-
             if (payload.matched) {
                 trackingService.trackEvent(EVENTS.VISUAL_SEARCH_MATCHED, {
                     source,
@@ -262,6 +281,9 @@ export default function VisualSearch({ onQuery }) {
                     matchCount: payload.matches.length,
                     topMatch: payload.matches[0]?.product_name,
                 })
+                // Successful matches belong in the standard catalogue grid,
+                // where shoppers can sort, filter and compare them normally.
+                if (showInProductGrid(payload)) return
             } else {
                 trackingService.trackEvent(EVENTS.VISUAL_SEARCH_NO_MATCH, {
                     source,
@@ -270,6 +292,9 @@ export default function VisualSearch({ onQuery }) {
                     brand: payload.extracted?.brand,
                 })
             }
+
+            setResult(payload)
+            setStatus('done')
         } catch (requestError) {
             setStatus('idle')
             setError(requestError.message)
@@ -282,7 +307,7 @@ export default function VisualSearch({ onQuery }) {
     }
 
     function searchByText() {
-        if (result?.query && onQuery) onQuery(result.query)
+        if (result?.query && onQuery) onQuery(result.query, { productUids: [] })
         close()
     }
 
@@ -319,14 +344,14 @@ export default function VisualSearch({ onQuery }) {
 
             {open ? (
                 <div
-                    className="fixed inset-0 z-[999] flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+                    className="fixed inset-0 z-[var(--z-overlay)] flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4"
                     role="dialog"
                     aria-modal="true"
                     aria-label="Search by photo"
                     onClick={close}
                 >
                     <div
-                        className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-5 shadow-xl sm:rounded-3xl"
+                        className="max-h-[88dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-3xl bg-white p-5 pb-safe-5 shadow-xl sm:rounded-3xl"
                         onClick={(event) => event.stopPropagation()}
                     >
                         <div className="mb-4 flex items-center justify-between">
@@ -402,6 +427,10 @@ export default function VisualSearch({ onQuery }) {
                                                 {result.extracted.product_name}
                                             </p>
                                         </>
+                                    ) : result?.extracted?.scanned_text ? (
+                                        <p className="line-clamp-2 text-slate-500" title={result.extracted.scanned_text}>
+                                            Read text: {result.extracted.scanned_text}
+                                        </p>
                                     ) : (
                                         <span className="text-slate-500">Nothing readable on that pack.</span>
                                     )}

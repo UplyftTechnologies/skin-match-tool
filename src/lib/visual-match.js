@@ -200,8 +200,9 @@ export function scoreProductFromText(product, text, brand) {
 // a quarter of a long one. Weighting each word by how rare it is in the
 // catalogue fixes that — "boost" is near-unique and decisive, "lotion" is
 // almost worthless.
-const BRANDLESS_MIN_MASS = 10;
-const BRANDLESS_MIN_SHARED = 3;
+const BRANDLESS_MIN_MASS = 4.5;
+const BRANDLESS_MIN_SHARED = 2;
+const BRANDLESS_MIN_DISTINCTIVE_WEIGHT = 2;
 
 // Document frequencies depend only on the catalogue, so they are computed once
 // per product list rather than on every photo.
@@ -228,19 +229,45 @@ function rankWithoutBrand(products, text, limit) {
   if (!scanned.size) return [];
   const weight = inverseDocumentFrequency(products);
 
-  return products
+  const candidates = products
     .map((product) => {
       // Brand words stay in play — a half-read logo still leaves usable letters.
       const wanted = [...meaningfulTokens(`${product.brand_name} ${product.product_name}`)];
       const hits = wanted.filter((token) => scanned.has(token));
-      const mass = hits.reduce((total, token) => total + weight(token), 0);
-      return { product, score: mass, shared: hits.length };
+      const normalizedText = ` ${normalize(text)} `;
+      const productTokens = [...meaningfulTokens(product.product_name)];
+      const phraseHit = productTokens.some((token, index) => {
+        const nextToken = productTokens[index + 1];
+        return nextToken
+          && scanned.has(token)
+          && scanned.has(nextToken)
+          && normalizedText.includes(` ${token} ${nextToken} `);
+      });
+      const mass = hits.reduce((total, token) => total + weight(token), 0)
+        + (phraseHit ? 2.5 : 0);
+      return { product, score: mass, shared: hits.length, phraseHit };
     })
     .filter(
-      (entry) => entry.score >= BRANDLESS_MIN_MASS && entry.shared >= BRANDLESS_MIN_SHARED,
+      (entry) => {
+        const wanted = meaningfulTokens(`${entry.product.brand_name} ${entry.product.product_name}`);
+        const scanned = meaningfulTokens(text);
+        const distinctiveHit = [...wanted]
+          .filter((token) => scanned.has(token))
+          .some((token) => weight(token) >= BRANDLESS_MIN_DISTINCTIVE_WEIGHT);
+        const phraseMatchIsStrong = entry.phraseHit && entry.shared >= BRANDLESS_MIN_SHARED;
+        const weightedMatchIsStrong = entry.score >= BRANDLESS_MIN_MASS
+          && distinctiveHit;
+        return entry.shared >= BRANDLESS_MIN_SHARED
+          && (phraseMatchIsStrong || weightedMatchIsStrong);
+      },
     )
-    .sort((left, right) => right.score - left.score)
-    .slice(0, limit);
+    .sort((left, right) => right.score - left.score);
+
+  // OCR often returns unrelated words from the whole package. Once an exact
+  // adjacent product phrase is present, those loose word matches are noise;
+  // keep only products containing that phrase.
+  const phraseCandidates = candidates.filter((entry) => entry.phraseHit);
+  return (phraseCandidates.length ? phraseCandidates : candidates).slice(0, limit);
 }
 
 export function rankCatalogMatchesFromText(products, text, limit = 12) {
