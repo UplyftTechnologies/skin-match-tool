@@ -207,9 +207,9 @@ function ProductCard({ product }) {
                     trackVisit()
                 }}
                 title={product.product_name}
-                className="product-name-clamp mb-2 min-h-[2.5rem] text-[12px] font-lato leading-snug text-gray-800 transition hover:text-[#e08a7d] hover:underline lg:text-sm"
+                className="mb-2 block min-h-[2.5rem] text-[12px] font-lato leading-snug text-gray-800 transition hover:text-[#e08a7d] hover:underline lg:text-sm"
             >
-                {product.product_name}
+                <span className="product-name-clamp">{product.product_name}</span>
             </Link>
 
             <div className="mb-3 flex min-h-5 items-center gap-2">
@@ -415,6 +415,7 @@ export default function Products() {
                                         slidesPerView={2.2}
                                         spaceBetween={12}
                                         freeMode={true}
+                                        centerInsufficientSlides={true}
                                         navigation={sectionProducts.length > 1 ? {
                                             prevEl: '.product-slider-prev',
                                             nextEl: '.product-slider-next',

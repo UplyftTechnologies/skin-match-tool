@@ -1085,8 +1085,11 @@ export default function MatchStudio({ initialData }) {
                 }}
               >
                 <option value="" disabled>Age</option>
-                <option value="Teen">Teen</option>
-                <option value="Adult">Adult</option>
+                <option value="Below 16">Below 16</option>
+                <option value="16-24">16-24</option>
+                <option value="25-34">25-34</option>
+                <option value="35-44">35-44</option>
+                <option value="Above 45">Above 45</option>
               </select>
               {/* NEW: Inline error for age group, shown after a submit attempt */}
               {missingFieldLabel === "Age Group" ? (

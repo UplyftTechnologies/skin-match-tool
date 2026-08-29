@@ -180,9 +180,9 @@ function ProductCard({ product }) {
                     trackVisit()
                 }}
                 title={product.product_name}
-                className="product-name-clamp mb-2 min-h-[2.75rem] text-[15px] font-lato leading-snug text-gray-800 transition hover:text-[#e08a7d] hover:underline lg:text-[16px]"
+                className="mb-2 block min-h-[2.75rem] text-[15px] font-lato leading-snug text-gray-800 transition hover:text-[#e08a7d] hover:underline lg:text-[16px]"
             >
-                {product.product_name}
+                <span className="product-name-clamp">{product.product_name}</span>
             </Link>
             {product.scoring?.blocked && product.scoring.blockReason ? (
                 <p className="mb-1 text-[10.5px] leading-snug text-rose-700">
@@ -443,6 +443,15 @@ function ProductsPageContent() {
     const [sortOpen, setSortOpen] = useState(false)
     const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'rating')
     const [currentPage, setCurrentPage] = useState(() => restoredState?.currentPage || 1)
+    const [isMobile, setIsMobile] = useState(false)
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(max-width: 639px)')
+        const updateIsMobile = () => setIsMobile(mediaQuery.matches)
+        updateIsMobile()
+        mediaQuery.addEventListener('change', updateIsMobile)
+        return () => mediaQuery.removeEventListener('change', updateIsMobile)
+    }, [])
     const [visualProductUids, setVisualProductUids] = useState(() => restoredState?.visualProductUids || [])
     // A remembered sort is a deliberate choice; a brand-new visit should
     // switch to Match score as soon as its saved/quiz profile is available.
@@ -617,9 +626,10 @@ function ProductsPageContent() {
 
     const firstProductNumber = totalProducts ? (currentPage - 1) * PRODUCTS_PER_PAGE + 1 : 0
     const lastProductNumber = Math.min(currentPage * PRODUCTS_PER_PAGE, totalProducts)
-    const firstPageButton = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
+    const maxPageButtons = isMobile ? 4 : 5
+    const firstPageButton = Math.max(1, Math.min(currentPage - 2, totalPages - maxPageButtons + 1))
     const pageNumbers = Array.from(
-        { length: Math.min(5, totalPages) },
+        { length: Math.min(maxPageButtons, totalPages) },
         (_, index) => Math.max(1, firstPageButton) + index,
     )
 

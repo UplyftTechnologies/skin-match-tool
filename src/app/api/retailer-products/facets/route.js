@@ -19,13 +19,22 @@ function optionsFromMap(map) {
     .sort((left, right) => left.label.localeCompare(right.label));
 }
 
+// Same shape as optionsFromMap, plus a representative product image per
+// brand -- there's no dedicated brand-logo field in the catalog, so the
+// first in-stock product image found for that brand stands in for one.
+function brandOptionsFromMap(map, images) {
+  return [...map.entries()]
+    .map(([value, count]) => ({ value, label: value, count, image: images.get(value)?.url || null }))
+    .sort((left, right) => left.label.localeCompare(right.label));
+}
+
 async function loadFacetRows() {
   const rows = [];
 
   for (let from = 0; ; from += PAGE_SIZE) {
     const { data, error } = await supabaseAdmin
       .from("retailer_products")
-      .select("brand,categories,mrp,selling_price,rating,product_attributes")
+      .select("brand,categories,mrp,selling_price,rating,product_attributes,image_url,in_stock")
       .range(from, from + PAGE_SIZE - 1);
 
     if (error) throw error;
@@ -44,6 +53,7 @@ export async function GET() {
   try {
     const rows = await loadFacetRows();
     const brands = new Map();
+    const brandImages = new Map();
     const categories = new Map();
     const countries = new Map();
     const priceCounts = { under_500: 0, "500_1000": 0, over_1000: 0 };
@@ -53,6 +63,14 @@ export async function GET() {
       increment(brands, product.brand);
       (product.categories || []).forEach((category) => increment(categories, category));
       increment(countries, product.product_attributes?.["Country of origin"]);
+
+      const brandName = typeof product.brand === "string" ? product.brand.trim() : "";
+      if (brandName && product.image_url) {
+        const existing = brandImages.get(brandName);
+        if (!existing || (!existing.inStock && product.in_stock)) {
+          brandImages.set(brandName, { url: product.image_url, inStock: Boolean(product.in_stock) });
+        }
+      }
 
       const price = Number(product.selling_price ?? product.mrp);
       if (Number.isFinite(price)) {
@@ -70,7 +88,7 @@ export async function GET() {
 
     cachedFacets = {
       options: {
-        brand: optionsFromMap(brands),
+        brand: brandOptionsFromMap(brands, brandImages),
         price: [
           { value: "under_500", label: "Under ₹500", count: priceCounts.under_500 },
           { value: "500_1000", label: "₹500 – ₹1,000", count: priceCounts["500_1000"] },
