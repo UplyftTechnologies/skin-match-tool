@@ -16,6 +16,7 @@ import {
 } from "react-icons/fi";
 import Header from "@/components/header";
 import RetailerProductGallery from "@/components/retailer-product-gallery";
+import RetailerProductScoreBadge from "@/components/retailer-product-score-badge";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { buildSizeOptions, isSizeSibling } from "@/lib/variant-sizes";
 import { canonicalCategory } from "@/lib/retailer-catalog";
@@ -413,9 +414,9 @@ export default async function RetailerProductPage({ params }) {
   const highestPrice = availablePrices.length ? Math.max(...availablePrices) : null;
   // Ingredient cautions come from the same screen the catalogue uses, so a
   // retinoid is flagged here even when the retailer's own copy does not.
-  const restrictedNotes = [
-    ...new Set(detectRestrictedActives(product).map((rule) => rule.reason)),
-  ];
+  const restrictedRules = detectRestrictedActives(product);
+  const restrictedNotes = [...new Set(restrictedRules.map((rule) => rule.reason))];
+  const restrictedIds = [...new Set(restrictedRules.map((rule) => rule.id))];
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#FAF9F6] text-slate-800">
@@ -439,7 +440,12 @@ export default async function RetailerProductPage({ params }) {
                 primaryImage={product.image_url}
                 imageUrls={product.image_urls}
                 productName={product.product_name}
-              />
+              >
+                <RetailerProductScoreBadge
+                  productUrl={product.product_url}
+                  restricted={restrictedIds}
+                />
+              </RetailerProductGallery>
 
               <div className="mt-3 hidden rounded-3xl border border-slate-100 bg-gradient-to-b from-rose-50/50 to-white p-6 lg:block">
                 <div className="flex items-center gap-2">

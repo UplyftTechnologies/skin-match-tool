@@ -11,7 +11,7 @@ function normalizeImages(primaryImage, imageUrls) {
     .filter((url) => /^https?:\/\//i.test(url)))];
 }
 
-export default function RetailerProductGallery({ imageUrls, primaryImage, productName }) {
+export default function RetailerProductGallery({ imageUrls, primaryImage, productName, children }) {
   const images = normalizeImages(primaryImage, imageUrls);
   const [activeIndex, setActiveIndex] = useState(0);
   const activeImage = images[activeIndex];
@@ -41,6 +41,7 @@ export default function RetailerProductGallery({ imageUrls, primaryImage, produc
             R
           </div>
         )}
+        {children}
 
         {images.length > 1 ? (
           <>
