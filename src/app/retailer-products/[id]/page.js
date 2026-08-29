@@ -419,7 +419,7 @@ export default async function RetailerProductPage({ params }) {
   const restrictedIds = [...new Set(restrictedRules.map((rule) => rule.id))];
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#FAF9F6] text-slate-800">
+    <div className="min-h-screen overflow-x-clip bg-[#FAF9F6] text-slate-800">
       <Header />
 
       <div role="main" className="px-4 py-6 sm:px-6 sm:py-10 lg:px-10 xl:px-12">
