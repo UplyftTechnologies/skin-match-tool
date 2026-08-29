@@ -9,6 +9,7 @@ import ScrollTracker from "@/components/tracking/scroll-tracker";
 import QuizRehydrator from "@/components/tracking/quiz-rehydrator";
 import BottomNav from "@/components/bottom-nav";
 import GlobalQuizPrompt from "@/components/global-quiz-prompt";
+import MetaPixelPageView from "@/components/tracking/meta-pixel-page-view";
 import { Cormorant_Garamond, Lato } from 'next/font/google'
 
 export const viewport = {
@@ -114,6 +115,31 @@ export default function RootLayout({ children }) {
         </WishlistProvider>
 
         <NotificationOptIn />
+
+        {process.env.NODE_ENV === "production" ? (
+          <>
+            <Script id="meta-pixel" strategy="afterInteractive">
+              {`
+                !function(f,b,e,v,n,t,s)
+                {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+                n.queue=[];t=b.createElement(e);t.async=!0;
+                t.src=v;s=b.getElementsByTagName(e)[0];
+                s.parentNode.insertBefore(t,s)}(window,document,'script',
+                'https://connect.facebook.net/en_US/fbevents.js');
+                fbq('init', '1721498525601686');
+                fbq('track', 'PageView');
+              `}
+            </Script>
+            <MetaPixelPageView />
+            <noscript
+              dangerouslySetInnerHTML={{
+                __html: '<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1721498525601686&amp;ev=PageView&amp;noscript=1" alt="" />',
+              }}
+            />
+          </>
+        ) : null}
 
         {process.env.NODE_ENV === "production" &&
           process.env.NEXT_PUBLIC_GA_ID ? (
