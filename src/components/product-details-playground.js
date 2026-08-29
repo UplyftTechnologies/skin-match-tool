@@ -2,6 +2,7 @@
 
 import ProductPlayground from '@/components/homeComponents/ProductPlayground'
 import { useScoredProducts } from '@/hooks/use-scored-products'
+import { scoredProductPath } from '@/lib/site'
 
 export default function ProductDetailsPlayground({ productUid }) {
     const { products, quizAnswers, loading, error } = useScoredProducts()
@@ -13,6 +14,7 @@ export default function ProductDetailsPlayground({ productUid }) {
             products={products}
             quizAnswers={quizAnswers}
             initialProductId={productUid}
+            linkBuilder={(item) => scoredProductPath(item.product_uid, item.score)}
         />
     )
 }

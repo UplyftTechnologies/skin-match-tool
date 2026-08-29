@@ -55,6 +55,7 @@ export default function RetailerProductPlayground({ productId, category }) {
       products={products}
       quizAnswers={quizAnswers}
       initialProductId={String(productId)}
+      linkBuilder={(item) => `/retailer-products/${encodeURIComponent(item.product_uid)}`}
     />
   )
 }

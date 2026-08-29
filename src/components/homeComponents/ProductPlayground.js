@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { FiArrowRight, FiCheck, FiChevronDown, FiGitMerge } from 'react-icons/fi'
 
 function numericPrice(product) {
@@ -180,9 +181,15 @@ function ProductPicker({ label, products, selectedId, disabledId, onChange }) {
     )
 }
 
-function ProductSummary({ product, isWinner }) {
+function ProductSummary({ product, isWinner, href }) {
+    const Wrapper = href ? Link : 'div'
+    const wrapperProps = href ? { href } : {}
+
     return (
-        <div className={`relative min-w-0 px-2 py-4 text-center sm:px-6 ${isWinner ? 'bg-[#f3f8f6]' : 'bg-white'}`}>
+        <Wrapper
+            {...wrapperProps}
+            className={`relative block min-w-0 px-2 py-4 text-center transition-colors sm:px-6 ${isWinner ? 'bg-[#f3f8f6]' : 'bg-white'} ${href ? 'hover:bg-[#faf8f6] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#e08a7d]' : ''}`}
+        >
             {isWinner ? (
                 <span className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-[#d8e7e6] px-2 py-1 text-[9px] font-bold uppercase text-[#355d59] sm:right-3 sm:top-3">
                     <FiCheck aria-hidden="true" /> Better fit
@@ -212,11 +219,11 @@ function ProductSummary({ product, isWinner }) {
                 <span className="text-[9px] font-semibold uppercase text-gray-400">match</span>
             </div>
             <p className="mt-2 text-xs font-semibold text-gray-700">{displayPrice(product)}</p>
-        </div>
+        </Wrapper>
     )
 }
 
-export default function ProductPlayground({ products, quizAnswers, initialProductId = '' }) {
+export default function ProductPlayground({ products, quizAnswers, initialProductId = '', linkBuilder }) {
     const comparableProducts = useMemo(
         () => products.filter((product) =>
             Number.isFinite(Number(product.score)) && comparisonProductType(product),
@@ -290,8 +297,8 @@ export default function ProductPlayground({ products, quizAnswers, initialProduc
                         Comparing {productTypeLabel(left)} products
                     </p>
                     <div className="relative mt-3 grid min-w-0 grid-cols-2 gap-px overflow-hidden border border-gray-200 bg-gray-200">
-                        <ProductSummary product={left} isWinner={leftWins} />
-                        <ProductSummary product={right} isWinner={rightWins} />
+                        <ProductSummary product={left} isWinner={leftWins} href={linkBuilder?.(left)} />
+                        <ProductSummary product={right} isWinner={rightWins} href={linkBuilder?.(right)} />
                     </div>
 
                     <div className="pt-5">

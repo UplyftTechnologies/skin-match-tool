@@ -562,7 +562,7 @@ export default async function RetailerProductPage({ params }) {
                             className={`flex items-center gap-3 px-3 py-3 sm:px-4 ${isLowest ? "bg-rose-50/60" : "bg-white"}`}
                           >
                             <div className="min-w-0 flex-1">
-                              <RetailerLogo site={item.site} height={16} />
+                              <RetailerLogo site={item.site} height={46} />
                               <p className="mt-1 truncate text-[11px] text-slate-400">
                                 {item.id === product.id ? "You are viewing this" : item.variant || canonicalSize(item.product_name) || "Standard size"}
                               </p>
