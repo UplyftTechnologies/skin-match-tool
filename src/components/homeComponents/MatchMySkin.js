@@ -24,7 +24,7 @@ const bodyConcerns = [
 ]
 const specialConditions = ['Excessive dryness', 'Pregnancy', 'Breast feeding', 'None']
 const maleRestrictedConditions = ['Pregnancy', 'Breast feeding']
-const ageOptions = ['Teen', 'Adult']
+const ageOptions = ['Below 16', '16-24', '25-34', '35-44', 'Above 45']
 const genderOptions = ['Female', 'Male', 'Other', 'Prefer not to say']
 
 function Pill({ disabled = false, label, selected, onClick }) {

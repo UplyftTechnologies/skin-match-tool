@@ -21,10 +21,15 @@ export const QUIZ_OPTIONS = {
   ],
   lipsEyesConcerns: [],
   specialConditions: ["Excessive Dryness", "Pregnant", "Breastfeeding", "None"],
-  ages: ["Teen", "Adult"],
+  ages: ["Below 16", "16-24", "25-34", "35-44", "Above 45"],
   genders: ["male", "female", "other", "prefer not to say"],
 };
 
+// The catalog only carries three age-fit score columns (<16, 17-25, Above 25),
+// so the finer 25-34 / 35-44 / Above 45 bands all read off the same "+>25"
+// column — the quiz asks a more specific question than the data can answer,
+// but grouping them keeps scoring correct while giving a friendlier picker.
+// "teen"/"adult" stay mapped for profiles saved before this change.
 export const AGE_COLUMNS = {
   teen: ["<16"],
   "under 16": ["<16"],
@@ -32,8 +37,12 @@ export const AGE_COLUMNS = {
   "<16": ["<16"],
   "16": ["<16"],
   adult: ["17-25", "+>25"],
+  "16 24": ["17-25"],
   "17-25": ["17-25"],
   "17 25": ["17-25"],
+  "25 34": ["+>25"],
+  "35 44": ["+>25"],
+  "above 45": ["+>25"],
   "above 25": ["+>25"],
   "over 25": ["+>25"],
   "25+": ["+>25"],
