@@ -17,6 +17,7 @@ import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
 import VisualSearch from '@/components/visual-search'
+import MatchMySkin from '@/components/homeComponents/MatchMySkin'
 
 const filterTabs = [
     { key: 'brand', label: 'Brand' },
@@ -191,16 +192,8 @@ function ProductCard({ product }) {
             ) : null}
             <div className="mb-1 flex min-h-5 items-center gap-2">
                 <span className="truncate text-sm font-semibold text-gray-900">
-                    {product.selling_price || product.mrp ? `₹${Math.ceil(product.selling_price || product.mrp)}` : 'Price unavailable'}
+                    {product.mrp ? `₹${Math.ceil(product.mrp)}` : 'Price unavailable'}
                 </span>
-                {product.mrp && product.selling_price && product.mrp > product.selling_price ? (
-                    <>
-                        <span className="text-xs text-gray-400 line-through">₹{Math.ceil(product.mrp)}</span>
-                        <span className="text-xs font-semibold text-green-700">
-                            {Math.round(((product.mrp - product.selling_price) / product.mrp) * 100)}% off
-                        </span>
-                    </>
-                ) : null}
             </div>
             {product.size_count > 1 ? (
               <p className="mb-1 text-[11px] text-slate-500">
@@ -444,6 +437,8 @@ function ProductsPageContent() {
     const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'rating')
     const [currentPage, setCurrentPage] = useState(() => restoredState?.currentPage || 1)
     const [isMobile, setIsMobile] = useState(false)
+    const [quizEditorOpen, setQuizEditorOpen] = useState(false)
+    const [savedProfileLoaded, setSavedProfileLoaded] = useState(false)
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(max-width: 639px)')
@@ -471,6 +466,7 @@ function ProductsPageContent() {
         // the first paint cascade. Same shape as useQuizAnswers.
         const timer = setTimeout(() => {
             setSavedProfile(getSavedSkinProfile()?.profile || null)
+            setSavedProfileLoaded(true)
         }, 0)
         return () => clearTimeout(timer)
     }, [quizAnswers])
@@ -636,6 +632,65 @@ function ProductsPageContent() {
     return (
         <div>
             <Header />
+            {scoringProfile ? (
+                <div className="bg-white px-3 py-2 sm:px-6">
+                    <div className="mx-auto max-w-7xl">
+                        <section className="quiz-answers-disclosure" aria-label="Completed skin quiz answers">
+                            <div className="quiz-answers-bar !px-4 !py-2.5">
+                                <span className="quiz-complete-message">
+                                    <span className="quiz-complete-check" aria-hidden="true">&#10003;</span>
+                                    <span>Quiz answers</span>
+                                </span>
+                                <div className="flex items-center gap-1 lg:gap-2">
+                                    <button
+                                        className="quiz-update-btn inline-flex !min-h-8 items-center !px-4 !py-1.5"
+                                        type="button"
+                                        onClick={() => setQuizEditorOpen(true)}
+                                    >
+                                        Take Quiz
+                                    </button>
+                                    <button
+                                        className="quiz-answers-toggle !h-8 !w-8"
+                                        type="button"
+                                        aria-label="View quiz answers"
+                                        aria-expanded={quizEditorOpen}
+                                        onClick={() => setQuizEditorOpen((open) => !open)}
+                                    >
+                                        <svg className="quiz-answers-chevron" aria-hidden="true" viewBox="0 0 20 20" fill="none">
+                                            <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            ) : savedProfileLoaded && quizAnswers !== undefined ? (
+                <div className="bg-white px-3 py-2 sm:px-6">
+                    <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 rounded-xl border border-[#ead8d3] bg-[#fdf7f5] px-4 py-3">
+                        <div>
+                            <p className="text-sm font-bold text-slate-900">Find products for your skin</p>
+                            <p className="text-xs text-slate-500">Complete the skin quiz to see your match scores.</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setQuizEditorOpen(true)}
+                            className="shrink-0 rounded-xl bg-[#171717] px-4 py-2 text-xs font-semibold text-white hover:bg-[#333]"
+                        >
+                            Take Quiz
+                        </button>
+                    </div>
+                </div>
+            ) : null}
+
+            {quizEditorOpen ? (
+                <div className="border-y border-[#ead8d3] bg-white">
+                    <MatchMySkin
+                        startEditing
+                        onComplete={() => setQuizEditorOpen(false)}
+                    />
+                </div>
+            ) : null}
             <SortFilterBar
                 filterCount={appliedFilterCount}
                 onFilterClick={openFilters}
@@ -707,12 +762,6 @@ function ProductsPageContent() {
                         <ProductCard key={product.product_uid} product={product} />
                     ))}
                 </div>
-
-                {!loading && !error && !scoringProfile ? (
-                    <div className="mx-auto mb-3 max-w-xl rounded-xl bg-[#fdf7f5] px-4 py-3 text-center text-[12.5px] leading-relaxed text-[#8a5c52]">
-                        Take the skin quiz to see how well each product matches your skin.
-                    </div>
-                ) : null}
 
                 {!loading && !error && totalProducts > 0 ? (
                     <nav className="mt-8 flex flex-col items-center gap-3" aria-label="Product pages">

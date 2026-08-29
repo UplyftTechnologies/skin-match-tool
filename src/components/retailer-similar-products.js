@@ -18,7 +18,7 @@ function formatPrice(value) {
 
 function SimilarCard({ product }) {
     const [imageFailed, setImageFailed] = useState(false)
-    const price = formatPrice(product.selling_price ?? product.mrp)
+    const price = formatPrice(product.mrp)
     const href = `/retailer-products/${encodeURIComponent(product.product_uid)}`
     const score = product.scoring?.blocked ? null : product.scoring?.score
 

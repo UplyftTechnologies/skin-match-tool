@@ -45,7 +45,7 @@ function brandSearchTerm(brandName) {
 }
 
 function priceOf(offer) {
-  const value = Number(offer.selling_price ?? offer.mrp);
+  const value = Number(offer.mrp);
   return Number.isFinite(value) && value > 0 ? value : null;
 }
 

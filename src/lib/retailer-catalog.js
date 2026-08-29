@@ -148,6 +148,7 @@ function toCard(primary, group) {
     product_name: primary.product_name,
     brand_name: primary.brand,
     category: canonicalCategory(primary),
+    product_type: canonicalCategory(primary),
     site: primary.site,
     image: primary.image_url || "",
     product_url: primary.product_url || "",
@@ -207,7 +208,7 @@ function collapseSizeVariants(cards) {
         (right.rating_count || 0) - (left.rating_count || 0) ||
         (left.selling_price ?? Infinity) - (right.selling_price ?? Infinity),
     );
-    const prices = family.map((item) => item.selling_price).filter((n) => Number.isFinite(n));
+    const prices = family.map((item) => item.mrp).filter((n) => Number.isFinite(n));
 
     return {
       ...ranked[0],

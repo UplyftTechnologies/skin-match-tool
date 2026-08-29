@@ -38,7 +38,7 @@ export async function generateMetadata({ params }) {
 }
 
 function GuideProductCard({ product }) {
-  const price = product.selling_price || product.mrp;
+  const price = product.mrp;
   return (
     <article className="product-card">
       <div className="product-image-wrap">

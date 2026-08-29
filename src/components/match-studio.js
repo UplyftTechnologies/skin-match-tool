@@ -234,7 +234,7 @@ function displayScore(score) {
 }
 
 function formatPrice(product) {
-  const value = product.selling_price || product.mrp;
+  const value = product.mrp;
   return value ? `Rs. ${Math.ceil(value)}` : "Price unavailable";
 }
 
