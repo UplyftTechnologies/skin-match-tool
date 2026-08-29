@@ -58,7 +58,7 @@ export default function SearchByCategory() {
                     spaceBetween={16}
                     freeMode={{ enabled: true, momentumBounce: false }}
                     touchStartPreventDefault={false}
-                    className="touch-pan-y"
+                    className="category-swiper touch-pan-y"
                     breakpoints={{
                         480: { spaceBetween: 18 },
                         768: { spaceBetween: 20 },
@@ -89,6 +89,13 @@ export default function SearchByCategory() {
                         </SwiperSlide>
                     ))}
                 </Swiper>
+                <style jsx global>{`
+                    @media (min-width: 1024px) {
+                        .category-swiper .swiper-wrapper {
+                            justify-content: center;
+                        }
+                    }
+                `}</style>
             </div>
         </div>
     )
