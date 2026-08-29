@@ -21,6 +21,8 @@ import { buildSizeOptions, isSizeSibling } from "@/lib/variant-sizes";
 import { canonicalCategory } from "@/lib/retailer-catalog";
 import { detectRestrictedActives } from "@/lib/scoring/ingredient-safety";
 import RetailerSimilarProducts from "@/components/retailer-similar-products";
+import RetailerProductPlayground from "@/components/retailer-product-playground";
+import TypicalPriceRange from "@/components/typical-price-range";
 
 export const dynamic = "force-dynamic";
 
@@ -540,6 +542,11 @@ export default async function RetailerProductPage({ params }) {
               </div>
               <p className="mt-1 hidden text-[12px] text-slate-400 sm:block">Inclusive of all taxes</p>
 
+              <TypicalPriceRange
+                currentPrice={product.selling_price ?? product.mrp}
+                prices={availablePrices}
+              />
+
               {/* ------------------------------------------ Retailer comparison */}
               <div id="buy-options" className="mt-5">
                 {comparableProducts.length > 1 ? (
@@ -620,6 +627,12 @@ export default async function RetailerProductPage({ params }) {
               </p>
             </div>
           </div>
+
+          {/* -------------------------------------------------- Product Playground */}
+          <RetailerProductPlayground
+            productId={product.id}
+            category={canonicalCategory(product)}
+          />
 
           {/* ------------------------------------------------ You may also like */}
           <RetailerSimilarProducts

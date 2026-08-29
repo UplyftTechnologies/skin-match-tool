@@ -415,6 +415,7 @@ export default function Products() {
                                         slidesPerView={2.2}
                                         spaceBetween={12}
                                         freeMode={true}
+                                        centerInsufficientSlides={true}
                                         navigation={sectionProducts.length > 1 ? {
                                             prevEl: '.product-slider-prev',
                                             nextEl: '.product-slider-next',
