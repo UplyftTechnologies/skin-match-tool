@@ -61,6 +61,22 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
     const [saveError, setSaveError] = useState('')
     const [hasCompletedQuiz, setHasCompletedQuiz] = useState(false)
     const [isQuizEditing, setIsQuizEditing] = useState(true)
+    const [quizInteractionStarted, setQuizInteractionStarted] = useState(false)
+
+    useEffect(() => {
+        const activelyFillingQuiz = isQuizEditing && (startEditing || quizInteractionStarted)
+        document.documentElement.toggleAttribute('data-quiz-editing', activelyFillingQuiz)
+        window.dispatchEvent(new CustomEvent('roopsee-quiz-editing', {
+            detail: activelyFillingQuiz,
+        }))
+
+        return () => {
+            document.documentElement.removeAttribute('data-quiz-editing')
+            window.dispatchEvent(new CustomEvent('roopsee-quiz-editing', {
+                detail: false,
+            }))
+        }
+    }, [isQuizEditing, quizInteractionStarted, startEditing])
 
     const missingFields = [
         !skinType && { key: 'skin-type', label: 'Skin type' },
@@ -325,7 +341,11 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
                     </div>
                 ) : null}
                 {!hasCompletedQuiz || isQuizEditing ? (
-                <div className={`max-w-md mx-auto px-4 lg:max-w-6xl xl:max-w-7xl lg:px-8 ${hasCompletedQuiz && !hideCompletedHeader ? 'pt-0 pb-6 md:pb-12' : 'py-6 md:py-12'}`}>
+                <div
+                    className={`max-w-md mx-auto px-4 lg:max-w-6xl xl:max-w-7xl lg:px-8 ${hasCompletedQuiz && !hideCompletedHeader ? 'pt-0 pb-6 md:pb-12' : 'py-6 md:py-12'}`}
+                    onFocusCapture={() => setQuizInteractionStarted(true)}
+                    onPointerDown={() => setQuizInteractionStarted(true)}
+                >
                     <div className={hasCompletedQuiz && !hideCompletedHeader ? 'quiz-expanded-content-panel' : ''}>
                     <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
                         SKIN QUIZ

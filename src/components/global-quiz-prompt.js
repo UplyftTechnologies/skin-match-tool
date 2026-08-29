@@ -11,21 +11,35 @@ export default function GlobalQuizPrompt() {
     const pathname = usePathname()
     const quizAnswers = useQuizAnswers()
     const [open, setOpen] = useState(false)
+    const [quizEditing, setQuizEditing] = useState(false)
 
     const skipPage = pathname?.startsWith('/login')
 
     useEffect(() => {
-        if (skipPage || quizAnswers !== null) return undefined
+        const updateQuizEditing = (event) => {
+            setQuizEditing(Boolean(event.detail))
+            if (event.detail) setOpen(false)
+        }
+
+        setQuizEditing(document.documentElement.hasAttribute('data-quiz-editing'))
+        window.addEventListener('roopsee-quiz-editing', updateQuizEditing)
+        return () => window.removeEventListener('roopsee-quiz-editing', updateQuizEditing)
+    }, [])
+
+    useEffect(() => {
+        if (skipPage || quizEditing || quizAnswers !== null) return undefined
         if (sessionStorage.getItem(SHOWN_KEY)) return undefined
 
-        const timer = window.setTimeout(() => setOpen(true), 15000)
+        const timer = window.setTimeout(() => {
+            if (!document.documentElement.hasAttribute('data-quiz-editing')) setOpen(true)
+        }, 15000)
         return () => window.clearTimeout(timer)
-    }, [skipPage, quizAnswers])
+    }, [skipPage, quizAnswers, quizEditing])
 
     const handleClose = () => {
         setOpen(false)
         sessionStorage.setItem(SHOWN_KEY, '1')
     }
 
-    return <RequireQuizModal open={open && !quizAnswers} onClose={handleClose} />
+    return <RequireQuizModal open={open && !quizAnswers && !quizEditing} onClose={handleClose} />
 }
