@@ -132,9 +132,9 @@ export default function BrandsPage() {
         <div className="min-h-screen bg-[#FAF9F6]">
             <Header />
             <div className="max-w-6xl mx-auto px-4 py-6 md:py-10">
-                <h1 style={{ letterSpacing: '0.1em' }} className="font-lato uppercase text-2xl md:text-3xl text-center tracking- mb-1">
+                <h2 style={{ letterSpacing: '0.1em' }} className="font-lato uppercase text-2xl md:text-3xl text-center tracking- mb-1">
                     All Brands
-                </h1>
+                </h2>
                 {!loading && !error ? (
                     <p className="text-center text-sm text-gray-500 mt-2">{brands.length} brands on Roopsee</p>
                 ) : null}
