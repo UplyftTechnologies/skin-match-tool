@@ -52,17 +52,49 @@ const CATEGORY_RULES = [
   ["Treatment", /specialised skincare|treatment|acne|pigmentation|anti.?ageing|anti.?aging/i],
 ];
 
-export function canonicalCategory(row) {
+// A moisturizer-with-SPF ("Clinique Moisture Surge SPF 25", "CeraVe AM
+// Facial Moisturizer With Sunscreen SPF 30", ...) matches the Sunscreen rule
+// below purely because "SPF" appears in the title, which used to outrank
+// Moisturizer on rule order alone — even though the retailer files these as
+// Moisturizers. The retailer's own category is the more trustworthy signal
+// for this one ambiguity: trust it when it unambiguously says Moisturizer and
+// the listing is not also filed under Sun Care.
+const RETAILER_CATEGORY_HINTS = {
+  sunscreen: /sun\s*care|sunscreen|sun\s*block/i,
+  moisturizer: /moisturi[sz]ers?/i,
+};
+
+// `siblingRows` are other retailers' listings of the same physical product
+// (same GTIN) — the cheapest offer (whichever row `row` is) sometimes comes
+// from a retailer whose own category is generic ("Personal Care") while a
+// sibling listing has a clean "Moisturizers" tag for the identical item, so
+// the disambiguation checks every listing of the product, not just this one.
+export function canonicalCategory(row, siblingRows = []) {
   const haystack = [
     ...(Array.isArray(row.categories) ? row.categories : []),
     row.product_name || "",
     row.variant || "",
   ].join(" ");
 
+  let matched = "Other";
   for (const [label, pattern] of CATEGORY_RULES) {
-    if (pattern.test(haystack)) return label;
+    if (pattern.test(haystack)) {
+      matched = label;
+      break;
+    }
   }
-  return "Other";
+
+  // Only the Sunscreen bucket is second-guessed — a mask, cleanser, serum,
+  // etc. that happens to share a GTIN family with a "Moisturizers"-tagged
+  // sibling must not be dragged into Moisturizer along with it.
+  if (matched !== "Sunscreen") return matched;
+
+  const retailerCategories = [row, ...siblingRows]
+    .flatMap((entry) => (Array.isArray(entry?.categories) ? entry.categories : []))
+    .join(" ");
+  const isRetailerMoisturizer = RETAILER_CATEGORY_HINTS.moisturizer.test(retailerCategories);
+  const isRetailerSunscreen = RETAILER_CATEGORY_HINTS.sunscreen.test(retailerCategories);
+  return isRetailerMoisturizer && !isRetailerSunscreen ? "Moisturizer" : matched;
 }
 
 function normalizeKey(value) {
@@ -162,7 +194,7 @@ export function deriveSkinFacts(rows, categoryRow) {
   const suitableFor = [skinType, concern].filter(Boolean).join(" · ");
 
   return {
-    baseType: categoryRow ? canonicalCategory(categoryRow) : "",
+    baseType: categoryRow ? canonicalCategory(categoryRow, rows) : "",
     skinType,
     concern,
     activeIngredient,
@@ -194,8 +226,8 @@ function toCard(primary, group) {
     restricted,
     product_name: primary.product_name,
     brand_name: primary.brand,
-    category: canonicalCategory(primary),
-    product_type: canonicalCategory(primary),
+    category: canonicalCategory(primary, group),
+    product_type: canonicalCategory(primary, group),
     size: listingSize(primary) || primary.variant || "",
     site: primary.site,
     image: primary.image_url || "",

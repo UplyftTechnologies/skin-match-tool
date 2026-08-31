@@ -627,12 +627,12 @@ export default async function RetailerProductPage({ params }) {
           {/* -------------------------------------------------- Product Playground */}
           <RetailerProductPlayground
             productId={product.id}
-            category={canonicalCategory(product)}
+            category={canonicalCategory(product, comparableProducts)}
           />
 
           {/* ------------------------------------------------ You may also like */}
           <RetailerSimilarProducts
-            category={canonicalCategory(product)}
+            category={canonicalCategory(product, comparableProducts)}
             excludeUid={String(product.id)}
           />
 
