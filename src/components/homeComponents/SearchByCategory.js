@@ -8,6 +8,8 @@ import 'swiper/css'
 import 'swiper/css/free-mode'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
+import { useQuizGate } from '@/hooks/use-quiz-gate'
+import RequireQuizModal from '@/components/RequireQuizModal'
 import Face from '@/assets/images/face.webp'
 import Body from '@/assets/images/body.webp'
 import lips from '@/assets/images/lips.webp'
@@ -37,6 +39,7 @@ function categoryHref(filters) {
 
 export default function SearchByCategory() {
     const router = useRouter()
+    const { guard, modalOpen, closeModal } = useQuizGate()
 
     const handleCategoryClick = (category) => {
         trackingService.trackEvent(EVENTS.CLICKED_SEARCH_BY_CATEGORY, {
@@ -45,7 +48,7 @@ export default function SearchByCategory() {
             section: 'search_by_category',
         })
 
-        router.push(categoryHref(category.filters))
+        guard(() => router.push(categoryHref(category.filters)))
     }
 
     return (
@@ -100,6 +103,7 @@ export default function SearchByCategory() {
                     }
                 `}</style>
             </div>
+            <RequireQuizModal open={modalOpen} onClose={closeModal} />
         </div>
     )
 }

@@ -745,62 +745,72 @@ function ProductsPageContent() {
                     />
                 </div>
 
-                {loading ? (
-                    <p className="py-8 text-center text-sm text-gray-500">Loading products…</p>
-                ) : null}
-                {error ? (
-                    <p className="py-8 text-center text-sm text-red-600">{error}</p>
-                ) : null}
-                {!loading && !error && products.length === 0 ? (
-                    <p className="py-8 text-center text-sm text-gray-500">No products found.</p>
-                ) : null}
-
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 mt-3 md:gap-6">
-                    {products.map((product) => (
-                        <ProductCard key={product.product_uid} product={product} />
-                    ))}
-                </div>
-
-                {!loading && !error && totalProducts > 0 ? (
-                    <nav className="mt-8 flex flex-col items-center gap-3" aria-label="Product pages">
-                        <p className="text-xs text-gray-500">
-                            Showing {firstProductNumber}–{lastProductNumber} of {totalProducts} products
+                {!scoringProfile ? (
+                    savedProfileLoaded && quizAnswers !== undefined ? (
+                        <p className="py-12 text-center text-sm text-gray-500">
+                            Complete the skin quiz above to see products matched to your skin.
                         </p>
-                        <div className="flex w-full max-w-full flex-wrap items-center justify-center gap-1.5 sm:gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
-                                disabled={currentPage === 1}
-                                className="shrink-0 rounded-full border border-[#e08a7d] px-2.5 py-1.5 text-[11px] text-[#d17a6d] disabled:cursor-not-allowed disabled:opacity-40 sm:px-3 sm:py-2 sm:text-xs"
-                            >
-                                Previous
-                            </button>
-                            {pageNumbers.map((pageNumber) => (
-                                <button
-                                    type="button"
-                                    key={pageNumber}
-                                    onClick={() => setCurrentPage(pageNumber)}
-                                    aria-current={currentPage === pageNumber ? 'page' : undefined}
-                                    className={`h-8 w-8 shrink-0 rounded-full text-[11px] font-semibold transition-colors sm:h-9 sm:w-9 sm:text-xs ${
-                                        currentPage === pageNumber
-                                            ? 'bg-[#e08a7d] text-white'
-                                            : 'border border-gray-200 bg-white text-gray-700 hover:border-[#e08a7d]'
-                                    }`}
-                                >
-                                    {pageNumber}
-                                </button>
+                    ) : null
+                ) : (
+                    <>
+                        {loading ? (
+                            <p className="py-8 text-center text-sm text-gray-500">Loading products…</p>
+                        ) : null}
+                        {error ? (
+                            <p className="py-8 text-center text-sm text-red-600">{error}</p>
+                        ) : null}
+                        {!loading && !error && products.length === 0 ? (
+                            <p className="py-8 text-center text-sm text-gray-500">No products found.</p>
+                        ) : null}
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 mt-3 md:gap-6">
+                            {products.map((product) => (
+                                <ProductCard key={product.product_uid} product={product} />
                             ))}
-                            <button
-                                type="button"
-                                onClick={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
-                                disabled={currentPage === totalPages}
-                                className="shrink-0 rounded-full border border-[#e08a7d] px-2.5 py-1.5 text-[11px] text-[#d17a6d] disabled:cursor-not-allowed disabled:opacity-40 sm:px-3 sm:py-2 sm:text-xs"
-                            >
-                                Next
-                            </button>
                         </div>
-                    </nav>
-                ) : null}
+
+                        {!loading && !error && totalProducts > 0 ? (
+                            <nav className="mt-8 flex flex-col items-center gap-3" aria-label="Product pages">
+                                <p className="text-xs text-gray-500">
+                                    Showing {firstProductNumber}–{lastProductNumber} of {totalProducts} products
+                                </p>
+                                <div className="flex w-full max-w-full flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+                                        disabled={currentPage === 1}
+                                        className="shrink-0 rounded-full border border-[#e08a7d] px-2.5 py-1.5 text-[11px] text-[#d17a6d] disabled:cursor-not-allowed disabled:opacity-40 sm:px-3 sm:py-2 sm:text-xs"
+                                    >
+                                        Previous
+                                    </button>
+                                    {pageNumbers.map((pageNumber) => (
+                                        <button
+                                            type="button"
+                                            key={pageNumber}
+                                            onClick={() => setCurrentPage(pageNumber)}
+                                            aria-current={currentPage === pageNumber ? 'page' : undefined}
+                                            className={`h-8 w-8 shrink-0 rounded-full text-[11px] font-semibold transition-colors sm:h-9 sm:w-9 sm:text-xs ${
+                                                currentPage === pageNumber
+                                                    ? 'bg-[#e08a7d] text-white'
+                                                    : 'border border-gray-200 bg-white text-gray-700 hover:border-[#e08a7d]'
+                                            }`}
+                                        >
+                                            {pageNumber}
+                                        </button>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentPage((page) => Math.min(page + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                        className="shrink-0 rounded-full border border-[#e08a7d] px-2.5 py-1.5 text-[11px] text-[#d17a6d] disabled:cursor-not-allowed disabled:opacity-40 sm:px-3 sm:py-2 sm:text-xs"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </nav>
+                        ) : null}
+                    </>
+                )}
 
             </div>
         </div>

@@ -8,6 +8,8 @@ import 'swiper/css'
 import 'swiper/css/free-mode'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
+import { useQuizGate } from '@/hooks/use-quiz-gate'
+import RequireQuizModal from '@/components/RequireQuizModal'
 import P1 from '@/assets/Shopbyproducts/p1.png'
 import P2 from '@/assets/Shopbyproducts/p2.png'
 import P3 from '@/assets/Shopbyproducts/p3.png'
@@ -32,6 +34,7 @@ function productTypeHref(type) {
 
 export default function SearchByProducts() {
     const router = useRouter()
+    const { guard, modalOpen, closeModal } = useQuizGate()
 
     const handleProductClick = (product) => {
         trackingService.trackEvent(EVENTS.CLICKED_SEARCH_BY_PRODUCT_TYPE, {
@@ -40,7 +43,7 @@ export default function SearchByProducts() {
             section: 'search_by_products',
         })
 
-        router.push(productTypeHref(product.type))
+        guard(() => router.push(productTypeHref(product.type)))
     }
 
     return (
@@ -84,6 +87,7 @@ export default function SearchByProducts() {
                     ))}
                 </Swiper>
             </div>
+            <RequireQuizModal open={modalOpen} onClose={closeModal} />
         </div>
     )
 }

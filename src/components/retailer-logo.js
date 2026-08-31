@@ -4,17 +4,11 @@ import Image from 'next/image'
 import Amazon from '@/assets/images/amazon.png'
 import Tira from '@/assets/images/tiira.png'
 import Nyka from '@/assets/images/nyka.webp'
+import { siteName } from '@/lib/site-name'
+
+export { siteName }
 
 const SITE_LOGOS = { nykaa: Nyka, tira: Tira, amazon: Amazon }
-const SITE_NAMES = {
-    nykaa: 'Nykaa',
-    tira: 'Tira',
-    amazon: 'Amazon',
-    roopsee: 'Roopsee',
-    purplle: 'Purplle',
-    broadway: 'Broadway',
-    kindlife: 'Kindlife',
-}
 
 // No local logo file for these yet — domains taken from real product_url
 // values already stored per retailer in retailer_products, not guessed, so
@@ -26,10 +20,6 @@ const SITE_LOGO_DOMAINS = {
 }
 
 const ONLINE_LOGO_TIMEOUT_MS = 3000
-
-export function siteName(site) {
-    return SITE_NAMES[site] || site
-}
 
 // A fetched-from-the-web logo has no local guarantee it exists or loads —
 // some hosts return a broken/zero-byte image without ever firing the <img>

@@ -24,7 +24,9 @@ import { detectRestrictedActives } from "@/lib/scoring/ingredient-safety";
 import RetailerSimilarProducts from "@/components/retailer-similar-products";
 import RetailerProductPlayground from "@/components/retailer-product-playground";
 import TypicalPriceRange from "@/components/typical-price-range";
-import RetailerLogo, { siteName } from "@/components/retailer-logo";
+import RetailerLogo from "@/components/retailer-logo";
+import { siteName } from "@/lib/site-name";
+import RequireQuizGate from "@/components/require-quiz-gate";
 
 export const dynamic = "force-dynamic";
 
@@ -422,6 +424,11 @@ export default async function RetailerProductPage({ params }) {
     <div className="min-h-screen overflow-x-clip bg-[#FAF9F6] text-slate-800">
       <Header />
 
+      <RequireQuizGate
+        title="Take the skin quiz to see this product"
+        description="Answer a few quick questions so this product is scored for your skin."
+        navigateToHomeQuiz
+      >
       <div role="main" className="px-4 py-6 sm:px-6 sm:py-10 lg:px-10 xl:px-12">
         <div className="mx-auto max-w-6xl">
           <Link
@@ -719,6 +726,7 @@ export default async function RetailerProductPage({ params }) {
           </div>
         </div>
       </div>
+      </RequireQuizGate>
     </div>
   );
 }

@@ -8,6 +8,8 @@ import 'swiper/css'
 import 'swiper/css/free-mode'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
+import { useQuizGate } from '@/hooks/use-quiz-gate'
+import RequireQuizModal from '@/components/RequireQuizModal'
 import { FiArrowRight } from 'react-icons/fi'
 import B1 from '@/assets/indianrockstar/i1.png'
 import B2 from '@/assets/indianrockstar/i2.png'
@@ -39,6 +41,7 @@ function brandHref(brand) {
 
 export default function IndianRockstar() {
     const router = useRouter()
+    const { guard, modalOpen, closeModal } = useQuizGate()
 
     const handleBrandClick = (brand) => {
         trackingService.trackEvent(EVENTS.CLICKED_INDIAN_ROCKSTAR_BRAND, {
@@ -47,14 +50,14 @@ export default function IndianRockstar() {
             section: 'indian_rockstar',
         })
 
-        router.push(brandHref(brand.brand))
+        guard(() => router.push(brandHref(brand.brand)))
     }
 
     const handleViewAll = () => {
         trackingService.trackEvent(EVENTS.CLICKED_VIEW_ALL_PRODUCTS, {
             source: 'indian_rockstar',
         })
-        router.push('/brands')
+        guard(() => router.push('/brands'))
     }
 
     return (
@@ -111,6 +114,7 @@ export default function IndianRockstar() {
                     </SwiperSlide>
                 </Swiper>
             </div>
+            <RequireQuizModal open={modalOpen} onClose={closeModal} />
         </div>
     )
 }

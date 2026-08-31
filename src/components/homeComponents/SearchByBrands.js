@@ -8,6 +8,8 @@ import 'swiper/css'
 import 'swiper/css/free-mode'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
+import { useQuizGate } from '@/hooks/use-quiz-gate'
+import RequireQuizModal from '@/components/RequireQuizModal'
 import { FiArrowRight } from 'react-icons/fi'
 import B1 from '@/assets/Kbeauty/k1.png'
 import B2 from '@/assets/Kbeauty/k2.png'
@@ -37,6 +39,7 @@ function brandHref(brand) {
 
 export default function SearchByBrands() {
   const router = useRouter()
+  const { guard, modalOpen, closeModal } = useQuizGate()
 
   const handleBrandClick = (brand) => {
     trackingService.trackEvent(EVENTS.CLICKED_SEARCH_K_BEAUTY_BRAND, {
@@ -45,14 +48,14 @@ export default function SearchByBrands() {
       section: 'search_k_beauty',
     })
 
-    router.push(brandHref(brand.brand))
+    guard(() => router.push(brandHref(brand.brand)))
   }
 
   const handleViewAll = () => {
     trackingService.trackEvent(EVENTS.CLICKED_VIEW_ALL_PRODUCTS, {
       source: 'search_k_beauty',
     })
-    router.push('/brands')
+    guard(() => router.push('/brands'))
   }
 
   return (
@@ -109,6 +112,7 @@ export default function SearchByBrands() {
           </SwiperSlide>
         </Swiper>
       </div>
+      <RequireQuizModal open={modalOpen} onClose={closeModal} />
     </div>
   )
 }
