@@ -5,9 +5,12 @@ import Link from "next/link";
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
 import { productPath } from "@/lib/site";
+import { clampScore, getScoreBand } from "@/lib/score-band";
 
 export default function SeoProductCard({ product, section }) {
   const price = product.mrp;
+  const displayScore = clampScore(product.score);
+  const band = getScoreBand(displayScore);
 
   function trackVisit() {
     trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
@@ -24,8 +27,8 @@ export default function SeoProductCard({ product, section }) {
     <article className="product-card">
       <div className="product-image-wrap">
         {product.image ? <img alt={product.product_name} loading="lazy" src={product.image} /> : <div className="image-fallback">R</div>}
-        <div className={`score-badge ${product.score >= 80 ? "score-good" : product.score >= 60 ? "score-present" : "score-weak"}`}>
-          <div>{Math.max(0, product.score)}<small>Match</small></div>
+        <div className={`score-badge score-${band.key}`} style={{ backgroundColor: band.fill }}>
+          <div>{displayScore}<small>{band.label}</small></div>
         </div>
       </div>
       <div className="product-body">

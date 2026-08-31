@@ -4,12 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
-
-function scoreBand(score) {
-    if (score >= 80) return { label: 'Great', className: 'score-good' }
-    if (score >= 60) return { label: 'Caution', className: 'score-present' }
-    return { label: 'Poor', className: 'score-weak' }
-}
+import { getScoreBand } from '@/lib/score-band'
 
 // Mirrors the profile shape /api/retailer-products/catalog expects (built
 // from URL params in use-retailer-catalog.js's buildQuery) — the scoring
@@ -76,10 +71,10 @@ export default function RetailerProductScoreBadge({ productUrl, restricted }) {
     if (!scoring || !Number.isFinite(Number(scoring.score))) return null
 
     const score = Math.max(0, Math.min(100, Math.round(Number(scoring.score))))
-    const band = scoreBand(score)
+    const band = getScoreBand(score)
 
     return (
-        <div className={`score-badge ${band.className}`}>
+        <div className={`score-badge score-${band.key}`} style={{ backgroundColor: band.fill }}>
             <div>
                 {scoring.blocked ? '—' : score}
                 <small>{scoring.blocked ? 'Blocked' : band.label}</small>

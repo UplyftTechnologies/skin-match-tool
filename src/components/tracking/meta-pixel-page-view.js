@@ -8,8 +8,6 @@ export default function MetaPixelPageView() {
   const initialPageViewTracked = useRef(false);
 
   useEffect(() => {
-    // The base snippet records the initial load. Only record subsequent
-    // client-side route changes here so the first PageView is not duplicated.
     if (!initialPageViewTracked.current) {
       initialPageViewTracked.current = true;
       return;

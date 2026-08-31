@@ -16,6 +16,7 @@ import ProductCard from "./ProductCard";
 import { getSessionId, getVisitorId, setLoggedInUser } from "@/lib/tracking/identity";
 import { saveSkinProfile } from "@/lib/profile-storage";
 import Header from "./header";
+import { getScoreBand } from "@/lib/score-band";
 
 const options = {
   skinTypes: ["Oily", "Dry", "Normal", "Combination"],
@@ -223,12 +224,6 @@ function rangeLabel(key) {
   }[key] || "All";
 }
 
-function scoreBand(score) {
-  if (score >= 80) return { label: "Great", className: "great" };
-  if (score >= 60) return { label: "Caution", className: "caution" };
-  return { label: "Poor", className: "poor" };
-}
-
 function displayScore(score) {
   return Math.max(0, score);
 }
@@ -282,7 +277,7 @@ function RoutineCard({ item, onOpen }) {
       </article>
     );
   }
-  const band = scoreBand(product.score);
+  const band = getScoreBand(product.score);
   return (
     <article
       className="routine-card"
@@ -300,7 +295,7 @@ function RoutineCard({ item, onOpen }) {
         <h4>{product.product_name}</h4>
         <p>{product.brand_name} · {product.product_type} · {product.when_to_use || "Routine"}</p>
       </div>
-      <div className={`routine-score score-${band.className}`}>{displayScore(product.score)}</div>
+      <div className={`routine-score score-${band.key}`} style={{ backgroundColor: band.fill }}>{displayScore(product.score)}</div>
     </article>
   );
 }
@@ -348,7 +343,7 @@ function ProductModal({ product, onClose }) {
   }, [product, onClose]);
 
   if (!product) return null;
-  const band = scoreBand(product.score);
+  const band = getScoreBand(product.score);
   return (
     <div
       aria-hidden="false"
@@ -368,7 +363,7 @@ function ProductModal({ product, onClose }) {
               <button aria-label="Close product details" className="close-button" onClick={onClose} type="button">×</button>
             </div>
             <div className="detail-grid">
-              <div className="detail-box"><span>Score</span><strong className={`score-${band.className}`}>{displayScore(product.score)} · {band.label}</strong></div>
+              <div className="detail-box"><span>Score</span><strong className={`score-${band.key}`} style={{ color: band.fill }}>{displayScore(product.score)} · {band.label}</strong></div>
               <div className="detail-box"><span>Price</span><strong>{formatPrice(product)}</strong></div>
               <div className="detail-box"><span>Size</span><strong>{product.size || "Unavailable"}</strong></div>
               <div className="detail-box"><span>Use</span><strong>{product.when_to_use || "Routine"}</strong></div>
