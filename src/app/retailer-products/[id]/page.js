@@ -491,7 +491,6 @@ export default async function RetailerProductPage({ params }) {
                 {product.product_name}
               </h2>
 
-
               {/* Size selector — unchanged. */}
               {sizeOptions.length ? (
                 <div className="mt-4">
