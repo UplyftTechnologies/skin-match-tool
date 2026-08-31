@@ -444,6 +444,9 @@ export default async function RetailerProductPage({ params }) {
                 <RetailerProductScoreBadge
                   productUrl={product.product_url}
                   restricted={restrictedIds}
+                  fallbackUrls={comparableProducts
+                    .map((item) => item.product_url)
+                    .filter((url) => url && url !== product.product_url)}
                 />
               </RetailerProductGallery>
 

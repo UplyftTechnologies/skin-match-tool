@@ -163,7 +163,7 @@ export default function Header({ className = "" }) {
               aria-hidden="true"
               className="absolute left-[12.5%] right-[12.5%] top-[17px] h-px bg-[#ead8d3] sm:top-[19px]"
             />
-            {["Take Quiz", "See Scores", "Finalise Product", "Buy"].map((label) => (
+            {["Take Quiz", "Check Skin Match", "Compare Products", "Buy"].map((label) => (
               <li
                 key={label}
                 className="relative flex min-w-0 flex-col items-center gap-1.5 px-1 text-center text-[10px] font-medium leading-tight text-gray-600 sm:text-xs"

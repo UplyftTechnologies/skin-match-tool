@@ -32,7 +32,7 @@ export default function GlobalQuizPrompt() {
 
         const timer = window.setTimeout(() => {
             if (!document.documentElement.hasAttribute('data-quiz-editing')) setOpen(true)
-        }, 15000)
+        }, 20000)
         return () => window.clearTimeout(timer)
     }, [skipPage, quizAnswers, quizEditing])
 

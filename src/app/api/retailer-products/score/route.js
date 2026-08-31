@@ -20,13 +20,22 @@ export async function POST(request) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const { productUrl, restricted, profile } = body || {};
-  if (!productUrl || !profile?.skinType) {
+  const { productUrl, fallbackUrls, restricted, profile } = body || {};
+  // The scored dataset is a snapshot scrape that does not cover every live
+  // listing — Nykaa is well covered, but Purplle/Amazon/Kindlife/Broadway and
+  // part of Tira are not. `fallbackUrls` carries sibling listings for the same
+  // physical product (GTIN-matched, from the compare-prices panel): same
+  // ingredients, same score, so the first one the dataset does recognise is
+  // used rather than leaving the shopper with no score at all.
+  const candidates = [productUrl, ...(Array.isArray(fallbackUrls) ? fallbackUrls : [])].filter(Boolean);
+  if (!candidates.length || !profile?.skinType) {
     return NextResponse.json({ scoring: null });
   }
 
-  const row = { product_url: productUrl, restricted: Array.isArray(restricted) ? restricted : [] };
-  const [scored] = attachScores([row], profile, [row]);
+  const restrictedIds = Array.isArray(restricted) ? restricted : [];
+  const rows = candidates.map((url) => ({ product_url: url, restricted: restrictedIds }));
+  const scored = attachScores(rows, profile, rows);
+  const match = scored.find((row) => row.scoring);
 
-  return NextResponse.json({ scoring: scored?.scoring || null });
+  return NextResponse.json({ scoring: match?.scoring || null });
 }

@@ -5,6 +5,7 @@ import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
 import { getScoreBand } from '@/lib/score-band'
+import { DEFAULT_PROFILE } from '@/lib/default-profile'
 
 // Mirrors the profile shape /api/retailer-products/catalog expects (built
 // from URL params in use-retailer-catalog.js's buildQuery) — the scoring
@@ -27,22 +28,30 @@ function toCatalogScoringProfile(profile) {
     }
 }
 
-export default function RetailerProductScoreBadge({ productUrl, restricted }) {
+export default function RetailerProductScoreBadge({ productUrl, restricted, fallbackUrls }) {
     const quizAnswers = useQuizAnswers()
     const [savedProfile, setSavedProfile] = useState(null)
+    const [savedProfileLoaded, setSavedProfileLoaded] = useState(false)
     const [scoring, setScoring] = useState(null)
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setSavedProfile(getSavedSkinProfile()?.profile || null)
+            setSavedProfileLoaded(true)
         }, 0)
         return () => clearTimeout(timer)
     }, [quizAnswers])
 
+    // Every product on this page should carry a score, even for a visitor who
+    // has never taken the quiz — so once we know there is no real quiz/saved
+    // profile to use, this falls back to the site default rather than hiding
+    // the badge entirely.
     const scoringProfile = useMemo(() => {
         if (quizAnswers) return quizAnswersToScoringProfile(quizAnswers)
-        return savedProfile?.selectedSkinType ? savedProfile : null
-    }, [quizAnswers, savedProfile])
+        if (savedProfile?.selectedSkinType) return savedProfile
+        if (quizAnswers === null && savedProfileLoaded) return { ...DEFAULT_PROFILE }
+        return null
+    }, [quizAnswers, savedProfile, savedProfileLoaded])
 
     const catalogProfile = useMemo(() => toCatalogScoringProfile(scoringProfile), [scoringProfile])
 
@@ -56,7 +65,7 @@ export default function RetailerProductScoreBadge({ productUrl, restricted }) {
         fetch('/api/retailer-products/score', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ productUrl, restricted, profile: catalogProfile }),
+            body: JSON.stringify({ productUrl, fallbackUrls, restricted, profile: catalogProfile }),
             signal: controller.signal,
         })
             .then((response) => response.json())
@@ -66,7 +75,7 @@ export default function RetailerProductScoreBadge({ productUrl, restricted }) {
             })
 
         return () => controller.abort()
-    }, [productUrl, restricted, catalogProfile])
+    }, [productUrl, fallbackUrls, restricted, catalogProfile])
 
     if (!scoring || !Number.isFinite(Number(scoring.score))) return null
 
