@@ -46,7 +46,7 @@ const CATEGORY_RULES = [
   ["Eye Care", /eye care|eye cream|under eye|eye serum/i],
   ["Lip Care", /lip care|lip balm|lip mask|lip scrub/i],
   ["Exfoliator", /exfoliat|scrub|peel/i],
-  ["Body Care", /body care|bath and body|body lotion|body wash|hands & feet|hand cream/i],
+  ["Body Care", /body care|bath and body|body lotion|body wash/i],
   ["Hair Care", /hair care|shampoo|conditioner|hair oil|hair serum/i],
   ["Kits & Combos", /kit|combo|set\b|bundle|gift/i],
   ["Treatment", /specialised skincare|treatment|acne|pigmentation|anti.?ageing|anti.?aging/i],
@@ -64,17 +64,31 @@ const RETAILER_CATEGORY_HINTS = {
   moisturizer: /moisturi[sz]ers?/i,
 };
 
+// "Hands & Feet" is a broad retailer bucket that gets attached to loosely
+// related products — a neck/face cream tagged "Hands & Feet, Neck Creams"
+// with no hand or feet wording anywhere in its own name. Trusted only when
+// the product's own name actually says hand/feet, not merely because the tag
+// showed up somewhere in a retailer's breadcrumb.
+const HAND_FEET_PATTERN = /hands? (&|and) feet|hand cream/i;
+
+// A bare "Cream" with no day/night/face/gel qualifier ("Nourishing Rich
+// Cream", "Barrier Cream") falls through every rule above and used to land
+// on "Other" — this is the last-resort catch reached only when nothing more
+// specific matched, so it can't steal a cleansing cream (Cleanser already
+// claimed it) or a sunscreen cream (Sunscreen already claimed it) from a
+// more specific bucket earlier in the list.
+const BARE_CREAM_PATTERN = /\bcreams?\b/i;
+
 // `siblingRows` are other retailers' listings of the same physical product
 // (same GTIN) — the cheapest offer (whichever row `row` is) sometimes comes
 // from a retailer whose own category is generic ("Personal Care") while a
 // sibling listing has a clean "Moisturizers" tag for the identical item, so
 // the disambiguation checks every listing of the product, not just this one.
 export function canonicalCategory(row, siblingRows = []) {
-  const haystack = [
-    ...(Array.isArray(row.categories) ? row.categories : []),
-    row.product_name || "",
-    row.variant || "",
-  ].join(" ");
+  const nameText = [row.product_name || "", row.variant || ""].join(" ");
+  const haystack = [...(Array.isArray(row.categories) ? row.categories : []), nameText].join(" ");
+
+  if (HAND_FEET_PATTERN.test(nameText)) return "Body Care";
 
   let matched = "Other";
   for (const [label, pattern] of CATEGORY_RULES) {
@@ -82,6 +96,10 @@ export function canonicalCategory(row, siblingRows = []) {
       matched = label;
       break;
     }
+  }
+
+  if (matched === "Other" && BARE_CREAM_PATTERN.test(haystack)) {
+    matched = "Moisturizer";
   }
 
   // Only the Sunscreen bucket is second-guessed — a mask, cleanser, serum,

@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { FiSearch } from 'react-icons/fi'
+import { FiSearch,FiRepeat } from 'react-icons/fi'
 import { HiArrowsUpDown } from 'react-icons/hi2'
 import { BsFunnel, BsHeartFill } from 'react-icons/bs'
 import { BiHeart } from 'react-icons/bi'
@@ -19,6 +19,8 @@ import { getSavedSkinProfile } from '@/lib/profile-storage'
 import VisualSearch from '@/components/visual-search'
 import MatchMySkin from '@/components/homeComponents/MatchMySkin'
 import { getScoreBand } from '@/lib/score-band'
+import { FaCartShopping } from 'react-icons/fa6'
+import AddToRoutineModal from '@/components/routine/AddToRoutineModal'
 
 const filterTabs = [
     { key: 'brand', label: 'Brand' },
@@ -68,6 +70,7 @@ function ProductCard({ product }) {
     const router = useRouter()
     const { isWishlisted, toggleWishlist } = useWishlist()
     const [imageFailed, setImageFailed] = useState(false)
+    const [routineModalOpen, setRoutineModalOpen] = useState(false)
     const savedProduct = product
     const wishlisted = isWishlisted(savedProduct.product_uid)
     const productHref = `/retailer-products/${encodeURIComponent(product.product_uid)}`
@@ -213,14 +216,32 @@ function ProductCard({ product }) {
                         : SITE_LABELS[product.site] || product.site}
                 </span>
             </div>
-            <button
-                type="button"
-                onClick={handleBuyNow}
-                style={{ fontSize: '11px' }}
-                className="mt-auto w-[90%] mx-auto font-semibold border rounded-full py-[8px] transition-colors duration-200 text-white bg-[#e08a7d] border-[#e08a7d] hover:bg-[#d17a6d]"
-            >
-                View Products
-            </button>
+            <div className="mt-auto flex w-[90%] mx-auto items-center gap-2">
+                <button
+                    type="button"
+                    aria-label="Add to routine"
+                    onClick={(event) => {
+                        event.stopPropagation()
+                        setRoutineModalOpen(true)
+                    }}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e08a7d] text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
+                >
+                    <FiRepeat size={13} />
+                </button>
+                <button
+                    type="button"
+                    onClick={handleBuyNow}
+                    style={{ fontSize: '11px' }}
+                    className="flex-1 font-semibold border rounded-full py-[8px] transition-colors duration-200 text-white bg-[#e08a7d] border-[#e08a7d] hover:bg-[#d17a6d]"
+                >
+                    View
+                </button>
+            </div>
+            <AddToRoutineModal
+                open={routineModalOpen}
+                onClose={() => setRoutineModalOpen(false)}
+                product={product}
+            />
         </div>
     )
 }

@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { BiHeart } from "react-icons/bi";
 import { IoPersonCircleOutline } from "react-icons/io5";
+import { FaCartShopping } from "react-icons/fa6";
 import { supabase } from "@/lib/supabase/client";
 import { useWishlist } from "@/context/WishlistContext";
+import { useRoutineCount } from "@/hooks/use-routine-count";
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
 
@@ -42,6 +44,7 @@ export default function Header({ className = "" }) {
   const [userSession, setUserSession] = useState(null);
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const { wishlistIds } = useWishlist();
+  const routineCount = useRoutineCount();
   const router = useRouter();
   const pathname = usePathname();
   const showNavigationFlow = pathname === "/";
@@ -98,6 +101,26 @@ export default function Header({ className = "" }) {
           <Logo dark={false} onClick={handleLogoClick} />
 
           <div className="flex items-center gap-2">
+          {routineCount > 0 && (
+            <Link
+              href="/build-routine"
+              aria-label="View my routine"
+              className="relative"
+              onClick={() =>
+                trackingService.trackEvent(EVENTS.CLICKED_VIEW_ALL_PRODUCTS, {
+                  source: "header_routine_icon",
+                  routine_count: routineCount,
+                })
+              }
+            >
+              <IconButton>
+                <FaCartShopping size={15} />
+              </IconButton>
+              <span className="absolute -top-1 -right-1 bg-[#e01a7f] text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
+                {routineCount}
+              </span>
+            </Link>
+          )}
           {sessionLoaded && userSession && wishlistIds.length > 0 && (
             <Link
               href="/wishlist"

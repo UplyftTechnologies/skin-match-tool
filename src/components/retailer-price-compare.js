@@ -64,7 +64,7 @@ function BuyButton({ offer, productName, primary, compact }) {
                 aria-label={`Buy ${offer.product_name} from ${siteName(offer.site)}`}
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#e08a7d] px-3 py-1.5 text-[12px] font-semibold text-[#d77465] transition-colors hover:bg-[#e08a7d] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e08a7d] sm:px-3.5 sm:py-2"
             >
-                View Products
+                View 
             </a>
         )
     }

@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { FaCartShopping } from "react-icons/fa6";
 import Image from 'next/image'
 import Link from 'next/link'
-import { FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { FiSearch, FiChevronLeft, FiChevronRight,FiRepeat } from 'react-icons/fi'
 import { BsHeartFill } from 'react-icons/bs'
 import { BiHeart } from 'react-icons/bi'
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -20,6 +21,7 @@ import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import ScoreBadge from '@/components/score-badge'
 import VisualSearch from '@/components/visual-search'
+import AddToRoutineModal from '@/components/routine/AddToRoutineModal'
 
 
 const SCORE_BANDS = [
@@ -116,6 +118,7 @@ function ProductCard({ product }) {
     const { isWishlisted, toggleWishlist } = useWishlist()
     const router = useRouter()
     const [imageFailed, setImageFailed] = useState(false)
+    const [routineModalOpen, setRoutineModalOpen] = useState(false)
     const savedProduct = wishlistProduct(product)
     const wishlisted = isWishlisted(savedProduct.product_uid)
     const productHref = `/retailer-products/${encodeURIComponent(product.product_uid)}`
@@ -218,14 +221,32 @@ function ProductCard({ product }) {
                 </span>
             </div>
 
-            <button
-                type="button"
-                onClick={handleBuyNow}
-                style={{ fontSize: '11px' }}
-                className="mt-auto w-[90%] mx-auto font-semibold border rounded-full py-[8px] transition-colors duration-200 text-white bg-[#e08a7d] border-[#e08a7d] hover:bg-[#d17a6d]"
-            >
-                View Products
-            </button>
+            <div className="mx-auto flex w-[90%] items-center gap-2">
+                <button
+                    type="button"
+                    aria-label="Add to routine"
+                    onClick={(event) => {
+                        event.stopPropagation()
+                        setRoutineModalOpen(true)
+                    }}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e08a7d] text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
+                >
+                    <FiRepeat />
+                </button>
+                <button
+                    type="button"
+                    onClick={handleBuyNow}
+                    style={{ fontSize: '11px' }}
+                    className="flex-1 font-semibold border rounded-full py-[8px] transition-colors duration-200 text-white bg-[#e08a7d] border-[#e08a7d] hover:bg-[#d17a6d]"
+                >
+                    View
+                </button>
+            </div>
+            <AddToRoutineModal
+                open={routineModalOpen}
+                onClose={() => setRoutineModalOpen(false)}
+                product={product}
+            />
         </div>
     )
 }
@@ -323,7 +344,7 @@ export default function Products() {
                     >
                         Products
                     </button>
-               
+
                 </div>
 
                 <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
@@ -481,11 +502,10 @@ export default function Products() {
                                             ['Premium', premiumItem],
                                         ].map(([tierLabel, item]) => (
                                             <div key={tierLabel} className="flex min-w-0 flex-col">
-                                                <p className={`mx-auto mb-3 rounded-full border px-4 py-1.5 text-center font-lato text-[11px] font-semibold uppercase tracking-[0.14em] shadow-sm md:text-xs ${
-                                                    tierLabel === 'Premium'
-                                                        ? 'border-[#e7c8a0] bg-[#fff8ed] text-[#9a6428]'
-                                                        : 'border-[#c9dedc] bg-[#eef7f6] text-[#426d69]'
-                                                }`}>
+                                                <p className={`mx-auto mb-3 rounded-full border px-4 py-1.5 text-center font-lato text-[11px] font-semibold uppercase tracking-[0.14em] shadow-sm md:text-xs ${tierLabel === 'Premium'
+                                                    ? 'border-[#e7c8a0] bg-[#fff8ed] text-[#9a6428]'
+                                                    : 'border-[#c9dedc] bg-[#eef7f6] text-[#426d69]'
+                                                    }`}>
                                                     {tierLabel}
                                                 </p>
                                                 {item?.product ? (
