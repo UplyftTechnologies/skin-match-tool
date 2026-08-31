@@ -200,6 +200,14 @@ function toCard(primary, group) {
     site: primary.site,
     image: primary.image_url || "",
     product_url: primary.product_url || "",
+    // Every retailer URL selling this same GTIN, primary included. The scored
+    // dataset is a snapshot that covers Nykaa well but barely touches
+    // Purplle/Amazon/Kindlife/Broadway/parts of Tira — when the primary
+    // listing (the cheapest in-stock offer, not necessarily a covered
+    // retailer) has no scoring data, attachScores() falls back through these
+    // to a sibling listing of the identical physical product instead of
+    // silently scoring the whole card null.
+    alternate_urls: [...new Set(group.map((row) => row.product_url).filter(Boolean))],
     selling_price: priceOf(primary),
     mrp: Number(primary.mrp) || null,
     discount_pct: Number(primary.discount_pct) || null,

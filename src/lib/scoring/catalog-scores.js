@@ -93,6 +93,19 @@ function overriddenByIngredients(product, risk) {
   return null;
 }
 
+// The primary URL first, then any sibling retailer listings of the same
+// GTIN — a card whose cheapest offer sits on a retailer the scored dataset
+// does not cover can still be scored off a covered sibling of the identical
+// physical product.
+function urlKeysFor(product) {
+  const keys = [retailerUrlKey(product.product_url)];
+  for (const url of product.alternate_urls || []) {
+    const key = retailerUrlKey(url);
+    if (key && !keys.includes(key)) keys.push(key);
+  }
+  return keys.filter(Boolean);
+}
+
 /** Attaches a score to each catalogue card that has one. */
 export function attachScores(products, profile, scope) {
   if (!profile) return products.map((product) => ({ ...product, scoring: null }));
@@ -100,14 +113,17 @@ export function attachScores(products, profile, scope) {
   // result set, not just the page being annotated. Deriving it from
   // `products` would rescore on every page and rank 20 products against
   // each other instead of against the full list.
-  const urlKeys = new Set(
-    (scope || products).map((product) => retailerUrlKey(product.product_url)).filter(Boolean),
-  );
+  const urlKeys = new Set((scope || products).flatMap((product) => urlKeysFor(product)));
   const scores = scoresByUrlKey(profile, urlKeys);
   const risk = riskyProfile(profile);
 
   return products.map((product) => {
-    const scoring = scores.get(retailerUrlKey(product.product_url)) || null;
+    let scoring = null;
+    for (const key of urlKeysFor(product)) {
+      scoring = scores.get(key);
+      if (scoring) break;
+    }
+    scoring = scoring || null;
     const override = overriddenByIngredients(product, risk);
     if (!override) return { ...product, scoring };
 

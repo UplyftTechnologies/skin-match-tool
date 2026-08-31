@@ -5,7 +5,6 @@ import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
 import { getScoreBand } from '@/lib/score-band'
-import { DEFAULT_PROFILE } from '@/lib/default-profile'
 
 // Mirrors the profile shape /api/retailer-products/catalog expects (built
 // from URL params in use-retailer-catalog.js's buildQuery) — the scoring
@@ -31,27 +30,22 @@ function toCatalogScoringProfile(profile) {
 export default function RetailerProductScoreBadge({ productUrl, restricted, fallbackUrls }) {
     const quizAnswers = useQuizAnswers()
     const [savedProfile, setSavedProfile] = useState(null)
-    const [savedProfileLoaded, setSavedProfileLoaded] = useState(false)
     const [scoring, setScoring] = useState(null)
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setSavedProfile(getSavedSkinProfile()?.profile || null)
-            setSavedProfileLoaded(true)
         }, 0)
         return () => clearTimeout(timer)
     }, [quizAnswers])
 
-    // Every product on this page should carry a score, even for a visitor who
-    // has never taken the quiz — so once we know there is no real quiz/saved
-    // profile to use, this falls back to the site default rather than hiding
-    // the badge entirely.
+    // No quiz/saved profile means there is nothing real to score against, so
+    // the badge stays hidden rather than showing a number scored against a
+    // generic default profile that isn't actually this shopper's skin.
     const scoringProfile = useMemo(() => {
         if (quizAnswers) return quizAnswersToScoringProfile(quizAnswers)
-        if (savedProfile?.selectedSkinType) return savedProfile
-        if (quizAnswers === null && savedProfileLoaded) return { ...DEFAULT_PROFILE }
-        return null
-    }, [quizAnswers, savedProfile, savedProfileLoaded])
+        return savedProfile?.selectedSkinType ? savedProfile : null
+    }, [quizAnswers, savedProfile])
 
     const catalogProfile = useMemo(() => toCatalogScoringProfile(scoringProfile), [scoringProfile])
 

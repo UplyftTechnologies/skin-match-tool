@@ -477,10 +477,11 @@ export default async function RetailerProductPage({ params }) {
             {/* Content column */}
             <div className="min-w-0 bg-white pt-2 sm:rounded-3xl sm:border sm:border-slate-100 sm:p-7 sm:shadow-sm">
               <div className="flex flex-wrap items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider sm:text-[12px]">
-                <span className="text-[#e08a7d]">{product.brand || product.site}</span>
-                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-slate-500">{product.site}</span>
+                <span className="text-[#e08a7d] text-lato font-bold">{product.brand || product.site}</span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-500 text-lato font-bold">
+                  {product.site}</span>
                 <span
-                  className={`rounded-full px-2.5 py-1 ${product.in_stock === false ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-700"}`}
+                  className={`rounded-full px-2.5 py-1 ${product.in_stock === false ? "bg-red-50 text-red-600 text-lato font-bold" : "bg-emerald-50 text-emerald-700 text-lato font-bold"}`}
                 >
                   {product.in_stock === false ? "Out of stock" : "In stock"}
                 </span>

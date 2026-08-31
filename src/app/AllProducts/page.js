@@ -18,6 +18,7 @@ import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
 import VisualSearch from '@/components/visual-search'
 import MatchMySkin from '@/components/homeComponents/MatchMySkin'
+import { getScoreBand } from '@/lib/score-band'
 
 const filterTabs = [
     { key: 'brand', label: 'Brand' },
@@ -123,27 +124,23 @@ function ProductCard({ product }) {
             className="h-full bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
         >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/3] mb-3">
-                {product.scoring ? (
-                    <span
-                        className={`absolute right-2 top-2 z-10 flex h-11 w-11 flex-col items-center justify-center rounded-full text-white shadow ${
-                            product.scoring.blocked
-                                ? 'bg-slate-500'
-                                : product.scoring.score >= 80
-                                  ? 'bg-emerald-600'
-                                  : product.scoring.score >= 50
-                                    ? 'bg-amber-500'
-                                    : 'bg-rose-500'
-                        }`}
-                        title={product.scoring.blockReason || product.scoring.label}
-                    >
-                        <span className="text-[13px] font-bold leading-none">
-                            {product.scoring.blocked ? '—' : product.scoring.score}
+                {product.scoring ? (() => {
+                    const band = getScoreBand(product.scoring.score)
+                    return (
+                        <span
+                            className="absolute right-2 top-2 z-10 flex h-11 w-11 flex-col items-center justify-center rounded-full text-white shadow"
+                            style={{ backgroundColor: band.fill }}
+                            title={product.scoring.blockReason || product.scoring.label}
+                        >
+                            <span className="text-[13px] font-bold leading-none">
+                                {product.scoring.blocked ? '—' : Math.max(0, Math.round(product.scoring.score))}
+                            </span>
+                            <span className="mt-0.5 text-[7px] font-semibold uppercase leading-none">
+                                {product.scoring.blocked ? 'blocked' : band.label}
+                            </span>
                         </span>
-                        <span className="mt-0.5 text-[7px] font-semibold uppercase leading-none">
-                            {product.scoring.blocked ? 'blocked' : 'match'}
-                        </span>
-                    </span>
-                ) : null}
+                    )
+                })() : null}
                 {product.in_stock === false ? (
                     <span className={`absolute z-10 rounded-full bg-slate-800/80 px-2 py-0.5 text-[10px] font-semibold text-white ${product.scoring ? 'right-2 top-14' : 'right-2 top-2'}`}>
                         Out of stock
