@@ -109,19 +109,39 @@ function suitability(product, skinType) {
     return `Not recommended for your ${profile}`
 }
 
-function comparisonProductType(product) {
-    const type = String(product?.product_type || '').trim().toLowerCase()
-    if (type === 'other' || type === 'skincare') return ''
-
-    if (type !== 'moisturizer') return type
-
-    const name = String(product?.product_name || '').toLowerCase()
-    const subtype = [
+// canonicalCategory() (lib/retailer-catalog.js) buckets by regex, so "Face
+// Wash" and "Gel Cleanser" both land in the single "Cleanser" category — fine
+// for browsing, but pairing them here would compare a face wash against a
+// Korean gel cleanser as if they were the same kind of product. Splitting by
+// name keeps the playground pairing a face wash with other face washes, same
+// as it already does for moisturizer/cream/lotion/gel.
+const SUBTYPE_PATTERNS = {
+    moisturizer: [
         ['moisturizer', /\bmoisturi[sz]ers?\b/],
         ['cream', /\bcreams?\b/],
         ['lotion', /\blotions?\b/],
         ['gel', /\bgels?\b/],
-    ].find(([, pattern]) => pattern.test(name))?.[0]
+    ],
+    cleanser: [
+        ['facewash', /\bface\s*wash(es)?\b/],
+        ['micellar', /\bmicellar\b/],
+        ['balm', /\bcleansing\s*balm|\bbalms?\b/],
+        ['oil', /\bcleansing\s*oil|\boil\s*cleansers?\b/],
+        ['foam', /\bfoam(ing)?\b/],
+        ['gel', /\bgel\b/],
+        ['cleanser', /\bcleansers?\b/],
+    ],
+}
+
+function comparisonProductType(product) {
+    const type = String(product?.product_type || '').trim().toLowerCase()
+    if (type === 'other' || type === 'skincare') return ''
+
+    const patterns = SUBTYPE_PATTERNS[type]
+    if (!patterns) return type
+
+    const name = String(product?.product_name || '').toLowerCase()
+    const subtype = patterns.find(([, pattern]) => pattern.test(name))?.[0]
 
     return subtype ? `${type}:${subtype}` : type
 }
