@@ -14,16 +14,19 @@ import lips from '@/assets/images/lips.webp'
 import eyes from '@/assets/images/eyes.webp'
 
 
+// Values must match the canonical categories `canonicalCategory()` in
+// retailer-catalog.js derives from each listing — the catalog filter does an
+// exact match against those, not against "Face"/"Body"/"Lips"/"Eyes".
 const categories = [
     {
         id: 1,
         name: 'Face',
         image: Face,
-        filters: ['Face'],
+        filters: ['Sunscreen', 'Serum', 'Moisturizer', 'Cleanser', 'Toner', 'Mask', 'Exfoliator', 'Treatment'],
     },
-    { id: 2, name: 'Body', image: Body, filters: ['Body'] },
-    { id: 3, name: 'Lips', image: lips, filters: ['Lips'] },
-    { id: 4, name: 'Eyes', image: eyes, filters: ['Eyes'] }
+    { id: 2, name: 'Body', image: Body, filters: ['Body Care'] },
+    { id: 3, name: 'Lips', image: lips, filters: ['Lip Care'] },
+    { id: 4, name: 'Eyes', image: eyes, filters: ['Eye Care'] }
 ]
 
 function categoryHref(filters) {
