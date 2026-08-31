@@ -26,15 +26,15 @@ export default function GlobalQuizPrompt() {
         return () => window.removeEventListener('roopsee-quiz-editing', updateQuizEditing)
     }, [])
 
-    useEffect(() => {
-        if (skipPage || quizEditing || quizAnswers !== null) return undefined
-        if (sessionStorage.getItem(SHOWN_KEY)) return undefined
+    // useEffect(() => {
+    //     if (skipPage || quizEditing || quizAnswers !== null) return undefined
+    //     if (sessionStorage.getItem(SHOWN_KEY)) return undefined
 
-        const timer = window.setTimeout(() => {
-            if (!document.documentElement.hasAttribute('data-quiz-editing')) setOpen(true)
-        }, 20000)
-        return () => window.clearTimeout(timer)
-    }, [skipPage, quizAnswers, quizEditing])
+    //     const timer = window.setTimeout(() => {
+    //         if (!document.documentElement.hasAttribute('data-quiz-editing')) setOpen(true)
+    //     }, 20000)
+    //     return () => window.clearTimeout(timer)
+    // }, [skipPage, quizAnswers, quizEditing])
 
     const handleClose = () => {
         setOpen(false)

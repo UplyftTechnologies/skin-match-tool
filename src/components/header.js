@@ -156,7 +156,7 @@ export default function Header({ className = "" }) {
       {showNavigationFlow && (
         <nav
           aria-label="How Roopsee works"
-          className="border-t border-black/5 bg-white px-4"
+          className="border-t border-black/5 bg-white px-1 lg:px-4"
         >
           <ol className="relative mx-auto grid max-w-2xl grid-cols-4 py-2.5 sm:py-3">
             <span
