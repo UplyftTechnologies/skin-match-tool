@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -25,6 +25,19 @@ const TIME_META = {
 export default function AddToRoutineModal({ open, onClose, product }) {
     const [addedSlotKey, setAddedSlotKey] = useState('')
 
+    useEffect(() => {
+        if (!open || !product) return
+        trackingService.trackEvent(EVENTS.OPENED_ADD_TO_ROUTINE_MODAL, {
+            productId: product.product_uid,
+            productName: product.product_name,
+            category: product.category || product.product_type || '',
+        })
+        // Fires once per open — re-firing on every keystroke-driven re-render
+        // of the parent is avoided by keying on product identity, not the
+        // whole product object reference.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open, product?.product_uid])
+
     // `open` only ever flips true from a client-side click after mount, so
     // by the time this renders anything `document` is guaranteed to exist —
     // no need for a mounted-state effect just to guard the portal target.
@@ -42,8 +55,7 @@ export default function AddToRoutineModal({ open, onClose, product }) {
         }
         saveRoutine(nextRoutine)
 
-        trackingService.trackEvent(EVENTS.CLICKED_SAVE_MY_MATCH, {
-            source: 'add_to_routine_modal',
+        trackingService.trackEvent(EVENTS.CLICKED_ADD_TO_ROUTINE_SLOT, {
             productId: product.product_uid,
             productName: product.product_name,
             routineTime: slot.time,
@@ -100,8 +112,15 @@ export default function AddToRoutineModal({ open, onClose, product }) {
                         </p>
                         <Link
                             href="/build-routine"
+                            onClick={() =>
+                                trackingService.trackEvent(EVENTS.CLICKED_ADD_TO_ROUTINE_EXTRA_STEP, {
+                                    productId: product.product_uid,
+                                    productName: product.product_name,
+                                    category: productCategory,
+                                })
+                            }
                             className="mt-4 inline-block
-                             rounded-full bg-[#D17A6D] px-5 py-2.5 text-xs 
+                             rounded-full bg-[#D17A6D] px-5 py-2.5 text-xs
                              font-semibold text-white hover:bg-[#D17A9D]"
                         >
                             Add it as an extra step

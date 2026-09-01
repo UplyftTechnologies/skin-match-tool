@@ -111,6 +111,10 @@ function BuildRoutinePageContent() {
         setRoutineLoaded(true)
     }, [])
 
+    useEffect(() => {
+        trackingService.trackPageLoad(EVENTS.PAGE_VIEWED_BUILD_ROUTINE, { page_type: 'build_routine' })
+    }, [])
+
     // Every Change/Remove persists immediately, the same way the home page's
     // "Add to Routine" picker already does — without this, a refresh before
     // clicking "Save my routine" silently reverted to whatever was last
@@ -188,21 +192,42 @@ function BuildRoutinePageContent() {
     // stays empty ("No product selected yet") instead of silently falling
     // back to the live suggestion. Only "Change" repopulates it after this.
     function removeStepProduct(stepId) {
+        trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_STEP_REMOVE, {
+            time: activeTime,
+            step: stepId,
+        })
         setRoutine((current) => ({
             ...current,
             [activeTime]: { ...current[activeTime], [stepId]: null },
         }))
     }
 
+    function handleTimeTabChange(time) {
+        trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_TIME_TAB, {
+            time,
+            section: 'build_routine_page',
+        })
+        setActiveTime(time)
+    }
+
+    function openStepPicker(step, source) {
+        trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_STEP_CHANGE, {
+            time: activeTime,
+            step: step.id,
+            source,
+        })
+        setPickerStep(step)
+    }
+
     function handleSave() {
         saveRoutine(routine)
-        trackingService.trackEvent(EVENTS.CLICKED_SAVE_MY_MATCH, { source: 'build_routine_page' })
+        trackingService.trackEvent(EVENTS.CLICKED_SAVE_ROUTINE, { source: 'build_routine_page' })
         setSavedMessage('Saved!')
         setTimeout(() => setSavedMessage(''), 2500)
     }
 
     function handleCompareShop() {
-        trackingService.trackEvent(EVENTS.CLICKED_VIEW_ALL_PRODUCTS, { source: 'build_routine_compare' })
+        trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_COMPARE_SHOP, { source: 'build_routine_page' })
         router.push('/AllProducts')
     }
 
@@ -251,7 +276,7 @@ function BuildRoutinePageContent() {
                                     <button
                                         key={time}
                                         type="button"
-                                        onClick={() => setActiveTime(time)}
+                                        onClick={() => handleTimeTabChange(time)}
                                         className={`-mb-px shrink-0 border-b-2 px-1 pb-3 text-sm font-bold uppercase tracking-wide transition-colors ${
                                             activeTime === time
                                                 ? 'border-[#e01a7f] text-[#e01a7f]'
@@ -277,7 +302,7 @@ function BuildRoutinePageContent() {
                                             product={step.product}
                                             loading={catalogsByStep[step.id].loading && !step.product}
                                             isExplicit={step.isExplicit}
-                                            onChange={() => setPickerStep(step)}
+                                            onChange={() => openStepPicker(step, 'change_button')}
                                             onRemove={() => removeStepProduct(step.id)}
                                         />
                                     ))
@@ -311,7 +336,14 @@ function BuildRoutinePageContent() {
                                         {weakestStep ? (
                                             <button
                                                 type="button"
-                                                onClick={() => setPickerStep(weakestStep)}
+                                                onClick={() => {
+                                                    trackingService.trackEvent(EVENTS.CLICKED_SEE_BETTER_ROUTINE_MATCH, {
+                                                        time: activeTime,
+                                                        step: weakestStep.id,
+                                                        currentScore: weakestStep.product?.scoring?.score ?? null,
+                                                    })
+                                                    setPickerStep(weakestStep)
+                                                }}
                                                 className="mt-3 w-full rounded-full border border-[#e01a7f] px-4 py-2 text-xs font-semibold text-[#e01a7f] hover:bg-[#fdeef1]"
                                             >
                                                 See better {weakestStep.label.toLowerCase()} matches
@@ -365,7 +397,16 @@ function BuildRoutinePageContent() {
                 allowCategoryChange={false}
                 profile={scoringProfile}
                 onSelect={(product) => {
-                    if (pickerStep) updateStepProduct(pickerStep.id, product)
+                    if (pickerStep) {
+                        trackingService.trackEvent(EVENTS.SELECTED_ROUTINE_STEP_PRODUCT, {
+                            time: activeTime,
+                            step: pickerStep.id,
+                            productId: product.product_uid,
+                            productName: product.product_name,
+                            score: product.scoring?.score ?? null,
+                        })
+                        updateStepProduct(pickerStep.id, product)
+                    }
                     setPickerStep(null)
                 }}
             />

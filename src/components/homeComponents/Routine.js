@@ -25,19 +25,26 @@ export default function Routine() {
     const { guard, modalOpen, closeModal } = useQuizGate()
     const [activeTime, setActiveTime] = useState('am')
 
-    const handleBuildRoutine = () => {
-        trackingService.trackEvent(EVENTS.CLICKED_VIEW_ALL_PRODUCTS, {
-            source: 'build_routine_cta',
-        })
+    const handleBuildRoutine = (source) => {
+        trackingService.trackEvent(EVENTS.CLICKED_BUILD_ROUTINE_CTA, { source })
         guard(() => router.push('/build-routine'))
     }
 
     const handleAddStep = (step) => {
-        trackingService.trackEvent(EVENTS.CLICKED_SEARCH_BY_PRODUCT_TYPE, {
+        trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_TEASER_ADD_STEP, {
+            time: activeTime,
+            step: step.id,
             productType: step.label,
-            section: 'build_routine',
         })
         guard(() => router.push('/build-routine'))
+    }
+
+    const handleTimeTabChange = (time) => {
+        trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_TIME_TAB, {
+            time,
+            section: 'home_routine_teaser',
+        })
+        setActiveTime(time)
     }
 
     return (
@@ -58,8 +65,8 @@ export default function Routine() {
 
                     <button
                         type="button"
-                        onClick={handleBuildRoutine}
-                        className="mt-6 inline-flex items-center gap-2 
+                        onClick={() => handleBuildRoutine('teaser_cta')}
+                        className="mt-6 inline-flex items-center gap-2
                         rounded-full bg-[#D17A6D] px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#D17A8D]"
                     >
                         Build My Routine
@@ -76,7 +83,7 @@ export default function Routine() {
                     <div className="flex gap-1 rounded-xl bg-[#f3eef8] p-1">
                         <button
                             type="button"
-                            onClick={() => setActiveTime('am')}
+                            onClick={() => handleTimeTabChange('am')}
                             className={`flex-1 rounded-lg py-2 text-xs font-bold uppercase tracking-wide transition-colors ${
                                 activeTime === 'am'
                                     ? 'bg-[#d9d3f0] text-gray-900'
@@ -87,7 +94,7 @@ export default function Routine() {
                         </button>
                         <button
                             type="button"
-                            onClick={() => setActiveTime('pm')}
+                            onClick={() => handleTimeTabChange('pm')}
                             className={`flex-1 rounded-lg py-2 text-xs font-bold uppercase tracking-wide transition-colors ${
                                 activeTime === 'pm'
                                     ? 'bg-[#d9d3f0] text-gray-900'
@@ -121,7 +128,7 @@ export default function Routine() {
 
                     <button
                         type="button"
-                        onClick={handleBuildRoutine}
+                        onClick={() => handleBuildRoutine('teaser_score_banner')}
                         className="mt-2 flex w-full items-center justify-between rounded-xl bg-[#fdeef1] px-4 py-3 text-left transition-colors hover:bg-[#fbe4ea]"
                     >
                         <span className="text-xs text-[#c76557]">Your routine, matched to your skin</span>
