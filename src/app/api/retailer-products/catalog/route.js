@@ -250,8 +250,20 @@ export async function GET(request) {
   const forSite = applyFilters(catalog, filters, { except: "site" });
   const forPrice = applyFilters(catalog, filters, { except: "price" });
 
+  const pageProducts = sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  // Scoring the whole filtered set is only needed to rank by score — done
+  // above, and `sorted` already carries `.scoring` for every item in that
+  // case. Any other sort (price, rating, name...) only needs scores for the
+  // 20 cards this page renders, not the (often thousands-deep) filtered set,
+  // so scope the scoring pass to just the page instead of re-running it
+  // against `matching` — that's the difference between scoring 20 products
+  // and scoring however many match the filters, on every single request.
+  const pageScored = sort === "score_desc"
+    ? pageProducts
+    : attachScores(pageProducts, profile, pageProducts);
+
   return catalogResponse({
-    products: attachScores(sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE), profile, matching),
+    products: pageScored,
     scored: Boolean(profile),
     total: sorted.length,
     catalogTotal: catalog.length,

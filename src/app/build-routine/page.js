@@ -7,23 +7,20 @@ import { FiX } from 'react-icons/fi'
 import Header from '@/components/header'
 import RequireQuizGate from '@/components/require-quiz-gate'
 import ProductPickerModal from '@/components/routine/ProductPickerModal'
-import { useRetailerCatalog } from '@/hooks/use-retailer-catalog'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
 import { getSavedRoutine, saveRoutine } from '@/lib/routine-storage'
 import { matchLabel, matchClasses } from '@/lib/routine-match'
-import { STEP_DEFS, stepsForTime } from '@/lib/routine-steps'
+import { stepsForTime } from '@/lib/routine-steps'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
-
-const BASE_STEPS = Object.entries(STEP_DEFS).map(([id, step]) => ({ id, ...step }))
 
 function emptyRoutine() {
     return { am: {}, pm: {} }
 }
 
-function StepRow({ stepNumber, label, product, loading, isExplicit, onChange, onRemove }) {
+function StepRow({ stepNumber, label, product, isExplicit, onChange, onRemove }) {
     const score = product?.scoring?.score
     const hasScore = Number.isFinite(Number(score))
 
@@ -39,14 +36,10 @@ function StepRow({ stepNumber, label, product, loading, isExplicit, onChange, on
                     <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">
                         Step {String(stepNumber).padStart(2, '0')} · {label}
                     </p>
-                    {loading ? (
-                        <p className="text-sm text-gray-400">Finding your best match…</p>
-                    ) : product ? (
+                    {product ? (
                         <>
                             <p className="truncate text-sm font-semibold text-gray-900">{product.product_name}</p>
-                            <p className="text-xs text-gray-400">
-                                {isExplicit ? 'Your selected product' : 'Suggested for you'}
-                            </p>
+                            <p className="text-xs text-gray-400">Your selected product</p>
                         </>
                     ) : (
                         <p className="text-sm text-gray-400">No product selected yet</p>
@@ -123,55 +116,23 @@ function BuildRoutinePageContent() {
         if (routineLoaded) saveRoutine(routine)
     }, [routine, routineLoaded])
 
-    // One fetch per fixed step — used only to auto-fill a sensible default so
-    // the page never opens empty; "Change" reopens the picker for anything else.
-    const cleanserCatalog = useRetailerCatalog({
-        search: '', filters: { brand: [], category: BASE_STEPS[0].categories, site: [], price: [] },
-        sort: 'score_desc', page: 1, profile: scoringProfile,
-    })
-    const serumCatalog = useRetailerCatalog({
-        search: '', filters: { brand: [], category: BASE_STEPS[1].categories, site: [], price: [] },
-        sort: 'score_desc', page: 1, profile: scoringProfile,
-    })
-    const moisturiserCatalog = useRetailerCatalog({
-        search: '', filters: { brand: [], category: BASE_STEPS[2].categories, site: [], price: [] },
-        sort: 'score_desc', page: 1, profile: scoringProfile,
-    })
-    const sunscreenCatalog = useRetailerCatalog({
-        search: '', filters: { brand: [], category: BASE_STEPS[3].categories, site: [], price: [] },
-        sort: 'score_desc', page: 1, profile: scoringProfile,
-    })
-    const catalogsByStep = {
-        cleanser: cleanserCatalog,
-        serum: serumCatalog,
-        moisturiser: moisturiserCatalog,
-        sunscreen: sunscreenCatalog,
-    }
-
-    // The best-scoring product per category is the default shown for an
-    // untouched step — a derived value, not state, so there is nothing to
-    // sync via an effect: it naturally updates as the catalog fetches land,
-    // and a user's own Change selection (stored in `routine`) always takes
-    // precedence over it. A step has three states: the key is absent (never
-    // touched — show the live suggestion), the key is `null` (explicitly
-    // cleared via Remove — show nothing until Change'd), or the key holds a
-    // product object (an explicit pick — show it, with Remove available).
+    // A step has two states: the key is absent or `null` (never touched, or
+    // explicitly cleared via Remove — show nothing until Change'd), or the
+    // key holds a product object (an explicit pick — show it, with Remove
+    // available). Nothing is auto-filled; a step only shows a product once
+    // the shopper has chosen one.
     const activeSteps = routine[activeTime]
     const timeSteps = stepsForTime(activeTime)
 
     const allSteps = timeSteps.map((step) => {
         const rawValue = activeSteps[step.id]
-        const isCleared = rawValue === null
         return {
             ...step,
-            product: isCleared ? null : rawValue || catalogsByStep[step.id].products?.[0] || null,
+            product: rawValue || null,
             isExplicit: Boolean(rawValue),
         }
     })
     const hasAnyStepProduct = allSteps.some((step) => step.product)
-    const anyStepLoading = timeSteps.some((step) =>
-        activeSteps[step.id] === undefined && catalogsByStep[step.id].loading,
-    )
     const scoredSteps = allSteps.filter((step) => Number.isFinite(Number(step.product?.scoring?.score)))
     const overallScore = scoredSteps.length
         ? Math.round(scoredSteps.reduce((sum, step) => sum + Number(step.product.scoring.score), 0) / scoredSteps.length)
@@ -226,8 +187,30 @@ function BuildRoutinePageContent() {
         setTimeout(() => setSavedMessage(''), 2500)
     }
 
+    function getRoutineProductUids() {
+        return [...new Set(
+            [...Object.values(routine.am), ...Object.values(routine.pm)]
+                .map((product) => product?.product_uid)
+                .filter(Boolean),
+        )]
+    }
+
     function handleCompareShop() {
-        trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_COMPARE_SHOP, { source: 'build_routine_page' })
+        const productUids = getRoutineProductUids()
+        if (!productUids.length) return
+        trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_COMPARE_SHOP, {
+            source: 'build_routine_page',
+            productCount: productUids.length,
+        })
+        const query = productUids.map((uid) => `productUid=${encodeURIComponent(uid)}`).join('&')
+        router.push(`/build-routine/compare?${query}`)
+    }
+
+    function handleShop() {
+        trackingService.trackEvent(EVENTS.CLICKED_ROUTINE_SHOP, {
+            source: 'build_routine_page',
+            productCount: getRoutineProductUids().length,
+        })
         router.push('/AllProducts')
     }
 
@@ -289,9 +272,9 @@ function BuildRoutinePageContent() {
                             </div>
 
                             <div className="mt-4 divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white">
-                                {!hasAnyStepProduct && !anyStepLoading ? (
+                                {!hasAnyStepProduct ? (
                                     <p className="px-5 py-10 text-center text-sm text-gray-400">
-                                        No routine chosen yet.
+                                        Please select your routine.
                                     </p>
                                 ) : (
                                     allSteps.map((step, index) => (
@@ -300,7 +283,6 @@ function BuildRoutinePageContent() {
                                             stepNumber={index + 1}
                                             label={step.label}
                                             product={step.product}
-                                            loading={catalogsByStep[step.id].loading && !step.product}
                                             isExplicit={step.isExplicit}
                                             onChange={() => openStepPicker(step, 'change_button')}
                                             onRemove={() => removeStepProduct(step.id)}
@@ -358,15 +340,28 @@ function BuildRoutinePageContent() {
                                 <p className="mt-1 text-xs text-gray-500">
                                     Compare prices across platforms before you buy your routine.
                                 </p>
-                                <button
-                                    type="button"
-                                    onClick={handleCompareShop}
-                                    className="mt-3 w-full rounded-full bg-[#D17A6D]
-                                     px-4 py-2.5 text-xs font-semibold text-white
-                                      hover:bg-[#D17A8D]"
-                                >
-                                    Compare prices &amp; shop
-                                </button>
+                                <div className="mt-3 flex gap-1.5">
+                                    <button
+                                        type="button"
+                                        onClick={handleCompareShop}
+                                        disabled={!hasAnyStepProduct}
+                                        className="flex-[1.4] whitespace-nowrap 
+                                        rounded-full bg-[#D17A6D]
+                                         px-2  text-[14px] font-semibold text-white
+                                          hover:bg-[#D17A8D] disabled:cursor-not-allowed
+                                           disabled:opacity-40"
+                                    >
+                                        Compare prices
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleShop}
+                                        className="flex-1 whitespace-nowrap rounded-full border border-[#D17A6D] px-2 py-2.5
+                                         text-xs font-semibold text-[#D17A6D] hover:bg-[#fdeef1]"
+                                    >
+                                        Shop
+                                    </button>
+                                </div>
                                 <button
                                     type="button"
                                     onClick={handleSave}

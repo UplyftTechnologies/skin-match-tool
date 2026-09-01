@@ -4,9 +4,9 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { FiSearch,FiRepeat } from 'react-icons/fi'
+import { FiSearch } from 'react-icons/fi'
 import { HiArrowsUpDown } from 'react-icons/hi2'
-import { BsFunnel, BsHeartFill } from 'react-icons/bs'
+import { BsFunnel, BsHeartFill, BsCart, BsCartFill } from 'react-icons/bs'
 import { BiHeart } from 'react-icons/bi'
 import Header from '@/components/header'
 import { useWishlist } from '@/context/WishlistContext'
@@ -15,11 +15,11 @@ import { EVENTS } from '@/lib/tracking/events'
 import { useRetailerCatalog } from '@/hooks/use-retailer-catalog'
 import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
+import { useIsInRoutine } from '@/hooks/use-in-routine'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
 import VisualSearch from '@/components/visual-search'
 import MatchMySkin from '@/components/homeComponents/MatchMySkin'
 import { getScoreBand } from '@/lib/score-band'
-import { FaCartShopping } from 'react-icons/fa6'
 import AddToRoutineModal from '@/components/routine/AddToRoutineModal'
 
 const filterTabs = [
@@ -73,6 +73,7 @@ function ProductCard({ product }) {
     const [routineModalOpen, setRoutineModalOpen] = useState(false)
     const savedProduct = product
     const wishlisted = isWishlisted(savedProduct.product_uid)
+    const inRoutine = useIsInRoutine(savedProduct.product_uid)
     const productHref = `/retailer-products/${encodeURIComponent(product.product_uid)}`
 
     function handleSaveMatch(event) {
@@ -220,13 +221,14 @@ function ProductCard({ product }) {
                 <button
                     type="button"
                     aria-label="Add to routine"
+                    aria-pressed={inRoutine}
                     onClick={(event) => {
                         event.stopPropagation()
                         setRoutineModalOpen(true)
                     }}
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e08a7d] text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
                 >
-                    <FiRepeat size={13} />
+                    {inRoutine ? <BsCartFill size={13} /> : <BsCart size={13} />}
                 </button>
                 <button
                     type="button"

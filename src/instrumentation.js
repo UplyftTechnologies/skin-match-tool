@@ -41,9 +41,19 @@ export async function register() {
 
   const started = Date.now();
   try {
-    const { warmRetailerCatalog } = await import("@/lib/retailer-catalog");
+    const { warmRetailerCatalog, refreshRetailerCatalogInBackground, CATALOG_CACHE_TTL_MS } =
+      await import("@/lib/retailer-catalog");
     const products = await warmRetailerCatalog();
     console.log(`[warmup] catalogue ready: ${products.length} products in ${Date.now() - started}ms`);
+
+    // Keeps the catalogue perpetually warm: rebuilt on a timer set a minute
+    // under its own TTL, so it is refreshed before it can go stale rather
+    // than after — no live request ever lands in that gap and pays the
+    // rebuild cost that used to follow every cache expiry.
+    setInterval(
+      () => refreshRetailerCatalogInBackground(),
+      Math.max(60_000, CATALOG_CACHE_TTL_MS - 60_000),
+    ).unref?.();
 
     // The scoring path has two separate first-use costs, both measured on a
     // cold process: reading and indexing the 16MB dataset, and the JIT

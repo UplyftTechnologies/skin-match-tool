@@ -2,11 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { FaCartShopping } from "react-icons/fa6";
 import Image from 'next/image'
 import Link from 'next/link'
-import { FiSearch, FiChevronLeft, FiChevronRight,FiRepeat } from 'react-icons/fi'
-import { BsHeartFill } from 'react-icons/bs'
+import { FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { BsHeartFill, BsCart, BsCartFill } from 'react-icons/bs'
 import { BiHeart } from 'react-icons/bi'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { FreeMode, Navigation } from 'swiper/modules'
@@ -19,6 +18,7 @@ import { EVENTS } from '@/lib/tracking/events'
 import { useRetailerCatalog } from '@/hooks/use-retailer-catalog'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
+import { useIsInRoutine } from '@/hooks/use-in-routine'
 import ScoreBadge from '@/components/score-badge'
 import VisualSearch from '@/components/visual-search'
 import AddToRoutineModal from '@/components/routine/AddToRoutineModal'
@@ -121,6 +121,7 @@ function ProductCard({ product }) {
     const [routineModalOpen, setRoutineModalOpen] = useState(false)
     const savedProduct = wishlistProduct(product)
     const wishlisted = isWishlisted(savedProduct.product_uid)
+    const inRoutine = useIsInRoutine(savedProduct.product_uid)
     const productHref = `/retailer-products/${encodeURIComponent(product.product_uid)}`
     const mrp = formatPrice(product.mrp)
 
@@ -225,13 +226,14 @@ function ProductCard({ product }) {
                 <button
                     type="button"
                     aria-label="Add to routine"
+                    aria-pressed={inRoutine}
                     onClick={(event) => {
                         event.stopPropagation()
                         setRoutineModalOpen(true)
                     }}
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e08a7d] text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
                 >
-                    <FiRepeat />
+                    {inRoutine ? <BsCartFill /> : <BsCart />}
                 </button>
                 <button
                     type="button"

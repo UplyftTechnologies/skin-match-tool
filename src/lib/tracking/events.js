@@ -79,6 +79,7 @@ export const EVENTS = {
   SELECTED_ROUTINE_STEP_PRODUCT: 'selected_routine_step_product',
   CLICKED_SEE_BETTER_ROUTINE_MATCH: 'clicked_see_better_routine_match',
   CLICKED_ROUTINE_COMPARE_SHOP: 'clicked_routine_compare_shop',
+  CLICKED_ROUTINE_SHOP: 'clicked_routine_shop',
   CLICKED_SAVE_ROUTINE: 'clicked_save_routine',
   OPENED_ADD_TO_ROUTINE_MODAL: 'opened_add_to_routine_modal',
   CLICKED_ADD_TO_ROUTINE_SLOT: 'clicked_add_to_routine_slot',

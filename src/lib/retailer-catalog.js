@@ -4,7 +4,6 @@
 // appears up to six times (nykaa, tira, amazon, purplle, broadway, kindlife).
 // Listing those as separate cards would make the grid look broken, so rows are
 // collapsed to one card per product and the cheapest offer is what we show.
-import { unstable_cache } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { detectRestrictedActives } from "@/lib/scoring/ingredient-safety";
 import { listingSize, variantBaseKey } from "@/lib/variant-sizes";
@@ -343,64 +342,89 @@ function collapseSizeVariants(cards) {
   });
 }
 
+// ~14-19k rows at PAGE_SIZE/page means 15-19 round trips to Supabase. Fetched
+// one after another that was measured at 8-10s to build the catalogue — almost
+// entirely network latency, not Postgres work, so firing every page at once
+// cuts it to roughly the time of the single slowest page. `.order("id")` makes
+// each page's `range()` window well-defined; offset pagination is only correct
+// against a fixed sort, and running the pages concurrently instead of in
+// sequence removed the accidental ordering that gave earlier code away with.
 async function fetchActiveRows() {
+  const { count, error: countError } = await supabaseAdmin
+    .from("retailer_products")
+    .select("id", { count: "exact", head: true })
+    .eq("is_active", true);
+  if (countError) throw new Error(`Failed to count retailer_products: ${countError.message}`);
+
+  const pageCount = Math.max(1, Math.ceil((count || 0) / PAGE_SIZE));
+  const pages = await Promise.all(
+    Array.from({ length: pageCount }, (_, index) => {
+      const from = index * PAGE_SIZE;
+      return supabaseAdmin
+        .from("retailer_products")
+        .select(CATALOG_FIELDS)
+        .eq("is_active", true)
+        .order("id", { ascending: true })
+        .range(from, from + PAGE_SIZE - 1);
+    }),
+  );
+
   const rows = [];
-  for (let from = 0; ; from += PAGE_SIZE) {
-    const { data, error } = await supabaseAdmin
-      .from("retailer_products")
-      .select(CATALOG_FIELDS)
-      .eq("is_active", true)
-      .range(from, from + PAGE_SIZE - 1);
+  for (const { data, error } of pages) {
     if (error) throw new Error(`Failed to load retailer_products: ${error.message}`);
     rows.push(...(data || []));
-    if (!data || data.length < PAGE_SIZE) break;
   }
   return rows;
 }
 
 // Rebuilding the whole catalogue on every request would mean ~18k rows over the
 // wire per page view, so it is held in module scope and refreshed on a timer.
-const CACHE_TTL_MS = 10 * 60 * 1000;
+export const CATALOG_CACHE_TTL_MS = 10 * 60 * 1000;
+const CACHE_TTL_MS = CATALOG_CACHE_TTL_MS;
 let cache = null;
 let refreshPromise = null;
+
+async function rebuildRetailerCatalog() {
+  const rows = await fetchActiveRows();
+  const groups = new Map();
+  for (const row of rows) {
+    if (!isSellable(row)) continue;
+    const key = dedupeKey(row);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(row);
+  }
+
+  // The both-retailers rule is FLAGGED here, not applied. This catalogue is
+  // shared: the browse listing wants only products it can price-compare, but
+  // visual search must be able to find anything the shopper photographs.
+  // Filtering here removed 86% of products from search, so a photo of a
+  // Nykaa-only product returned the nearest surviving lookalike instead of
+  // nothing. Each consumer now applies the rule, or ignores it.
+  const products = [];
+  for (const group of groups.values()) {
+    let primary = null;
+    for (const row of group) if (isBetterOffer(row, primary)) primary = row;
+    if (!primary) continue;
+    products.push({
+      ...toCard(primary, group),
+      on_target_retailers: isAvailableOnBothTargetRetailers(group),
+    });
+  }
+
+  // Collapse once and serve the same array the cache holds. Returning the
+  // pre-collapse `products` here meant the first request after every cache
+  // expiry got duplicate size cards while every later one got the collapsed
+  // list.
+  const collapsed = collapseSizeVariants(products);
+  cache = { products: collapsed, builtAt: Date.now() };
+  return collapsed;
+}
 
 async function buildRetailerCatalog() {
   if (cache && Date.now() - cache.builtAt < CACHE_TTL_MS) return cache.products;
 
   try {
-    const rows = await fetchActiveRows();
-    const groups = new Map();
-    for (const row of rows) {
-      if (!isSellable(row)) continue;
-      const key = dedupeKey(row);
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(row);
-    }
-
-    // The both-retailers rule is FLAGGED here, not applied. This catalogue is
-    // shared: the browse listing wants only products it can price-compare, but
-    // visual search must be able to find anything the shopper photographs.
-    // Filtering here removed 86% of products from search, so a photo of a
-    // Nykaa-only product returned the nearest surviving lookalike instead of
-    // nothing. Each consumer now applies the rule, or ignores it.
-    const products = [];
-    for (const group of groups.values()) {
-      let primary = null;
-      for (const row of group) if (isBetterOffer(row, primary)) primary = row;
-      if (!primary) continue;
-      products.push({
-        ...toCard(primary, group),
-        on_target_retailers: isAvailableOnBothTargetRetailers(group),
-      });
-    }
-
-    // Collapse once and serve the same array the cache holds. Returning the
-    // pre-collapse `products` here meant the first request after every cache
-    // expiry got duplicate size cards while every later one got the collapsed
-    // list.
-    const collapsed = collapseSizeVariants(products);
-    cache = { products: collapsed, builtAt: Date.now() };
-    return collapsed;
+    return await rebuildRetailerCatalog();
   } catch (error) {
     // A refresh failure should not blank the listing — keep serving the last
     // good catalogue and let the next request try again.
@@ -409,20 +433,29 @@ async function buildRetailerCatalog() {
   }
 }
 
-const loadPersistedRetailerCatalog = unstable_cache(
-  buildRetailerCatalog,
-  ["retailer-catalog-v2-comparison-fields"],
-  { revalidate: CACHE_TTL_MS / 1000 },
-);
+/**
+ * Unconditionally rebuilds the catalogue, ignoring the current cache's age.
+ *
+ * Called on a timer from instrumentation.js, set just under CATALOG_CACHE_TTL_MS,
+ * so the cache is refreshed in the background before it ever goes stale — the
+ * live request that used to land right after expiry and pay the ~8-10s rebuild
+ * cost no longer exists, because there is no window where the cache is stale.
+ */
+export async function refreshRetailerCatalogInBackground() {
+  try {
+    await rebuildRetailerCatalog();
+  } catch (error) {
+    // Keep serving whatever is cached; the next scheduled attempt tries again.
+    console.error("[catalog-refresh] background rebuild failed:", error.message);
+  }
+}
 
 /**
- * Populates the in-process cache without going through unstable_cache.
+ * Populates the in-process cache.
  *
- * unstable_cache needs Next's request-scoped incremental cache, which does
- * not exist during instrumentation.register() — calling loadRetailerCatalog()
- * there throws "Invariant: incrementalCache missing". Building directly fills
- * the module-scope cache that buildRetailerCatalog checks first, so the first
- * real request still returns immediately.
+ * Exported separately from loadRetailerCatalog() only so
+ * instrumentation.register() has an unambiguous name to call before any
+ * request exists — both go through the same module-scope cache.
  */
 export function warmRetailerCatalog() {
   return buildRetailerCatalog();
@@ -430,9 +463,10 @@ export function warmRetailerCatalog() {
 
 export function loadRetailerCatalog() {
   // Cache misses can arrive concurrently (for example, a page render and its
-  // client request). Share the one persisted-cache lookup/rebuild per process.
+  // client request). Share the one rebuild per process rather than each
+  // kicking off its own.
   if (!refreshPromise) {
-    refreshPromise = loadPersistedRetailerCatalog().finally(() => {
+    refreshPromise = buildRetailerCatalog().finally(() => {
       refreshPromise = null;
     });
   }
