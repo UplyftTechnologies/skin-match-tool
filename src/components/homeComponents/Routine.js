@@ -79,7 +79,7 @@ export default function Routine() {
                 </div>
 
                 {/* Right — routine builder preview card */}
-                <div className="mx-auto w-full max-w-md rounded-2xl bg-white p-2 shadow-[0_8px_30px_rgba(70,55,50,0.08)]">
+                {/* <div className="mx-auto w-full max-w-md rounded-2xl bg-white p-2 shadow-[0_8px_30px_rgba(70,55,50,0.08)]">
                     <div className="flex gap-1 rounded-xl bg-[#f3eef8] p-1">
                         <button
                             type="button"
@@ -132,12 +132,12 @@ export default function Routine() {
                         className="mt-2 flex w-full items-center justify-between rounded-xl bg-[#fdeef1] px-4 py-3 text-left transition-colors hover:bg-[#fbe4ea]"
                     >
                         <span className="text-xs text-[#c76557]">Your routine, matched to your skin</span>
-                        <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#e01a7f]">
+                        <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#D77465]">
                             Roopsee score
                             <FiArrowRight aria-hidden="true" />
                         </span>
                     </button>
-                </div>
+                </div> */}
             </div>
             <RequireQuizModal open={modalOpen} onClose={closeModal} />
         </div>

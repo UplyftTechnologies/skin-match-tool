@@ -272,23 +272,17 @@ function BuildRoutinePageContent() {
                             </div>
 
                             <div className="mt-4 divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white">
-                                {!hasAnyStepProduct ? (
-                                    <p className="px-5 py-10 text-center text-sm text-gray-400">
-                                        Please select your routine.
-                                    </p>
-                                ) : (
-                                    allSteps.map((step, index) => (
-                                        <StepRow
-                                            key={step.id}
-                                            stepNumber={index + 1}
-                                            label={step.label}
-                                            product={step.product}
-                                            isExplicit={step.isExplicit}
-                                            onChange={() => openStepPicker(step, 'change_button')}
-                                            onRemove={() => removeStepProduct(step.id)}
-                                        />
-                                    ))
-                                )}
+                                {allSteps.map((step, index) => (
+                                    <StepRow
+                                        key={step.id}
+                                        stepNumber={index + 1}
+                                        label={step.label}
+                                        product={step.product}
+                                        isExplicit={step.isExplicit}
+                                        onChange={() => openStepPicker(step, 'change_button')}
+                                        onRemove={() => removeStepProduct(step.id)}
+                                    />
+                                ))}
                             </div>
                         </div>
 
@@ -326,7 +320,7 @@ function BuildRoutinePageContent() {
                                                     })
                                                     setPickerStep(weakestStep)
                                                 }}
-                                                className="mt-3 w-full rounded-full border border-[#e01a7f] px-4 py-2 text-xs font-semibold text-[#e01a7f] hover:bg-[#fdeef1]"
+                                                className="mt-3 w-full rounded-full border border-[#d77465] px-4 py-2 text-xs font-semibold text-[#d77465] hover:bg-[#fdeef1]"
                                             >
                                                 See better {weakestStep.label.toLowerCase()} matches
                                             </button>

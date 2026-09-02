@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { GoPlus } from "react-icons/go";
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiSearch } from 'react-icons/fi'
@@ -228,7 +229,7 @@ function ProductCard({ product }) {
                     }}
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e08a7d] text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
                 >
-                    {inRoutine ? <BsCartFill size={13} /> : <BsCart size={13} />}
+                    {inRoutine ? <GoPlus size={13} /> : <GoPlus size={13} />}
                 </button>
                 <button
                     type="button"

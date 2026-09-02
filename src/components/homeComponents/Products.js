@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
-import { BsHeartFill, BsCart, BsCartFill } from 'react-icons/bs'
+import { BsHeartFill } from 'react-icons/bs'
+import { GoPlus } from "react-icons/go";
 import { BiHeart } from 'react-icons/bi'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { FreeMode, Navigation } from 'swiper/modules'
@@ -94,7 +95,7 @@ function pickByScoreBands(products) {
 function formatPrice(value) {
     const amount = Number(value)
 
-    return Number.isFinite(amount)
+    return Number.isFinite(amount) && amount > 0
         ? new Intl.NumberFormat('en-IN', {
             style: 'currency',
             currency: 'INR',
@@ -218,7 +219,7 @@ function ProductCard({ product }) {
 
             <div className="mb-3 flex min-h-5 items-center gap-2">
                 <span className="truncate text-sm font-semibold text-gray-900">
-                    {mrp || 'Price unavailable'}
+                    {mrp || 'Out of stock'}
                 </span>
             </div>
 
@@ -233,7 +234,7 @@ function ProductCard({ product }) {
                     }}
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e08a7d] text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
                 >
-                    {inRoutine ? <BsCartFill /> : <BsCart />}
+                    {inRoutine ? <GoPlus /> : <GoPlus  />}
                 </button>
                 <button
                     type="button"
@@ -349,7 +350,7 @@ export default function Products() {
 
                 </div>
 
-                <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
+                {/* <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
                     <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">
                         Your selections
                     </p>
@@ -376,7 +377,7 @@ export default function Products() {
                             </span>
                         ))}
                     </div>
-                </div>
+                </div> */}
 
                 {activeView === 'products' ? <div className="relative max-w-xl mx-auto mb-2 mt-3 lg:mt-4">
                     <FiSearch

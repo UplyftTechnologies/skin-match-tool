@@ -50,7 +50,7 @@ const getProduct = cache(async (id) => {
 
 function formatPrice(value) {
   const amount = Number(value);
-  return Number.isFinite(amount)
+  return Number.isFinite(amount) && amount > 0
     ? new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
@@ -158,7 +158,7 @@ export default async function RetailerProductPage({ params }) {
     .filter(([, value]) => value !== null && value !== "" && formatAttribute(value));
   const availablePrices = comparableProducts
     .map((item) => Number(item.mrp))
-    .filter((price) => Number.isFinite(price));
+    .filter((price) => Number.isFinite(price) && price > 0);
   const lowestPrice = availablePrices.length ? Math.min(...availablePrices) : null;
   const highestPrice = availablePrices.length ? Math.max(...availablePrices) : null;
   // Ingredient cautions come from the same screen the catalogue uses, so a
@@ -289,7 +289,7 @@ export default async function RetailerProductPage({ params }) {
 
               <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1 sm:mt-5">
                 <span className="text-[15px] font-extrabold leading-none text-slate-900 sm:text-[1.9rem]">
-                  {mrp || "Price unavailable"}
+                  {mrp || "Out of stock"}
                 </span>
               </div>
               <p className="mt-1 hidden text-[12px] text-slate-400 sm:block">Inclusive of all taxes</p>
@@ -333,7 +333,7 @@ export default async function RetailerProductPage({ params }) {
 
                             <div className="shrink-0 text-right">
                               <p className="text-[14px] font-bold text-slate-900">
-                                {formatPrice(item.mrp) || "—"}
+                                {formatPrice(item.mrp) || "Out of stock"}
                               </p>
                               {isLowest ? (
                                 <p className="text-[10px] font-bold uppercase text-emerald-700">Lowest</p>

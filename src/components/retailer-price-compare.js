@@ -11,7 +11,7 @@ function roopseeStoreUrl(productUid) {
 
 function formatPrice(value) {
     const amount = Number(value)
-    return Number.isFinite(amount)
+    return Number.isFinite(amount) && amount > 0
         ? new Intl.NumberFormat('en-IN', {
             style: 'currency',
             currency: 'INR',
@@ -82,7 +82,7 @@ function BuyButton({ offer, productName, primary, compact }) {
             }`}
         >
             Buy from {siteName(offer.site)}
-            <span className="font-bold">{formatPrice(offer.price)}</span>
+            <span className="font-bold">{formatPrice(offer.price) || 'Out of stock'}</span>
             <FiExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
         </a>
     )
@@ -177,7 +177,7 @@ function OfferModal({ offer, offers, productName, onClose }) {
 
                         <div className="mt-3 flex flex-wrap items-end gap-x-3 gap-y-1">
                             <span className="text-[1.5rem] font-extrabold leading-none text-slate-900">
-                                {formatPrice(offer.price)}
+                                {formatPrice(offer.price) || 'Out of stock'}
                             </span>
                             {showMrp ? (
                                 <>
@@ -385,7 +385,7 @@ export default function RetailerPriceCompare({ productUid, productName, catalogP
                                 </span>
                                 <span className="text-right">
                                     <span className="block text-[14px] font-bold text-slate-900">
-                                        {formatPrice(row.price)}
+                                        {formatPrice(row.price) || 'Out of stock'}
                                     </span>
                                     <span className="text-[10px] font-semibold text-[#d77465]">Roopsee</span>
                                 </span>
@@ -406,7 +406,7 @@ export default function RetailerPriceCompare({ productUid, productName, catalogP
                                 <span className="flex shrink-0 items-center gap-2">
                                     <span className="text-right">
                                         <span className="block text-[14px] font-medium text-slate-900">
-                                            {formatPrice(row.price)}
+                                            {formatPrice(row.price) || 'Out of stock'}
                                         </span>
                                         <Rating offer={row} />
                                     </span>

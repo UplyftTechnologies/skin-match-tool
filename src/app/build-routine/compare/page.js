@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 function formatPrice(value) {
   const amount = Number(value);
-  return Number.isFinite(amount)
+  return Number.isFinite(amount) && amount > 0
     ? new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
@@ -80,7 +80,7 @@ export default async function BuildRoutineComparePage({ searchParams }) {
         ) : (
           <div className="mt-6 space-y-6">
             {comparisons.map(({ product, offers }) => {
-              const prices = offers.map((item) => Number(item.mrp)).filter(Number.isFinite);
+              const prices = offers.map((item) => Number(item.mrp)).filter((price) => Number.isFinite(price) && price > 0);
               const lowestPrice = prices.length ? Math.min(...prices) : null;
 
               return (
@@ -125,7 +125,7 @@ export default async function BuildRoutineComparePage({ searchParams }) {
                             </div>
                             <div className="shrink-0 text-right">
                               <p className="text-[14px] font-bold text-slate-900">
-                                {formatPrice(offer.mrp) || "—"}
+                                {formatPrice(offer.mrp) || "Out of stock"}
                               </p>
                               {isLowest ? (
                                 <p className="text-[10px] font-bold uppercase text-emerald-700">Lowest</p>
