@@ -1,6 +1,5 @@
 'use client'
 
-import { BsPatchCheckFill } from 'react-icons/bs'
 import BrandSlider from '../BrandSlider'
 
 const announcements = [
@@ -51,8 +50,8 @@ export default function KnowBefore() {
   return (
     <div>
       <AnnouncementBar />
-      <section className="bg-[#FAF9F6] px-3 pt-7 sm:pt-9">
-        <div className="mx-auto max-w-7xl text-center">
+      <section className="bg-[#FAF9F6] px-3 ">
+        {/* <div className="mx-auto max-w-7xl text-center">
           <h2 className="font-cormorant text-[25px] leading-none tracking-[0.17em] text-black sm:text-[34px] md:text-[42px]">
             Skin <em className="italic">match</em> tool
           </h2>
@@ -71,8 +70,10 @@ export default function KnowBefore() {
           <div className="mt-7 sm:mt-9">
             <BrandSlider />
           </div>
-        </div>
+        </div> */}
+
       </section>
+
     </div>
   )
 }

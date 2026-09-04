@@ -65,6 +65,21 @@ function formatAttribute(value) {
   return String(value || "");
 }
 
+// Retailers scrape their own copy independently, so the same physical product
+// can have a description on Tira but not on Nykaa, or vice versa. The page the
+// shopper lands on is whichever retailer's `id` is in the URL — showing only
+// that one row's fields meant half the products looked empty even though a
+// sibling listing of the identical item had the copy. Scanning every
+// comparable listing (this one first) finds real content far more often than
+// trusting whichever retailer happens to be primary.
+function pickFirst(rows, field) {
+  for (const row of rows) {
+    const value = row?.[field];
+    if (Array.isArray(value) ? value.length : value) return value;
+  }
+  return null;
+}
+
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const product = await getProduct(id);
@@ -154,7 +169,19 @@ export default async function RetailerProductPage({ params }) {
   const sizeOptions = buildSizeOptions(product, sizeSiblings);
 
   const mrp = formatPrice(product.mrp);
-  const attributes = Object.entries(product.product_attributes || {})
+  // Nykaa's copy is the best-scraped and most trusted, so it wins whenever a
+  // sibling listing on Nykaa exists — the viewed retailer's own copy (and
+  // then every other sibling) only fills in whatever Nykaa is missing.
+  const allSources = [product, ...comparableProducts];
+  const nykaaSource = allSources.find((row) => row?.site === "nykaa");
+  const detailSources = nykaaSource
+    ? [nykaaSource, ...allSources.filter((row) => row !== nykaaSource)]
+    : allSources;
+  const description = pickFirst(detailSources, "description");
+  const keyIngredients = pickFirst(detailSources, "key_ingredients") || [];
+  const ingredientsList = pickFirst(detailSources, "ingredients");
+  const howToUse = pickFirst(detailSources, "how_to_use");
+  const attributes = Object.entries(pickFirst(detailSources, "product_attributes") || {})
     .filter(([, value]) => value !== null && value !== "" && formatAttribute(value));
   const availablePrices = comparableProducts
     .map((item) => Number(item.mrp))
@@ -392,19 +419,19 @@ export default async function RetailerProductPage({ params }) {
 
           {/* ------------------------------------------------------ Detail rows */}
           <div className="mt-6 min-w-0 overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm sm:mt-8 lg:mt-10">
-            {product.description ? (
+            {description ? (
               <CollapsibleRow icon={FiFileText} title="DESCRIPTION">
                 <p className="max-w-2xl break-words text-[14px] leading-relaxed text-slate-600 sm:text-[14.5px]">
-                  {product.description}
+                  {description}
                 </p>
               </CollapsibleRow>
             ) : null}
 
             <CollapsibleRow icon={FiDroplet} title="KEY INGREDIENTS" open>
               <div className="max-w-2xl">
-                {product.key_ingredients?.length ? (
+                {keyIngredients.length ? (
                   <div className="flex flex-wrap items-center gap-2">
-                    {product.key_ingredients.map((item) => (
+                    {keyIngredients.map((item) => (
                       <span
                         key={item}
                         className="rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-[12.5px] font-semibold text-[#d77465]"
@@ -415,13 +442,13 @@ export default async function RetailerProductPage({ params }) {
                   </div>
                 ) : null}
 
-                {product.ingredients ? (
+                {ingredientsList ? (
                   <div className="mt-4 rounded-xl bg-slate-50 p-4">
                     <div className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">
                       Full ingredient list (INCI)
                     </div>
                     <p className="mt-2 break-words text-[12.5px] leading-relaxed text-slate-500">
-                      {product.ingredients}
+                      {ingredientsList}
                     </p>
                   </div>
                 ) : (
@@ -432,7 +459,7 @@ export default async function RetailerProductPage({ params }) {
 
             <CollapsibleRow icon={FiInfo} title="HOW TO USE" open>
               <p className="max-w-2xl break-words text-[14px] leading-relaxed text-slate-600 sm:text-[14.5px]">
-                {product.how_to_use || "Follow the directions printed on the product packaging."}
+                {howToUse || "Follow the directions printed on the product packaging."}
               </p>
             </CollapsibleRow>
 

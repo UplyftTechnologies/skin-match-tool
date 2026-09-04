@@ -10,12 +10,18 @@ import IndianRockstar from '@/components/homeComponents/IndianRockstar.js'
 import MeetDocter from "@/components/homeComponents/MeetDocter.js"
 import Routine from "@/components/homeComponents/Routine"
 import RequireQuizGate from "@/components/require-quiz-gate"
+import AnimatedSkinShowcase from '@/components/homeComponents/AnimatedSkinShowcase'
+import BrandSlider from '@/components/BrandSlider'
+import AniVideo from '@/components/homeComponents/AniVideo'
 
 function page() {
   return (
     <div>
       <Header />
       <KnowBefore />
+      <AniVideo />
+      {/* <AnimatedSkinShowcase /> */}
+      <BrandSlider/>
       <MatchMySkin />
       <RequireQuizGate
         title="Take the quiz above to see products"

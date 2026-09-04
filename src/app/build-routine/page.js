@@ -57,7 +57,7 @@ function StepRow({ stepNumber, label, product, isExplicit, onChange, onRemove })
                     onClick={onChange}
                     className="rounded-full border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors hover:border-[#e08a7d] hover:text-[#e08a7d]"
                 >
-                    Change
+                    {product ? 'Change' : 'Select'}
                 </button>
                 {isExplicit ? (
                     <button

@@ -6,7 +6,7 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 // as a match instead of drifting apart.
 
 const COMPARISON_FIELDS =
-  "id,site,gtin,product_name,variant,mrp,selling_price,discount_pct,in_stock,product_url,image_url,categories,ingredients";
+  "id,site,gtin,product_name,variant,mrp,selling_price,discount_pct,in_stock,product_url,image_url,categories,ingredients,description,how_to_use,key_ingredients,product_attributes";
 
 function normalizedProductName(name) {
   return String(name || "")
