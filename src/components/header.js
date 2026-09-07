@@ -101,11 +101,11 @@ export default function Header({ className = "" }) {
           <Logo dark={false} onClick={handleLogoClick} />
 
           <div className="flex items-center gap-2">
-          {routineCount > 0 && (
+          {(routineCount > 0 || (sessionLoaded && userSession)) && (
             <Link
               href="/build-routine"
               aria-label="View my routine"
-              className="relative"
+              className="relative flex items-center gap-1.5 text-xs font-medium text-gray-700"
               onClick={() =>
                 trackingService.trackEvent(EVENTS.CLICKED_VIEW_ALL_PRODUCTS, {
                   source: "header_routine_icon",
@@ -113,12 +113,15 @@ export default function Header({ className = "" }) {
                 })
               }
             >
-              <IconButton>
+              <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-gray-300">
                 <FaCartShopping size={15} />
-              </IconButton>
+              </span>
+              {sessionLoaded && userSession ? <span>My Routine</span> : null}
+              {routineCount > 0 ? (
               <span className="absolute -top-1 -right-1 bg-[#e01a7f] text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
                 {routineCount}
               </span>
+              ) : null}
             </Link>
           )}
           {sessionLoaded && userSession && wishlistIds.length > 0 && (

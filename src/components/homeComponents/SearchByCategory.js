@@ -24,7 +24,7 @@ const categories = [
         id: 1,
         name: 'Face',
         image: Face,
-        filters: ['Sunscreen', 'Serum', 'Moisturizer', 'Cleanser', 'Toner', 'Mask', 'Exfoliator', 'Treatment'],
+        filters: ['Sunscreen', 'Serum', 'Face Oil', 'Moisturizer', 'Cleanser', 'Toner', 'Mask', 'Exfoliator', 'Treatment'],
     },
     { id: 2, name: 'Body', image: Body, filters: ['Body Care'] },
     { id: 3, name: 'Lips', image: lips, filters: ['Lip Care'] },

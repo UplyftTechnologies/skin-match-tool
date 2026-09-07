@@ -322,6 +322,11 @@ export default function ProfilePage() {
                     </div>
                 )}
 
+                <Link href="/build-routine" className="mb-6 flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-white px-4 py-4 text-sm font-semibold text-gray-900">
+                    <span>My Routine</span>
+                    <BiChevronRight aria-hidden="true" size={20} />
+                </Link>
+
                 <h2 className="text-center text-[12px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-3">
                     Your Wishlist
                 </h2>

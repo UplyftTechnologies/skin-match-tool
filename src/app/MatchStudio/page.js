@@ -10,16 +10,16 @@ import IndianRockstar from '@/components/homeComponents/IndianRockstar.js'
 import MeetDocter from "@/components/homeComponents/MeetDocter.js"
 import Routine from "@/components/homeComponents/Routine"
 import RequireQuizGate from "@/components/require-quiz-gate"
-import AnimatedSkinShowcase from '@/components/homeComponents/AnimatedSkinShowcase'
 import BrandSlider from '@/components/BrandSlider'
-import AniVideo from '@/components/homeComponents/AniVideo'
+import AnimatedSkinShowcase from '@/components/homeComponents/AnimatedSkinShowcase'
+import Animation2 from '@/components/Animation2'
 
 function page() {
   return (
     <div>
       <Header />
       <KnowBefore />
-      <AniVideo />
+      <Animation2  className="concern-animation-home" />
       {/* <AnimatedSkinShowcase /> */}
       <BrandSlider/>
       <MatchMySkin />

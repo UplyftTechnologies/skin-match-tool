@@ -12,10 +12,12 @@ const CATEGORY_OPTIONS = [
     'Toner', 'Mask', 'Exfoliator', 'Eye Care', 'Lip Care', 'Body Care', 'Hair Care', 'Treatment',
 ]
 
-function buildQuery({ categories, profile }) {
+function buildQuery({ categories, profile, search, minScore, sort, page }) {
     const params = new URLSearchParams()
-    params.set('sort', 'score_desc')
-    params.set('page', '1')
+    params.set('sort', sort)
+    params.set('page', String(page))
+    if (search.trim()) params.set('search', search.trim())
+    if (minScore) params.set('minScore', minScore)
     categories.forEach((category) => params.append('category', category))
     if (profile?.selectedSkinType) {
         params.set('skinType', profile.selectedSkinType)
@@ -43,32 +45,73 @@ function buildQuery({ categories, profile }) {
 export default function ProductPickerModal({ open, onClose, title, categories, allowCategoryChange, profile, onSelect }) {
     const [category, setCategory] = useState(() => categories?.[0] || CATEGORY_OPTIONS[0])
     const [products, setProducts] = useState([])
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
+    const [search, setSearch] = useState('')
+    const [minScore, setMinScore] = useState('')
+    const [sort, setSort] = useState('score_desc')
+    const [page, setPage] = useState(1)
+    const [pagination, setPagination] = useState({ total: 0, page: 1, totalPages: 1 })
+    const [error, setError] = useState('')
+    const [retry, setRetry] = useState(0)
+    const query = buildQuery({
+        categories: allowCategoryChange ? [category] : (categories?.length ? categories : [category]),
+        profile, search, minScore, sort, page,
+    })
+
+    function changeFilter(setter, value) {
+        setter(value)
+        if (setter !== setPage) setPage(1)
+        setLoading(true)
+        setError('')
+        setProducts([])
+    }
 
     useEffect(() => {
         if (!open) return undefined
         const controller = new AbortController()
-        setLoading(true)
-        const activeCategories = allowCategoryChange ? [category] : (categories?.length ? categories : [category])
-        fetch(`/api/retailer-products/catalog?${buildQuery({ categories: activeCategories, profile })}`, {
+        const timer = setTimeout(() => {
+            setLoading(true)
+            setError('')
+            setProducts([])
+            fetch(`/api/retailer-products/catalog?${query}`, {
             signal: controller.signal,
         })
-            .then((response) => response.json())
-            .then((payload) => setProducts(payload.products || []))
-            .catch((error) => {
-                if (error.name !== 'AbortError') setProducts([])
+            .then((response) => {
+                if (!response.ok) throw new Error('Unable to load products. Please try again.')
+                return response.json()
             })
-            .finally(() => setLoading(false))
+            .then((payload) => {
+                if (controller.signal.aborted) return
+                setProducts(payload.products || [])
+                setPagination({ total: payload.total, page: payload.page, totalPages: payload.totalPages })
+            })
+            .catch((error) => {
+                if (!controller.signal.aborted) setError(error.message || 'Unable to load products.')
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setLoading(false)
+            })
+        }, 250)
 
-        return () => controller.abort()
-    }, [open, category, categories, allowCategoryChange, profile])
+        return () => { clearTimeout(timer); controller.abort() }
+    }, [open, query, retry])
+
+    useEffect(() => {
+        if (!open) return
+        const onKeyDown = (event) => { if (event.key === 'Escape') onClose() }
+        document.addEventListener('keydown', onKeyDown)
+        return () => document.removeEventListener('keydown', onKeyDown)
+    }, [open, onClose])
 
     if (!open) return null
 
     return (
         <div className="fixed inset-0 z-[var(--z-overlay)] flex items-center justify-center bg-black/40 px-4" onClick={onClose}>
             <div
-                className="flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white"
+                role="dialog"
+                aria-modal="true"
+                aria-label={title}
+                className="flex max-h-[85dvh] w-full max-w-lg flex-col overflow-hidden rounded-lg bg-white"
                 onClick={(event) => event.stopPropagation()}
             >
                 <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
@@ -82,7 +125,8 @@ export default function ProductPickerModal({ open, onClose, title, categories, a
                     <div className="border-b border-gray-100 px-5 py-3">
                         <select
                             value={category}
-                            onChange={(event) => setCategory(event.target.value)}
+                            aria-label="Product category"
+                            onChange={(event) => changeFilter(setCategory, event.target.value)}
                             className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 outline-none focus:border-[#e08a7d]"
                         >
                             {CATEGORY_OPTIONS.map((option) => (
@@ -92,14 +136,49 @@ export default function ProductPickerModal({ open, onClose, title, categories, a
                     </div>
                 ) : null}
 
-                <div className="flex-1 overflow-y-auto px-2 py-2">
+                <div className="space-y-3 border-b border-gray-100 px-5 py-3">
+                    <label className="block text-xs font-medium text-gray-600">
+                        Search products
+                        <input type="search" value={search} onChange={(event) => changeFilter(setSearch, event.target.value)}
+                            placeholder="Product or brand" className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                        <label className="text-xs font-medium text-gray-600">
+                            Match score
+                            <select value={minScore} disabled={!profile?.selectedSkinType}
+                                onChange={(event) => changeFilter(setMinScore, event.target.value)}
+                                className="mt-1 w-full rounded-lg border border-gray-200 px-2 py-2 text-sm disabled:opacity-50">
+                                <option value="">All scores</option>
+                                <option value="90">90 and above</option>
+                                <option value="80">80 and above</option>
+                                <option value="60">60 and above</option>
+                            </select>
+                        </label>
+                        <label className="text-xs font-medium text-gray-600">
+                            Sort by
+                            <select value={sort} onChange={(event) => changeFilter(setSort, event.target.value)}
+                                className="mt-1 w-full rounded-lg border border-gray-200 px-2 py-2 text-sm">
+                                <option value="score_desc">Best match</option>
+                                <option value="price_asc">Lowest price</option>
+                                <option value="price_desc">Highest price</option>
+                                <option value="name_asc">Name: A to Z</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2" aria-busy={loading}>
+                    {error ? <div role="alert" className="p-4 text-center text-sm text-rose-700">
+                        <p>{error}</p>
+                        <button type="button" onClick={() => setRetry(value => value + 1)} className="mt-2 underline">Try again</button>
+                    </div> : null}
                     {loading ? <p className="py-8 text-center text-sm text-gray-500">Loading products…</p> : null}
-                    {!loading && products.length === 0 ? (
+                    {!loading && !error && products.length === 0 ? (
                         <p className="py-8 text-center text-sm text-gray-500">No products found.</p>
                     ) : null}
                     {products.map((product) => {
                         const score = product.scoring?.score
-                        const hasScore = Number.isFinite(Number(score))
+                        const hasScore = score != null && Number.isFinite(Number(score))
                         return (
                             <button
                                 key={product.product_uid}
@@ -129,6 +208,16 @@ export default function ProductPickerModal({ open, onClose, title, categories, a
                         )
                     })}
                 </div>
+                {!loading && !error ? <div className="flex shrink-0 items-center justify-between gap-2 border-t border-gray-100 px-5 py-3 text-xs text-gray-600">
+                    <span role="status">{pagination.total} products</span>
+                    <div className="flex items-center gap-3">
+                        <button type="button" disabled={pagination.page <= 1} onClick={() => changeFilter(setPage, pagination.page - 1)}
+                            className="py-2 disabled:opacity-40">Previous</button>
+                        <span>{pagination.page} / {pagination.totalPages}</span>
+                        <button type="button" disabled={pagination.page >= pagination.totalPages} onClick={() => changeFilter(setPage, pagination.page + 1)}
+                            className="py-2 disabled:opacity-40">Next</button>
+                    </div>
+                </div> : null}
             </div>
         </div>
     )

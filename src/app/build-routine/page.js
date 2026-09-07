@@ -15,14 +15,15 @@ import { matchLabel, matchClasses } from '@/lib/routine-match'
 import { stepsForTime } from '@/lib/routine-steps'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
+import { supabase } from '@/lib/supabase/client'
 
 function emptyRoutine() {
     return { am: {}, pm: {} }
 }
 
-function StepRow({ stepNumber, label, product, isExplicit, onChange, onRemove }) {
+function StepRow({ stepNumber, label, optional, product, isExplicit, onChange, onRemove }) {
     const score = product?.scoring?.score
-    const hasScore = Number.isFinite(Number(score))
+    const hasScore = score != null && Number.isFinite(Number(score))
 
     return (
         <div className="flex flex-col gap-3 px-4 py-4 sm:px-5 sm:flex-row sm:items-center sm:justify-between">
@@ -34,7 +35,7 @@ function StepRow({ stepNumber, label, product, isExplicit, onChange, onRemove })
                 </span>
                 <div className="min-w-0">
                     <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">
-                        Step {String(stepNumber).padStart(2, '0')} · {label}
+                        {optional ? 'Optional' : `Step ${String(stepNumber).padStart(2, '0')}`} · {label}
                     </p>
                     {product ? (
                         <>
@@ -97,6 +98,7 @@ function BuildRoutinePageContent() {
     const [routineLoaded, setRoutineLoaded] = useState(false)
     const [pickerStep, setPickerStep] = useState(null)
     const [savedMessage, setSavedMessage] = useState('')
+    const [saving, setSaving] = useState(false)
 
     useEffect(() => {
         const saved = getSavedRoutine()
@@ -133,7 +135,7 @@ function BuildRoutinePageContent() {
         }
     })
     const hasAnyStepProduct = allSteps.some((step) => step.product)
-    const scoredSteps = allSteps.filter((step) => Number.isFinite(Number(step.product?.scoring?.score)))
+    const scoredSteps = allSteps.filter((step) => step.product?.scoring?.score != null && Number.isFinite(Number(step.product.scoring.score)))
     const overallScore = scoredSteps.length
         ? Math.round(scoredSteps.reduce((sum, step) => sum + Number(step.product.scoring.score), 0) / scoredSteps.length)
         : null
@@ -180,11 +182,27 @@ function BuildRoutinePageContent() {
         setPickerStep(step)
     }
 
-    function handleSave() {
-        saveRoutine(routine)
-        trackingService.trackEvent(EVENTS.CLICKED_SAVE_ROUTINE, { source: 'build_routine_page' })
-        setSavedMessage('Saved!')
-        setTimeout(() => setSavedMessage(''), 2500)
+    async function handleSave() {
+        if (saving) return
+        setSaving(true)
+        setSavedMessage('')
+        try {
+            const { data: { session }, error } = await supabase.auth.getSession()
+            if (error) throw error
+            if (!session) {
+                saveRoutine(routine)
+                router.push('/login?redirect=%2Fbuild-routine')
+                return
+            }
+            saveRoutine(routine)
+            trackingService.trackEvent(EVENTS.CLICKED_SAVE_ROUTINE, { source: 'build_routine_page' })
+            setSavedMessage('Saved!')
+            setTimeout(() => setSavedMessage(''), 2500)
+        } catch {
+            setSavedMessage('Could not save. Please try again.')
+        } finally {
+            setSaving(false)
+        }
     }
 
     function getRoutineProductUids() {
@@ -272,7 +290,7 @@ function BuildRoutinePageContent() {
                             </div>
 
                             <div className="mt-4 divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white">
-                                {allSteps.map((step, index) => (
+                                {allSteps.filter((step) => !step.optional).map((step, index) => (
                                     <StepRow
                                         key={step.id}
                                         stepNumber={index + 1}
@@ -284,6 +302,24 @@ function BuildRoutinePageContent() {
                                     />
                                 ))}
                             </div>
+                            <details className="mt-4 border-y border-gray-200" open>
+                                <summary className="cursor-pointer py-4 text-sm font-semibold text-gray-800">
+                                    Optional steps
+                                </summary>
+                                <div className="divide-y divide-gray-100 bg-white">
+                                    {allSteps.filter((step) => step.optional).map((step) => (
+                                        <StepRow
+                                            key={step.id}
+                                            label={step.label}
+                                            optional
+                                            product={step.product}
+                                            isExplicit={step.isExplicit}
+                                            onChange={() => openStepPicker(step, 'change_button')}
+                                            onRemove={() => removeStepProduct(step.id)}
+                                        />
+                                    ))}
+                                </div>
+                            </details>
                         </div>
 
                         <div className="space-y-4">
@@ -359,9 +395,10 @@ function BuildRoutinePageContent() {
                                 <button
                                     type="button"
                                     onClick={handleSave}
+                                    disabled={saving || !routineLoaded}
                                     className="mt-2 w-full rounded-full border border-gray-200 px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
                                 >
-                                    {savedMessage || 'Save my routine'}
+                                    {saving ? 'Saving...' : savedMessage || 'Save my routine'}
                                 </button>
                             </div>
 

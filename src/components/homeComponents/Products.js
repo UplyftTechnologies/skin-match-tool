@@ -223,26 +223,32 @@ function ProductCard({ product }) {
                 </span>
             </div>
 
-            <div className="mx-auto flex w-[90%] items-center gap-2">
-                <button
-                    type="button"
-                    aria-label="Add to routine"
-                    aria-pressed={inRoutine}
-                    onClick={(event) => {
-                        event.stopPropagation()
-                        setRoutineModalOpen(true)
-                    }}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e08a7d] text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
-                >
-                    {inRoutine ? <GoPlus /> : <GoPlus  />}
-                </button>
+            <div className="mx-auto flex flex-col w-[90%] items-center gap-2">
+                <div onClick={(event) => {
+                    event.stopPropagation()
+                    setRoutineModalOpen(true)
+                }}
+                    className="flex w-full items-center justify-center gap-1 lg:gap-2">
+                    <button
+                        type="button"
+                        aria-label="Add to routine"
+                        aria-pressed={inRoutine}
+
+                        className="flex h-5 w-5 lg:h-6 lg:w-6 shrink-0 items-center justify-center rounded-full border border-[#e08a7d] text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
+                    >
+                        {inRoutine ? <GoPlus /> : <GoPlus />}
+                    </button>
+                    <span className="font-lato text-[15px]">Add routine</span>
+                </div>
                 <button
                     type="button"
                     onClick={handleBuyNow}
                     style={{ fontSize: '11px' }}
-                    className="flex-1 font-semibold border rounded-full py-[8px] transition-colors duration-200 text-white bg-[#e08a7d] border-[#e08a7d] hover:bg-[#d17a6d]"
+                    className="flex-1 font-semibold border rounded-full
+                     py-[8px] transition-colors w-full duration-200 text-white bg-[#e08a7d] 
+                     border-[#e08a7d] hover:bg-[#d17a6d]"
                 >
-                    View
+                    View Details
                 </button>
             </div>
             <AddToRoutineModal

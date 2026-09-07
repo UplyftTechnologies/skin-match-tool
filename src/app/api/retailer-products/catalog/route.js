@@ -205,6 +205,11 @@ export async function GET(request) {
     : null;
 
   const sort = searchParams.get("sort") || "rating";
+  const requestedMinScore = searchParams.get("minScore");
+  const minScore = requestedMinScore !== null && requestedMinScore.trim() !== "" &&
+    Number.isFinite(Number(requestedMinScore))
+    ? Math.max(0, Math.min(100, Number(requestedMinScore)))
+    : null;
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
 
   let catalog;
@@ -238,10 +243,14 @@ export async function GET(request) {
     }, Boolean(profile));
   }
 
-  // Scores must be attached BEFORE sorting when sorting by score, since a
-  // product's score is not a property of the catalogue row.
-  const scored = sort === "score_desc" ? attachScores(matching, profile, matching) : matching;
-  const sorted = sortProducts(scored, sort);
+  // Score the full set before score filtering or ranking, then paginate.
+  const needsFullScores = sort === "score_desc" || minScore !== null;
+  const scored = needsFullScores ? attachScores(matching, profile, matching) : matching;
+  const scoreFiltered = minScore === null ? scored : scored.filter((product) =>
+    product.scoring?.score != null && !product.scoring.blocked &&
+    Number.isFinite(Number(product.scoring.score)) && Number(product.scoring.score) >= minScore,
+  );
+  const sorted = sortProducts(scoreFiltered, sort);
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
 
@@ -251,14 +260,14 @@ export async function GET(request) {
   const forPrice = applyFilters(catalog, filters, { except: "price" });
 
   const pageProducts = sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
-  // Scoring the whole filtered set is only needed to rank by score — done
+  // Scoring the whole filtered set is needed to rank or filter by score — done
   // above, and `sorted` already carries `.scoring` for every item in that
   // case. Any other sort (price, rating, name...) only needs scores for the
   // 20 cards this page renders, not the (often thousands-deep) filtered set,
   // so scope the scoring pass to just the page instead of re-running it
   // against `matching` — that's the difference between scoring 20 products
   // and scoring however many match the filters, on every single request.
-  const pageScored = sort === "score_desc"
+  const pageScored = needsFullScores
     ? pageProducts
     : attachScores(pageProducts, profile, pageProducts);
 

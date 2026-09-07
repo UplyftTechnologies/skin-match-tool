@@ -107,8 +107,7 @@ export default function AddToRoutineModal({ open, onClose, product }) {
                 {matchingSlots.length === 0 ? (
                     <div className="px-5 py-6 text-center">
                         <p className="text-sm text-gray-600">
-                            This isn&apos;t a Cleanser, Serum, Moisturiser or Sunscreen, so it doesn&apos;t
-                            fit a fixed routine slot.
+                            No routine slot matches this product&apos;s category yet.
                         </p>
                         <Link
                             href="/build-routine"
@@ -123,7 +122,7 @@ export default function AddToRoutineModal({ open, onClose, product }) {
                              rounded-full bg-[#D17A6D] px-5 py-2.5 text-xs
                              font-semibold text-white hover:bg-[#D17A9D]"
                         >
-                            Add it as an extra step
+                            View your routine
                         </Link>
                     </div>
                 ) : (

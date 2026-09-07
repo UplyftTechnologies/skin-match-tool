@@ -198,12 +198,12 @@ function ProductCard({ product }) {
                 </span>
             </div>
             {product.size_count > 1 ? (
-              <p className="mb-1 text-[11px] text-slate-500">
-                {product.size_count} sizes
-                {product.from_price
-                  ? ` · from ₹${Math.ceil(product.from_price).toLocaleString("en-IN")}`
-                  : ""}
-              </p>
+                <p className="mb-1 text-[11px] text-slate-500">
+                    {product.size_count} sizes
+                    {product.from_price
+                        ? ` · from ₹${Math.ceil(product.from_price).toLocaleString("en-IN")}`
+                        : ""}
+                </p>
             ) : null}
             <div className="mb-3 flex min-h-4 items-center gap-2 text-[11px] text-gray-400">
                 {product.rating ? (
@@ -218,26 +218,32 @@ function ProductCard({ product }) {
                         : SITE_LABELS[product.site] || product.site}
                 </span>
             </div>
-            <div className="mt-auto flex w-[90%] mx-auto items-center gap-2">
-                <button
-                    type="button"
-                    aria-label="Add to routine"
-                    aria-pressed={inRoutine}
-                    onClick={(event) => {
-                        event.stopPropagation()
-                        setRoutineModalOpen(true)
-                    }}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#e08a7d] text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
-                >
-                    {inRoutine ? <GoPlus size={13} /> : <GoPlus size={13} />}
-                </button>
+            <div className="mx-auto flex flex-col w-[90%] items-center gap-2">
+                <div onClick={(event) => {
+                    event.stopPropagation()
+                    setRoutineModalOpen(true)
+                }}
+                    className="flex w-full items-center justify-center gap-1 lg:gap-2">
+                    <button
+                        type="button"
+                        aria-label="Add to routine"
+                        aria-pressed={inRoutine}
+
+                        className="flex h-5 w-5 lg:h-6 lg:w-6 shrink-0 items-center justify-center rounded-full border border-[#e08a7d] text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
+                    >
+                        {inRoutine ? <GoPlus /> : <GoPlus />}
+                    </button>
+                    <span className="font-lato text-[15px]">Add routine</span>
+                </div>
                 <button
                     type="button"
                     onClick={handleBuyNow}
                     style={{ fontSize: '11px' }}
-                    className="flex-1 font-semibold border rounded-full py-[8px] transition-colors duration-200 text-white bg-[#e08a7d] border-[#e08a7d] hover:bg-[#d17a6d]"
+                    className="flex-1 font-semibold border rounded-full
+                                py-[8px] transition-colors w-full duration-200 text-white bg-[#e08a7d] 
+                                border-[#e08a7d] hover:bg-[#d17a6d]"
                 >
-                    View
+                    View Details
                 </button>
             </div>
             <AddToRoutineModal
@@ -813,11 +819,10 @@ function ProductsPageContent() {
                                             key={pageNumber}
                                             onClick={() => setCurrentPage(pageNumber)}
                                             aria-current={currentPage === pageNumber ? 'page' : undefined}
-                                            className={`h-8 w-8 shrink-0 rounded-full text-[11px] font-semibold transition-colors sm:h-9 sm:w-9 sm:text-xs ${
-                                                currentPage === pageNumber
+                                            className={`h-8 w-8 shrink-0 rounded-full text-[11px] font-semibold transition-colors sm:h-9 sm:w-9 sm:text-xs ${currentPage === pageNumber
                                                     ? 'bg-[#e08a7d] text-white'
                                                     : 'border border-gray-200 bg-white text-gray-700 hover:border-[#e08a7d]'
-                                            }`}
+                                                }`}
                                         >
                                             {pageNumber}
                                         </button>

@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 function buildQuery({ search, filters, sort, page, profile, bands, productUids }) {
     const params = new URLSearchParams()
-    // Bump when the public catalogue card shape changes so the browser does
-    // not reuse a previously cached response that is missing new fields.
-    params.set('schema', '2')
+    // Bump when card fields or category mapping change so the browser does
+    // not reuse catalogue responses with outdated classifications.
+    params.set('schema', '3')
     if (search.trim()) params.set('search', search.trim())
     for (const productUid of productUids || []) params.append('productUid', productUid)
     for (const key of ['brand', 'category', 'site', 'price']) {
@@ -42,6 +42,7 @@ function buildQuery({ search, filters, sort, page, profile, bands, productUids }
 // facet counts all happen on the server; this only ever holds one page.
 export function useRetailerCatalog({ search, filters, sort, page, profile, bands, productUids }) {
     const [state, setState] = useState({
+        query: null,
         products: [],
         facets: { brand: [], category: [], site: [], price: [] },
         total: 0,
@@ -49,11 +50,7 @@ export function useRetailerCatalog({ search, filters, sort, page, profile, bands
         totalPages: 1,
         scored: false,
     })
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
-    // Keeps the previous page on screen while the next one loads, so the grid
-    // does not collapse to empty on every keystroke.
-    const loaded = useRef(false)
+    const [failure, setFailure] = useState(null)
 
     const query = buildQuery({ search, filters, sort, page, profile, bands, productUids })
 
@@ -61,14 +58,15 @@ export function useRetailerCatalog({ search, filters, sort, page, profile, bands
         const controller = new AbortController()
         const timer = setTimeout(async () => {
             try {
-                if (!loaded.current) setLoading(true)
                 const response = await fetch(`/api/retailer-products/catalog?${query}`, {
                     signal: controller.signal,
                 })
                 const payload = await response.json()
+                if (controller.signal.aborted) return
                 if (!response.ok) throw new Error(payload.error || 'Unable to load products.')
 
                 setState({
+                    query,
                     products: payload.products || [],
                     facets: payload.facets || { brand: [], category: [], site: [], price: [] },
                     total: payload.total || 0,
@@ -76,12 +74,9 @@ export function useRetailerCatalog({ search, filters, sort, page, profile, bands
                     totalPages: payload.totalPages || 1,
                     scored: Boolean(payload.scored),
                 })
-                setError('')
-                loaded.current = true
+                setFailure(null)
             } catch (fetchError) {
-                if (fetchError.name !== 'AbortError') setError(fetchError.message)
-            } finally {
-                if (!controller.signal.aborted) setLoading(false)
+                if (!controller.signal.aborted) setFailure({ query, message: fetchError.message })
             }
         }, 220)
 
@@ -91,5 +86,16 @@ export function useRetailerCatalog({ search, filters, sort, page, profile, bands
         }
     }, [query])
 
-    return { ...state, loading, error }
+    // Results belong to the exact filter request that produced them. Never
+    // show the previous category's cards under a newly applied selection.
+    const isCurrent = state.query === query
+    const error = failure?.query === query ? failure.message : ''
+    return {
+        ...state,
+        products: isCurrent ? state.products : [],
+        total: isCurrent ? state.total : 0,
+        totalPages: isCurrent ? state.totalPages : 1,
+        loading: !isCurrent && !error,
+        error,
+    }
 }

@@ -6,19 +6,36 @@
 // Category values match canonicalCategory() (lib/retailer-catalog.js) exactly.
 export const STEP_DEFS = {
   cleanser: { label: "Cleanser", categories: ["Cleanser"] },
-  serum: { label: "Serum", categories: ["Serum", "Treatment"] },
+  toner: { label: "Toner", categories: ["Toner"], optional: true },
+  essence: { label: "Essence", categories: ["Serum"], optional: true },
+  serum: { label: "Serum", categories: ["Serum", "Treatment"], optional: true },
+  treatment: { label: "Treatment / Active", categories: ["Treatment", "Serum", "Exfoliator"], optional: true },
+  eyeCream: { label: "Eye Cream", categories: ["Eye Care"], optional: true },
+  spotTreatment: { label: "Spot Treatment", categories: ["Treatment"], optional: true },
+  faceMist: { label: "Face Mist", categories: ["Toner"], optional: true },
+  faceOil: { label: "Face Oil", categories: ["Face Oil"], optional: true },
+  lipCare: { label: "Lip Care", categories: ["Lip Care"], optional: true },
   moisturiser: { label: "Moisturiser", categories: ["Moisturizer"] },
   sunscreen: { label: "Sunscreen", categories: ["Sunscreen"] },
 };
 
-// Sunscreen has no place in a PM routine; serum is treated as PM-focused here.
+const OPTIONAL_STEPS = [
+  "toner", "essence", "serum", "treatment", "eyeCream",
+  "spotTreatment", "faceMist", "faceOil", "lipCare",
+];
+
+// Optional slots share the same IDs across AM and PM; saved picks remain separate.
 export const STEPS_BY_TIME = {
-  am: ["cleanser", "moisturiser", "sunscreen"],
-  pm: ["cleanser", "serum", "moisturiser"],
+  am: ["cleanser", "moisturiser", "sunscreen", ...OPTIONAL_STEPS],
+  pm: ["cleanser", "serum", "moisturiser", ...OPTIONAL_STEPS.filter((id) => id !== "serum")],
 };
 
 export function stepsForTime(time) {
-  return STEPS_BY_TIME[time].map((id) => ({ id, ...STEP_DEFS[id] }));
+  return STEPS_BY_TIME[time].map((id) => ({
+    id,
+    ...STEP_DEFS[id],
+    optional: time === "pm" && id === "serum" ? false : Boolean(STEP_DEFS[id].optional),
+  }));
 }
 
 // Every AM/PM · step slot, flattened — what the "Add to Routine" picker
