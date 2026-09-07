@@ -11,6 +11,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useRoutineCount } from "@/hooks/use-routine-count";
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
+import { FiSunrise } from "react-icons/fi";
 
 export const Logo = ({ dark, onClick }) => (
   <div
@@ -114,7 +115,7 @@ export default function Header({ className = "" }) {
               }
             >
               <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-gray-300">
-                <FaCartShopping size={15} />
+                <FiSunrise size={15} />
               </span>
               {sessionLoaded && userSession ? <span>My Routine</span> : null}
               {routineCount > 0 ? (
