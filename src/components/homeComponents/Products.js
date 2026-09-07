@@ -228,17 +228,19 @@ function ProductCard({ product }) {
                     event.stopPropagation()
                     setRoutineModalOpen(true)
                 }}
-                    className="flex w-full items-center justify-center gap-1 lg:gap-2">
+                    className="flex w-full p-1 rounded-[10px] border border-[#e08a7d] items-center justify-center gap-1 lg:gap-2">
                     <button
                         type="button"
                         aria-label="Add to routine"
                         aria-pressed={inRoutine}
 
-                        className="flex h-5 w-5 lg:h-6 lg:w-6 shrink-0 items-center justify-center rounded-full border border-[#e08a7d] text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
+                        className="flex h-5 w-5 lg:h-6 lg:w-6 shrink-0 items-center
+                         justify-center
+                          transition-colors duration-200 hover:bg-[#f8eeeb]"
                     >
                         {inRoutine ? <GoPlus /> : <GoPlus />}
                     </button>
-                    <span className="font-lato text-[15px]">Add routine</span>
+                    <span className="font-lato text-[15px]">Add Routine</span>
                 </div>
                 <button
                     type="button"
