@@ -62,10 +62,11 @@ export default function Animation2({ className = '', prefix = '' }) {
                         )
                     })}
                 </span>
+                
             </span>
             <style jsx>{`
                 .concern-animation {
-                    --row-height: 2em;
+                    --row-height: 1.80em;
                     display: flex;
                     flex-wrap: wrap;
                     align-items: center;
@@ -74,30 +75,29 @@ export default function Animation2({ className = '', prefix = '' }) {
                     width: 100%;
                     max-width: 100%;
                     box-sizing: border-box;
-                    padding: 10px 20px;
+                    padding: 0px 20px;
                     text-align: center;
                     vertical-align: middle;
                     font-family: inherit;
                     font-size: 24px;
                     line-height: 1.5;
                     letter-spacing: 0;
-                    background-color: #fff;
+                    background-color: #FAF9F6;
                 }
                 .prefix { color: #858585; }
-                .word-window {
-                    display: inline-block;
-                    height: var(--row-height);
-                    width: 36rem;
-                    min-width: 0;
-                    max-width: 100%;
-                    overflow: hidden;
-                    mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
-                    font-family: Lato, Arial, sans-serif;
-                    font-weight: 600;
-                }
+              .word-window {
+    display: inline-block;
+    height: var(--row-height);
+    width: min(36rem, 100%);   /* was: width: 36rem; max-width: 100%; */
+    min-width: 0;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+    font-family: Lato, Arial, sans-serif;
+    font-weight: 600;
+}
                 .word-track {
                     display: grid;
-                    background-color: #fff;
+                    background-color: #FAF9F6;
                 }
                 .word {
                     display: flex;

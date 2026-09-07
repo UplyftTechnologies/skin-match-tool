@@ -1,6 +1,8 @@
 'use client'
 
+import { BsPatchCheckFill } from 'react-icons/bs'
 import BrandSlider from '../BrandSlider'
+import Animation2 from '../Animation2'
 
 const announcements = [
   'Free Registration',
@@ -16,15 +18,18 @@ function AnnouncementBar() {
 
   return (
     <div className="w-full overflow-hidden bg-black ring-1 ring-inset ring-[#ca58ff]">
-      <div className="relative w-full overflow-hidden">
+      {/* screen-reader accessible copy, marquee itself is aria-hidden */}
+      <span className="sr-only">{announcements.join(', ')}</span>
+
+      <div className="relative w-full overflow-hidden" aria-hidden="true">
         <div className="flex w-max animate-announcement-scroll items-center">
           {track.map((item, index) => (
             <span
               key={`${item}-${index}`}
-              className="flex shrink-0 items-center gap-2 px-2.5 py-1 font-lato text-[7px] font-semibold uppercase leading-none text-white whitespace-nowrap sm:gap-3 sm:px-4 sm:py-1.5 sm:text-[9px]"
+              className="flex shrink-0 items-center gap-2 px-3 py-2 font-lato text-[11px] font-semibold uppercase leading-none tracking-wide text-white whitespace-nowrap sm:gap-3 sm:px-4 sm:py-2 sm:text-[12px] md:text-[13px]"
             >
               {item}
-              <span aria-hidden="true">•</span>
+              <span className="text-[#ca58ff]" aria-hidden="true">•</span>
             </span>
           ))}
         </div>
@@ -36,10 +41,15 @@ function AnnouncementBar() {
           to { transform: translateX(-50%); }
         }
         .animate-announcement-scroll {
-          animation: announcement-scroll 18s linear infinite;
+          animation: announcement-scroll 22s linear infinite;
         }
         .animate-announcement-scroll:hover {
           animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-announcement-scroll {
+            animation: none;
+          }
         }
       `}</style>
     </div>
@@ -50,30 +60,26 @@ export default function KnowBefore() {
   return (
     <div>
       <AnnouncementBar />
-      <section className="bg-[#FAF9F6] px-3 ">
-        {/* <div className="mx-auto max-w-7xl text-center">
-          <h2 className="font-cormorant text-[25px] leading-none tracking-[0.17em] text-black sm:text-[34px] md:text-[42px]">
+      <section className="bg-[#FAF9F6] px-4 py-4 sm:px-6 sm:py-6 md:py-6">
+        <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
+          <h2 className="font-cormorant text-[28px] leading-[1.1] tracking-[0.14em] text-black sm:text-[36px] md:text-[46px]">
             Skin <em className="italic">match</em> tool
           </h2>
 
-          <div className="mt-2 flex items-center justify-center gap-1.5 rounded-full  px-3 py-1 mx-auto w-fit">
-            <BsPatchCheckFill className="text-[#197a4d] text-[11px] sm:text-[13px]" />
-            <span className="font-lato text-[11px] font-semibold uppercase tracking-[0.05em] text-[#197a4d] sm:text-[13px] md:text-sm">
+          <Animation2 className="concern-animation-home" />
+
+          <div className="mt-1 flex items-center gap-2 rounded-full border border-[#197a4d]/20 bg-[#eafaf3] px-3.5 py-1.5 sm:mt-1 sm:px-4 sm:py-2">
+            <BsPatchCheckFill className="text-[13px] text-[#197a4d] sm:text-[15px]" />
+            <span className="font-lato text-[12px] font-semibold tracking-[0.03em] text-[#197a4d] sm:text-sm">
               Doctor Verified Scores
             </span>
           </div>
 
-          <p className="mt-1.5 font-lato text-[8px] leading-tight text-black sm:text-[10px] md:text-xs">
-            Skincare Products scored for your skin across 500+ brands
+          <p className="mt-1 max-w-xs font-lato text-[12px] leading-relaxed text-gray-600 sm:max-w-sm sm:text-[13px] md:text-sm">
+            Skincare products scored for your skin across 500+ brands
           </p>
-
-          <div className="mt-7 sm:mt-9">
-            <BrandSlider />
-          </div>
-        </div> */}
-
+        </div>
       </section>
-
     </div>
   )
 }

@@ -19,7 +19,7 @@ function page() {
     <div>
       <Header />
       <KnowBefore />
-      <Animation2  className="concern-animation-home" />
+      {/* <Animation2  className="concern-animation-home" /> */}
       {/* <AnimatedSkinShowcase /> */}
       <BrandSlider/>
       <MatchMySkin />
