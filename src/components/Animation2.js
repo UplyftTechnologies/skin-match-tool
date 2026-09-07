@@ -12,11 +12,14 @@ const HEADINGS = [
     'Save wishlist and get price alerts',
 ]
 
-const HEADING_COLORS = ['#be185d', '#0f766e', '#1d4ed8', '#b45309', '#7e22ce']
+const HEADING_COLORS = ['#0f766e','#0f766e','#0f766e','#0f766e','#0f766e']
 const HEADING_ICONS = [FiUserCheck, FiCheckSquare, FiTag, FiShoppingBag, FiBell]
 
+const HOLD_DURATION = 1.6     
+const TRANSITION_DURATION = 0.35 
+const INITIAL_DELAY = 1.2      
 export default function Animation2({ className = '', prefix = '' }) {
-    const rootRef = useRef(null)
+     const rootRef = useRef(null)
     const trackRef = useRef(null)
 
     useEffect(() => {
@@ -26,13 +29,12 @@ export default function Animation2({ className = '', prefix = '' }) {
             const track = trackRef.current
             const timeline = gsap.timeline({ repeat: -1 })
 
-            // The duplicate first row makes the reset at the end invisible.
             HEADINGS.forEach((_, index) => {
                 timeline.to(track, {
                     yPercent: -((index + 1) * 100) / (HEADINGS.length + 1),
-                    duration: 0.65,
-                    ease: 'power3.inOut',
-                }, index * 3.4 + 2.75)
+                    duration: TRANSITION_DURATION,
+                    ease: 'power4.out',
+                }, index * HOLD_DURATION + INITIAL_DELAY)
             })
             timeline.set(track, { yPercent: 0 })
         }, rootRef)
@@ -75,11 +77,11 @@ export default function Animation2({ className = '', prefix = '' }) {
                     width: 100%;
                     max-width: 100%;
                     box-sizing: border-box;
-                    padding: 0px 20px;
+                    padding: 0px 10px;
                     text-align: center;
                     vertical-align: middle;
                     font-family: inherit;
-                    font-size: 24px;
+                    font-size: 18px;
                     line-height: 1.5;
                     letter-spacing: 0;
                     background-color: #FAF9F6;
@@ -123,8 +125,8 @@ export default function Animation2({ className = '', prefix = '' }) {
                 @media (max-width: 520px) {
                     .concern-animation {
                         --row-height: 1.80em;
-                        padding: 4px 16px;
-                        font-size: 18px;
+                        padding: 0px 12px;
+                        font-size: 14px;
                     }
                 }
                 .accessible-copy {

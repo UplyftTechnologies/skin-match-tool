@@ -223,12 +223,13 @@ function ProductCard({ product }) {
                 </span>
             </div>
 
-            <div className="mx-auto flex flex-col w-[90%] items-center gap-2">
+            <div className="mx-auto flex flex-col w-[90%] items-center gap-1 lg:gap-2">
                 <div onClick={(event) => {
                     event.stopPropagation()
                     setRoutineModalOpen(true)
                 }}
-                    className="flex w-full p-1 rounded-[10px] border border-[#e08a7d] items-center justify-center gap-1 lg:gap-2">
+                    className="flex w-full p-1 rounded-full border border-[#e08a7d] items-center
+                     justify-center  lg:gap-2">
                     <button
                         type="button"
                         aria-label="Add to routine"
@@ -240,7 +241,7 @@ function ProductCard({ product }) {
                     >
                         {inRoutine ? <GoPlus /> : <GoPlus />}
                     </button>
-                    <span className="font-lato text-[15px]">Add Routine</span>
+                    <span className="font-lato text-[12px] lg:text-[15px]">Add Routine</span>
                 </div>
                 <button
                     type="button"

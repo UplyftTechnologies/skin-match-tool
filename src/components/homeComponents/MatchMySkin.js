@@ -7,6 +7,7 @@ import { getSessionId } from '@/lib/tracking/identity'
 import { quizAnswersToResultProfile } from '@/lib/quiz-profile'
 import { supabase } from '@/lib/supabase/client'
 import { saveSkinProfile } from '@/lib/profile-storage'
+import { BsPatchCheckFill } from 'react-icons/bs'
 
 const skinTypes = ['Oily', 'Dry', 'Normal', 'Combination', "I don't know"]
 const sensitiveOptions = ['Yes', 'No']
@@ -316,242 +317,251 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
                                     <span>Quiz answers</span>
                                 </span>
                                 <div className="flex items-center gap-1 lg:gap-2">
-                                <button
-                                    className="quiz-update-btn"
-                                    type="button"
-                                    disabled={savingQuiz}
-                                    onClick={() => setIsQuizEditing(true)}
-                                >
-                                    Update Quiz
-                                </button>
-                                <button
-                                    className="quiz-answers-toggle"
-                                    type="button"
-                                    aria-expanded={isQuizEditing}
-                                    aria-label={isQuizEditing ? 'Collapse quiz answers' : 'Expand quiz answers'}
-                                    onClick={() => setIsQuizEditing((expanded) => !expanded)}
-                                >
-                                    <svg className="quiz-answers-chevron" aria-hidden="true" viewBox="0 0 20 20" fill="none">
-                                        <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </button>
+                                    <button
+                                        className="quiz-update-btn"
+                                        type="button"
+                                        disabled={savingQuiz}
+                                        onClick={() => setIsQuizEditing(true)}
+                                    >
+                                        Update Quiz
+                                    </button>
+                                    <button
+                                        className="quiz-answers-toggle"
+                                        type="button"
+                                        aria-expanded={isQuizEditing}
+                                        aria-label={isQuizEditing ? 'Collapse quiz answers' : 'Expand quiz answers'}
+                                        onClick={() => setIsQuizEditing((expanded) => !expanded)}
+                                    >
+                                        <svg className="quiz-answers-chevron" aria-hidden="true" viewBox="0 0 20 20" fill="none">
+                                            <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
                         </section>
                     </div>
                 ) : null}
                 {!hasCompletedQuiz || isQuizEditing ? (
-                <div
-                    className={`max-w-md mx-auto px-4 lg:max-w-6xl xl:max-w-7xl lg:px-8 ${hasCompletedQuiz && !hideCompletedHeader ? 'pt-0 pb-6 md:pb-12' : 'py-2 md:py-8'}`}
-                    onFocusCapture={() => setQuizInteractionStarted(true)}
-                    onPointerDown={() => setQuizInteractionStarted(true)}
-                >
-                    <div className={hasCompletedQuiz && !hideCompletedHeader ? 'quiz-expanded-content-panel' : ''}>
-                    <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
-                        SKIN QUIZ
-                    </h2>
+                    <div
+                        className={`max-w-md mx-auto px-4 lg:max-w-6xl xl:max-w-7xl lg:px-8 ${hasCompletedQuiz && !hideCompletedHeader ? 'pt-0 pb-6 md:pb-12' : 'py-2 md:py-8'}`}
+                        onFocusCapture={() => setQuizInteractionStarted(true)}
+                        onPointerDown={() => setQuizInteractionStarted(true)}
+                    >
+                        <div className={hasCompletedQuiz && !hideCompletedHeader ? 'quiz-expanded-content-panel' : ''}>
+                            <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
+                                SKIN QUIZ
+                            </h2>
+                            <div className="mx-auto flex justify-center w-[auto]  lg:w-[20%] text-center">
+                                <div className="mt-1 flex items-center gap-2 rounded-full mx-auto
+                             border border-[#197a4d]/20 bg-[#eafaf3] w-[auto] px-3.5 py-1
+                              sm:mt-1 sm:px-4 sm:py-1">
 
-                    {hasCompletedQuiz ? (
-                        <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
-                            <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">
-                                Your selections
-                            </p>
-                            <div className="mt-2 flex flex-wrap justify-center gap-2">
-                                {[
-                                    ['Skin', skinType],
-                                    ['Sensitive', sensitive],
-                                    ...selectedConcerns.map((concern) => ['Concern', concern]),
-                                    ['Age', age],
-                                    ['Gender', gender],
-                                    ...conditions.map((condition) => ['Condition', condition]),
-                                ].filter(([, value]) => value).map(([label, value], index) => (
-                                    <span
-                                        key={`${label}-${value}-${index}`}
-                                        className="rounded-full bg-[#f8eeeb] px-3 py-1 text-xs font-medium text-slate-700"
-                                    >
-                                        <strong>{label}:</strong> {value}
+                                    <BsPatchCheckFill className="text-[13px] text-[#197a4d] sm:text-[15px]" />
+                                    <span className="font-lato text-[12px] font-semibold tracking-[0.03em] text-[#197a4d] sm:text-sm">
+                                        Doctor Verified Scores
                                     </span>
-                                ))}
+                                </div>
                             </div>
-                        </div>
-                    ) : null}
-
-                    <div className="mt-2 lg:mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 lg:gap-x-8 lg:gap-y-5">
-
-                        <DontKnowSkinTypeModal open={showGuideModal} onClose={() => setShowGuideModal(false)} />
-
-                        {/* Skin type */}
-                        <section id="quiz-skin-type">
-                            <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">What&apos;s your skin type?</h2>
-                            <div className="grid grid-cols-2 gap-2">
-                                {skinTypes.map((type) => (
-                                    <Pill
-                                        key={type}
-                                        label={type}
-                                        selected={skinType === type}
-                                        onClick={() => handleSkinTypeSelect(type)}
-                                    />
-                                ))}
-                            </div>
-                            {hasFieldError('skin-type') ? (
-                                <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select your skin type.</p>
+                            {hasCompletedQuiz ? (
+                                <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
+                                    <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">
+                                        Your selections
+                                    </p>
+                                    <div className="mt-2 flex flex-wrap justify-center gap-2">
+                                        {[
+                                            ['Skin', skinType],
+                                            ['Sensitive', sensitive],
+                                            ...selectedConcerns.map((concern) => ['Concern', concern]),
+                                            ['Age', age],
+                                            ['Gender', gender],
+                                            ...conditions.map((condition) => ['Condition', condition]),
+                                        ].filter(([, value]) => value).map(([label, value], index) => (
+                                            <span
+                                                key={`${label}-${value}-${index}`}
+                                                className="rounded-full bg-[#f8eeeb] px-3 py-1 text-xs font-medium text-slate-700"
+                                            >
+                                                <strong>{label}:</strong> {value}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
                             ) : null}
-                        </section>
 
-                        {/* Sensitive */}
-                        <section id="quiz-sensitive">
-                            <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Is your skin sensitive?</h2>
-                            <div className="grid grid-cols-2 gap-2">
-                                {sensitiveOptions.map((opt) => (
-                                    <Pill
-                                        key={opt}
-                                        label={opt}
-                                        selected={sensitive === opt}
-                                        onClick={() => handleSensitiveSelect(opt)}
-                                    />
-                                ))}
-                            </div>
-                            {hasFieldError('sensitive') ? (
-                                <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select whether your skin is sensitive.</p>
-                            ) : null}
-                        </section>
+                            <div className="mt-2 lg:mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-2 lg:gap-x-8 lg:gap-y-5">
 
-                        {/* Age / Gender */}
-                        <section>
-                            <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Tell us more about you</h2>
+                                <DontKnowSkinTypeModal open={showGuideModal} onClose={() => setShowGuideModal(false)} />
 
-                            <div className="grid grid-cols-2 gap-2">
-                                {/* Age dropdown */}
-                                <div id="quiz-age" className="relative w-full">
-                                    <select
-                                        value={age}
-                                        onChange={handleAgeSelect}
-                                        style={{ fontSize: '13px', border: '1px solid #D1D5DC', borderRadius: '5px', fontWeight: 400, color: age ? '#374151' : '#6b7280', height: '37px' }}
-                                        className="appearance-none w-full md:text-base py-[9px] px-2 pr-7
+                                {/* Skin type */}
+                                <section id="quiz-skin-type">
+                                    <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">What&apos;s your skin type?</h2>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {skinTypes.map((type) => (
+                                            <Pill
+                                                key={type}
+                                                label={type}
+                                                selected={skinType === type}
+                                                onClick={() => handleSkinTypeSelect(type)}
+                                            />
+                                        ))}
+                                    </div>
+                                    {hasFieldError('skin-type') ? (
+                                        <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select your skin type.</p>
+                                    ) : null}
+                                </section>
+
+                                {/* Sensitive */}
+                                <section id="quiz-sensitive">
+                                    <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Is your skin sensitive?</h2>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {sensitiveOptions.map((opt) => (
+                                            <Pill
+                                                key={opt}
+                                                label={opt}
+                                                selected={sensitive === opt}
+                                                onClick={() => handleSensitiveSelect(opt)}
+                                            />
+                                        ))}
+                                    </div>
+                                    {hasFieldError('sensitive') ? (
+                                        <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select whether your skin is sensitive.</p>
+                                    ) : null}
+                                </section>
+
+                                {/* Age / Gender */}
+                                <section>
+                                    <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Tell us more about you</h2>
+
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {/* Age dropdown */}
+                                        <div id="quiz-age" className="relative w-full">
+                                            <select
+                                                value={age}
+                                                onChange={handleAgeSelect}
+                                                style={{ fontSize: '13px', border: '1px solid #D1D5DC', borderRadius: '5px', fontWeight: 400, color: age ? '#374151' : '#6b7280', height: '37px' }}
+                                                className="appearance-none w-full md:text-base py-[9px] px-2 pr-7
                                      rounded-[3px] border border-gray-200 bg-white focus:outline-none focus:border-gray-400"
-                                    >
-                                        <option value="" disabled>Age</option>
-                                        {ageOptions.map((opt) => (
-                                            <option key={opt} value={opt}>{opt}</option>
-                                        ))}
-                                    </select>
-                                    <svg className="pointer-events-none absolute right-2 top-[20px] -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
-                                        <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                    {hasFieldError('age') ? (
-                                        <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select your age.</p>
-                                    ) : null}
-                                </div>
+                                            >
+                                                <option value="" disabled>Age</option>
+                                                {ageOptions.map((opt) => (
+                                                    <option key={opt} value={opt}>{opt}</option>
+                                                ))}
+                                            </select>
+                                            <svg className="pointer-events-none absolute right-2 top-[20px] -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
+                                                <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                            {hasFieldError('age') ? (
+                                                <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select your age.</p>
+                                            ) : null}
+                                        </div>
 
-                                {/* Gender dropdown */}
-                                <div id="quiz-gender" className="relative w-full">
-                                    <select
-                                        value={gender}
-                                        onChange={handleGenderSelect}
-                                        style={{ fontSize: '13px', border: '1px solid #D1D5DC', borderRadius: '5px', fontWeight: 400, color: age ? '#374151' : '#6b7280', height: '37px' }}
-                                        className="appearance-none w-full md:text-base py-[9px] px-2 pr-7 rounded-[3px] border border-gray-200 bg-white focus:outline-none focus:border-gray-400"
-                                    >
-                                        <option value="" disabled>Gender</option>
-                                        {genderOptions.map((opt) => (
-                                            <option key={opt} value={opt}>{opt}</option>
-                                        ))}
-                                    </select>
-                                    <svg className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
-                                        <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                    {hasFieldError('gender') ? (
-                                        <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select your gender.</p>
-                                    ) : null}
-                                </div>
-                            </div>
+                                        {/* Gender dropdown */}
+                                        <div id="quiz-gender" className="relative w-full">
+                                            <select
+                                                value={gender}
+                                                onChange={handleGenderSelect}
+                                                style={{ fontSize: '13px', border: '1px solid #D1D5DC', borderRadius: '5px', fontWeight: 400, color: age ? '#374151' : '#6b7280', height: '37px' }}
+                                                className="appearance-none w-full md:text-base py-[9px] px-2 pr-7 rounded-[3px] border border-gray-200 bg-white focus:outline-none focus:border-gray-400"
+                                            >
+                                                <option value="" disabled>Gender</option>
+                                                {genderOptions.map((opt) => (
+                                                    <option key={opt} value={opt}>{opt}</option>
+                                                ))}
+                                            </select>
+                                            <svg className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" viewBox="0 0 20 20" fill="none">
+                                                <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                            {hasFieldError('gender') ? (
+                                                <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select your gender.</p>
+                                            ) : null}
+                                        </div>
+                                    </div>
 
-                        </section>
+                                </section>
 
-                        {/* Concerns */}
-                        <section id="quiz-concerns" className="md:col-span-2 lg:col-span-3">
-                            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900">
-                                    Choose your skin concern <span className="text-gray-400 text-sm">(Choose 1)</span>
-                                </h2>
-                                <div
-                                    role="tablist"
-                                    aria-label="Concern area"
-                                    className="grid w-36 grid-cols-2 self-left rounded-full border border-[#ead8d3] bg-[#faf7f5] p-0.5 sm:w-40"
-                                >
-                                    {['face', 'body'].map((area) => (
-                                        <button
-                                            key={area}
-                                            type="button"
-                                            role="tab"
-                                            aria-selected={concernArea === area}
-                                            onClick={() => handleConcernAreaSelect(area)}
-                                            style={{fontSize:'12px',fontWeight:'600'}}
-                                            className={`rounded-full px-2.5 py-[8px] font-lato text-[10px] 
-                                                font-semibold uppercase tracking-[0.1em] transition-all ${
-                                                concernArea === area
-                                                    ? 'bg-[#d8e7e6] text-[#355d59] shadow-sm'
-                                                    : 'text-gray-400 hover:text-gray-600'
-                                            }`}
+                                {/* Concerns */}
+                                <section id="quiz-concerns" className="md:col-span-2 lg:col-span-3">
+                                    <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                        <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900">
+                                            Choose your skin concern <span className="text-gray-400 text-sm">(Choose 1)</span>
+                                        </h2>
+                                        <div
+                                            role="tablist"
+                                            aria-label="Concern area"
+                                            className="grid w-36 grid-cols-2 self-left rounded-full border border-[#ead8d3] bg-[#faf7f5] p-0.5 sm:w-40"
                                         >
-                                            {area}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 lg:gap-3">
-                                {(concernArea === 'face' ? faceConcerns : bodyConcerns).map((item) => (
-                                    <Pill
-                                        key={item}
-                                        label={item}
-                                        selected={selectedConcerns.includes(item)}
-                                        onClick={() => handleConcernSelect(item)}
-                                    />
-                                ))}
-                            </div>
-                            {hasFieldError('concerns') ? (
-                                <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select at least one skin concern.</p>
-                            ) : null}
-                        </section>
+                                            {['face', 'body'].map((area) => (
+                                                <button
+                                                    key={area}
+                                                    type="button"
+                                                    role="tab"
+                                                    aria-selected={concernArea === area}
+                                                    onClick={() => handleConcernAreaSelect(area)}
+                                                    style={{ fontSize: '12px', fontWeight: '600' }}
+                                                    className={`rounded-full px-2.5 py-[8px] font-lato text-[10px] 
+                                                font-semibold uppercase tracking-[0.1em] transition-all ${concernArea === area
+                                                            ? 'bg-[#d8e7e6] text-[#355d59] shadow-sm'
+                                                            : 'text-gray-400 hover:text-gray-600'
+                                                        }`}
+                                                >
+                                                    {area}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-2 lg:gap-3">
+                                        {(concernArea === 'face' ? faceConcerns : bodyConcerns).map((item) => (
+                                            <Pill
+                                                key={item}
+                                                label={item}
+                                                selected={selectedConcerns.includes(item)}
+                                                onClick={() => handleConcernSelect(item)}
+                                            />
+                                        ))}
+                                    </div>
+                                    {hasFieldError('concerns') ? (
+                                        <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select at least one skin concern.</p>
+                                    ) : null}
+                                </section>
 
-                        {/* Special conditions */}
-                        <section id="quiz-conditions" className="md:col-span-2 lg:col-span-3">
-                            <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Special conditions</h2>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                {specialConditions.map((item) => (
-                                    <Pill
-                                        key={item}
-                                        label={item}
-                                        selected={conditions.includes(item)}
-                                        disabled={gender === 'Male' && maleRestrictedConditions.includes(item)}
-                                        onClick={() => toggleCondition(item)}
-                                    />
-                                ))}
+                                {/* Special conditions */}
+                                <section id="quiz-conditions" className="md:col-span-2 lg:col-span-3">
+                                    <h2 className="font-cormorant text-[21px] font-[500] italic text-gray-900 mb-1">Special conditions</h2>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                        {specialConditions.map((item) => (
+                                            <Pill
+                                                key={item}
+                                                label={item}
+                                                selected={conditions.includes(item)}
+                                                disabled={gender === 'Male' && maleRestrictedConditions.includes(item)}
+                                                onClick={() => toggleCondition(item)}
+                                            />
+                                        ))}
+                                    </div>
+                                    {hasFieldError('conditions') ? (
+                                        <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select a special condition, or choose None.</p>
+                                    ) : null}
+                                </section>
                             </div>
-                            {hasFieldError('conditions') ? (
-                                <p className="mt-1 text-xs font-medium text-red-600" role="alert">Please select a special condition, or choose None.</p>
-                            ) : null}
-                        </section>
-                    </div>
 
-                    <div className="flex justify-center">
-                        <button
-                            type="button"
-                            onClick={handleSubmit}
-                            disabled={savingQuiz}
-                            className="w-full md:w-64 font-lato mt-8 text-sm tracking-widest capitalize 
+                            <div className="flex justify-center">
+                                <button
+                                    type="button"
+                                    onClick={handleSubmit}
+                                    disabled={savingQuiz}
+                                    className="w-full md:w-64 font-lato mt-8 text-sm tracking-widest capitalize 
                      text-[#ff7e67] border border-[#e08a7d] rounded-[10px] py-2 hover:bg-[#d17a6d] hover:text-white
                       transition-colors duration-300 disabled:cursor-wait disabled:opacity-60"
-                        >
-                            {savingQuiz ? 'Saving your quiz…' : hasCompletedQuiz ? 'Update Quiz' : 'Find my match'}
-                        </button>
+                                >
+                                    {savingQuiz ? 'Saving your quiz…' : hasCompletedQuiz ? 'Update Quiz' : 'Find my match'}
+                                </button>
+                            </div>
+                            {saveError ? (
+                                <p className="mx-auto mt-3 max-w-md text-center text-xs font-medium text-red-600" role="alert">
+                                    {saveError}
+                                </p>
+                            ) : null}
+                        </div>
                     </div>
-                    {saveError ? (
-                        <p className="mx-auto mt-3 max-w-md text-center text-xs font-medium text-red-600" role="alert">
-                            {saveError}
-                        </p>
-                    ) : null}
-                    </div>
-                </div>
                 ) : null}
             </div>
         </div>

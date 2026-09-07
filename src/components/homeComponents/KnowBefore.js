@@ -62,22 +62,13 @@ export default function KnowBefore() {
       <AnnouncementBar />
       <section className="bg-[#FAF9F6] px-4 py-4 sm:px-6 sm:py-6 md:py-6">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
-          <h2 className="font-cormorant text-[28px] leading-[1.1] tracking-[0.14em] text-black sm:text-[36px] md:text-[46px]">
+          <h2 className="font-cormorant text-[28px] leading-[1.1]
+           tracking-[0.14em] text-black sm:text-[36px] md:text-[46px]">
             Skin <em className="italic">match</em> tool
           </h2>
 
           <Animation2 className="concern-animation-home" />
 
-          <div className="mt-1 flex items-center gap-2 rounded-full border border-[#197a4d]/20 bg-[#eafaf3] px-3.5 py-1.5 sm:mt-1 sm:px-4 sm:py-2">
-            <BsPatchCheckFill className="text-[13px] text-[#197a4d] sm:text-[15px]" />
-            <span className="font-lato text-[12px] font-semibold tracking-[0.03em] text-[#197a4d] sm:text-sm">
-              Doctor Verified Scores
-            </span>
-          </div>
-
-          <p className="mt-1 max-w-xs font-lato text-[12px] leading-relaxed text-gray-600 sm:max-w-sm sm:text-[13px] md:text-sm">
-            Skincare products scored for your skin across 500+ brands
-          </p>
         </div>
       </section>
     </div>

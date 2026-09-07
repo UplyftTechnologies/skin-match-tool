@@ -223,7 +223,7 @@ function ProductCard({ product }) {
                     event.stopPropagation()
                     setRoutineModalOpen(true)
                 }}
-                    className="flex w-full p-1 rounded-[15px] border border-[#e08a7d] items-center justify-center gap-1 lg:gap-2">
+                    className="flex w-full p-1 rounded-full border border-[#e08a7d] items-center justify-center gap-1 lg:gap-2">
                     <button
                         type="button"
                         aria-label="Add to routine"
