@@ -122,7 +122,7 @@ export default function Animation2({ className = '', prefix = '' }) {
                 .heading-text { min-width: 0; }
                 @media (max-width: 520px) {
                     .concern-animation {
-                        --row-height: 1.50em;
+                        --row-height: 1.80em;
                         padding: 4px 16px;
                         font-size: 18px;
                     }

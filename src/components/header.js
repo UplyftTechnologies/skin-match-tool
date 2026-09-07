@@ -192,7 +192,7 @@ export default function Header({ className = "" }) {
             {["Take Quiz", "Check Skin Match", "Compare Products", "Buy"].map((label) => (
               <li
                 key={label}
-                className="relative flex min-w-0 flex-col items-center gap-1.5 px-1 text-center text-[10px] font-medium leading-tight text-gray-600 sm:text-xs"
+                className="relative flex min-w-0 flex-col items-center gap-1.5 px-1 text-center text-[9px] font-medium leading-tight text-gray-600 sm:text-xs"
               >
                 <span className="relative z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#d9aaa2] bg-white sm:h-4 sm:w-4">
                   <span className="h-1.5 w-1.5 rounded-full bg-[#e8c8c2]" />

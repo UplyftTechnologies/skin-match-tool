@@ -308,7 +308,7 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
             </div>
             <div className='bg-[#FFFFFF]'>
                 {hasCompletedQuiz && !hideCompletedHeader ? (
-                    <div className={`mx-auto max-w-md px-4 lg:max-w-6xl lg:px-8 xl:max-w-7xl ${isQuizEditing ? 'pt-6 pb-0 md:pt-12' : 'py-6 md:py-12'}`}>
+                    <div className={`mx-auto max-w-md px-4 lg:max-w-6xl lg:px-8 xl:max-w-7xl ${isQuizEditing ? 'pt-6 pb-0 md:pt-12' : 'py-2 md:py-8'}`}>
                         <section className={`quiz-answers-disclosure ${isQuizEditing ? 'quiz-answers-disclosure-open' : ''}`} aria-label="Completed skin quiz answers">
                             <div className="quiz-answers-bar">
                                 <span className="quiz-complete-message">
@@ -342,7 +342,7 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
                 ) : null}
                 {!hasCompletedQuiz || isQuizEditing ? (
                 <div
-                    className={`max-w-md mx-auto px-4 lg:max-w-6xl xl:max-w-7xl lg:px-8 ${hasCompletedQuiz && !hideCompletedHeader ? 'pt-0 pb-6 md:pb-12' : 'py-6 md:py-12'}`}
+                    className={`max-w-md mx-auto px-4 lg:max-w-6xl xl:max-w-7xl lg:px-8 ${hasCompletedQuiz && !hideCompletedHeader ? 'pt-0 pb-6 md:pb-12' : 'py-2 md:py-8'}`}
                     onFocusCapture={() => setQuizInteractionStarted(true)}
                     onPointerDown={() => setQuizInteractionStarted(true)}
                 >
