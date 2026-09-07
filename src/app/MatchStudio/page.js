@@ -22,6 +22,7 @@ function page() {
       {/* <Animation2  className="concern-animation-home" /> */}
       {/* <AnimatedSkinShowcase /> */}
       <MatchMySkin />
+                  <BrandSlider/>
       <RequireQuizGate
         title="Take the quiz above to see products"
         description="Answer a few quick questions so every product here is scored for your skin."
@@ -29,7 +30,6 @@ function page() {
       >
         <Products />
       </RequireQuizGate>
-            <BrandSlider/>
       <MeetDocter />
       <Routine />
       <SearchByCategory />

@@ -80,8 +80,8 @@ export default function Animation2({ className = '', prefix = '' }) {
                     padding: 0px 10px;
                     text-align: center;
                     vertical-align: middle;
-                    font-family: inherit;
-                    font-size: 18px;
+                    font-family: lato;
+                    font-size: 22px;
                     line-height: 1.5;
                     letter-spacing: 0;
                     background-color: #FAF9F6;
@@ -126,7 +126,7 @@ export default function Animation2({ className = '', prefix = '' }) {
                     .concern-animation {
                         --row-height: 1.80em;
                         padding: 0px 12px;
-                        font-size: 14px;
+                        font-size: 16px;
                     }
                 }
                 .accessible-copy {

@@ -41,6 +41,57 @@ function IconButton({ children, ...props }) {
   );
 }
 
+const announcements = [
+  'Free Registration',
+  'Save Skin Profile',
+  'Save Wishlist',
+  'Price Drop Alert',
+  'Compare Prices',
+  'Choose Shop & Buy',
+]
+
+  function AnnouncementBar() {
+  const track = [...announcements, ...announcements]
+
+  return (
+    <div className="w-full overflow-hidden bg-black ring-1 ring-inset ring-[#ca58ff]">
+      {/* screen-reader accessible copy, marquee itself is aria-hidden */}
+      <span className="sr-only">{announcements.join(', ')}</span>
+
+      <div className="relative w-full overflow-hidden" aria-hidden="true">
+        <div className="flex w-max animate-announcement-scroll items-center">
+          {track.map((item, index) => (
+            <span
+              key={`${item}-${index}`}
+              className="flex shrink-0 items-center gap-2 px-3 py-2 font-lato text-[11px] font-semibold uppercase leading-none tracking-wide text-white whitespace-nowrap sm:gap-3 sm:px-4 sm:py-2 sm:text-[12px] md:text-[13px]"
+            >
+              {item}
+              <span className="text-[#ca58ff]" aria-hidden="true">•</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes announcement-scroll {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+        .animate-announcement-scroll {
+          animation: announcement-scroll 22s linear infinite;
+        }
+        .animate-announcement-scroll:hover {
+          animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-announcement-scroll {
+            animation: none;
+          }
+        }
+      `}</style>
+    </div>
+  )
+}
 export default function Header({ className = "" }) {
   const [userSession, setUserSession] = useState(null);
   const [sessionLoaded, setSessionLoaded] = useState(false);
@@ -180,6 +231,7 @@ export default function Header({ className = "" }) {
           </div>
         </div>
       </div>
+      <AnnouncementBar />
       {showNavigationFlow && (
         <nav
           aria-label="How Roopsee works"

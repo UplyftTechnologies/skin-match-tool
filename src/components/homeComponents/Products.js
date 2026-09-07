@@ -241,7 +241,7 @@ function ProductCard({ product }) {
                     >
                         {inRoutine ? <GoPlus /> : <GoPlus />}
                     </button>
-                    <span className="font-lato text-[12px] lg:text-[15px]">Add Routine</span>
+                    <span className="font-lato text-[11px] lg:text-[15px]">Add Routine</span>
                 </div>
                 <button
                     type="button"
