@@ -4,7 +4,7 @@ import Animation2 from '../Animation2'
 import SkincareCharacter from './SkincareCharacter'
 export default function KnowBefore() {
   return (
-      <section aria-labelledby="skin-match-heading" className="relative overflow-hidden bg-[#FAF7F2] bg-[linear-gradient(120deg,#FAF7F2_0%,#F5F6F1_45%,#D8E7E6_100%)] px-4 py-4 sm:px-6 sm:py-9">
+      <section aria-labelledby="skin-match-heading" className="relative overflow-hidden bg-[#FAF7F2] bg-[linear-gradient(120deg,#FAF7F2_0%,#F5F6F1_45%,#D8E7E6_100%)] px-4 py-1 sm:px-6 sm:py-2">
         {/* <div className="pointer-events-none mx-auto mb-2 h-24 w-24 sm:h-28 sm:w-28 lg:absolute lg:left-[max(16px,calc(50%-590px))] lg:top-1/2 lg:mb-0 lg:h-48 lg:w-48 lg:-translate-y-1/2">
           <SkincareCharacter />
         </div> */}
