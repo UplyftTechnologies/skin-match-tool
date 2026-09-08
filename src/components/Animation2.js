@@ -2,8 +2,14 @@
 
 import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
+import Image from 'next/image'
 import styles from './Animation2.module.css'
-import { FiUserCheck, FiCheckSquare, FiTag, FiShoppingBag, FiBell } from 'react-icons/fi'
+import skinMatchImage from '../assets/svgimages/f1.png'
+import routineImage from '../assets/svgimages/f2.png'
+import comparePricesImage from '../assets/svgimages/f3.png'
+import shopImage from '../assets/svgimages/f4.png'
+import priceAlertsImage from '../assets/svgimages/f5.png'
+import doctorVerifiedImage from '../assets/svgimages/f6.png'
 
 const HEADINGS = [
     'Know your skin match',
@@ -11,10 +17,18 @@ const HEADINGS = [
     'Compare prices',
     'Choose where to buy',
     'Save wishlist and get price alerts',
+    'Doctor verified',
 ]
 
-const HEADING_COLORS = ['#D17A6D','#D17A6D','#D17A6D','#D17A6D','#D17A6D']
-const HEADING_ICONS = [FiUserCheck, FiCheckSquare, FiTag, FiShoppingBag, FiBell]
+const HEADING_COLORS = HEADINGS.map(() => '#000')
+const ICON_IMAGES = [
+    skinMatchImage,
+    routineImage,
+    comparePricesImage,
+    shopImage,
+    priceAlertsImage,
+    doctorVerifiedImage,
+]
 
 const HOLD_DURATION = 2.8
 const TRANSITION_DURATION = 0.35 
@@ -52,15 +66,17 @@ export default function Animation2({ className = '', prefix = '' }) {
             <span className={styles['word-window']} aria-hidden="true">
                 <span ref={trackRef} className={styles['word-track']}>
                     {[...HEADINGS, HEADINGS[0]].map((heading, index) => {
-                        const Icon = HEADING_ICONS[index % HEADINGS.length]
                         return (
                         <span
                             className={styles['word']}
                             key={`${heading}-${index}`}
                             style={{ color: HEADING_COLORS[index % HEADINGS.length] }}
                         >
-                            <span className={styles['heading-icon']}><Icon aria-hidden="true" focusable="false" /></span>
-                            <span className={styles['heading-text']}>{heading}</span>
+                            <span className={styles['heading-icon']}>
+                                <Image src={ICON_IMAGES[index % HEADINGS.length]}
+                                width={40} height={40} sizes="40px" alt="" />
+                            </span>
+                            <span className={`${styles['heading-text']} text-[#000]`}>{heading}</span>
                         </span>
                         )
                     })}
@@ -70,3 +86,4 @@ export default function Animation2({ className = '', prefix = '' }) {
         </span>
     )
 }
+

@@ -1,6 +1,7 @@
 import React from 'react'
 import Header from '@/components/header'
 import KnowBefore from '@/components/homeComponents/KnowBefore'
+import QuizSteps from '@/components/homeComponents/QuizSteps'
 import MatchMySkin from '@/components/homeComponents/MatchMySkin'
 import Products from '@/components/homeComponents/Products'
 import SearchByCategory from '@/components/homeComponents/SearchByCategory'
@@ -19,6 +20,7 @@ function page() {
     <div>
       <Header />
       <KnowBefore />
+      <QuizSteps />
       {/* <Animation2  className="concern-animation-home" /> */}
       {/* <AnimatedSkinShowcase /> */}
       <MatchMySkin />
@@ -29,7 +31,7 @@ function page() {
       >
         <Products />
       </RequireQuizGate>
-                        <BrandSlider/>
+      <BrandSlider />
       <MeetDocter />
       <Routine />
       <SearchByCategory />

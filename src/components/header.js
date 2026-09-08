@@ -232,7 +232,7 @@ export default function Header({ className = "" }) {
         </div>
       </div>
       <AnnouncementBar />
-      {showNavigationFlow && (
+      {/* {showNavigationFlow && (
         <nav
           aria-label="How Roopsee works"
           className="border-t border-black/5 bg-white px-1 lg:px-4"
@@ -255,7 +255,7 @@ export default function Header({ className = "" }) {
             ))}
           </ol>
         </nav>
-      )}
+      )} */}
     </>
   );
 }

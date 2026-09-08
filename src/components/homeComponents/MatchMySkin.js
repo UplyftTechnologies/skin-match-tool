@@ -35,7 +35,7 @@ function Pill({ disabled = false, label, selected, onClick }) {
             onClick={onClick}
             disabled={disabled}
             style={{ fontSize: '13px' }}
-            className={`flex h-[42px] w-full items-center justify-center rounded-[3px] border px-1 py-1.5 transition-colors duration-200 md:text-base
+            className={`flex h-[42px] w-full items-center justify-center rounded-[10px] border px-1 py-1.5 transition-colors duration-200 md:text-base
         ${selected
                     ? 'bg-[#D8E7E6] border-[#D8E7E6] text-gray-900'
                     : disabled
@@ -307,7 +307,8 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
         <div>
             <div id="match-my-skin">
             </div>
-            <div className='bg-[#FFFFFF]'>
+            <div className='bg-[#FDFBF8]
+             '>
                 {hasCompletedQuiz && !hideCompletedHeader ? (
                     <div className={`mx-auto max-w-md px-4 lg:max-w-6xl lg:px-8 xl:max-w-7xl ${isQuizEditing ? 'pt-6 pb-0 md:pt-12' : 'py-2 md:py-8'}`}>
                         <section className={`quiz-answers-disclosure ${isQuizEditing ? 'quiz-answers-disclosure-open' : ''}`} aria-label="Completed skin quiz answers">
@@ -343,14 +344,17 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
                 ) : null}
                 {!hasCompletedQuiz || isQuizEditing ? (
                     <div
-                        className={`max-w-md mx-auto px-4 lg:max-w-6xl xl:max-w-7xl lg:px-8 ${hasCompletedQuiz && !hideCompletedHeader ? 'pt-0 pb-6 md:pb-12' : 'py-2 md:py-8'}`}
+                        className={`max-w-md mx-auto px-4 
+                            lg:max-w-6xl xl:max-w-7xl lg:px-8 ${hasCompletedQuiz && !hideCompletedHeader ? 'pt-0 pb-6 md:pb-12' : 'py-2 md:py-8'}`}
                         onFocusCapture={() => setQuizInteractionStarted(true)}
                         onPointerDown={() => setQuizInteractionStarted(true)}
                     >
                         <div className={hasCompletedQuiz && !hideCompletedHeader ? 'quiz-expanded-content-panel' : ''}>
-                            <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
+                            <h2 style={{ letterSpacing: '0.1em' }} className="font-lato
+                             text-lg uppercase md:text-3xl text-center tracking- mb-1">
                                 SKIN QUIZ
                             </h2>
+                            <div aria-hidden="true" className="mx-auto mb-4 h-[3px] w-12 rounded-full bg-[#d8e7e6]" />
                             {/* <div className="mx-auto flex justify-center w-[auto]  lg:w-[20%] text-center">
                                 <div className="mt-1 flex items-center gap-2 rounded-full mx-auto
                              border border-[#197a4d]/20 bg-[#eafaf3] w-[auto] px-3.5 py-1

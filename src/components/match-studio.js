@@ -888,7 +888,8 @@ export default function MatchStudio({ initialData }) {
 
       <main id="matcher">
         {data && !isQuizEditing ? (
-          <section className="panel profile-panel quiz-complete-panel" aria-label="Skin quiz completed">
+          <section className="panel profile-panel 
+          quiz-complete-panel" aria-label="Skin quiz completed">
             <div className="quiz-complete-message">
               <span className="quiz-complete-check" aria-hidden="true">&#10003;</span>
               <span>Skin quiz completed</span>

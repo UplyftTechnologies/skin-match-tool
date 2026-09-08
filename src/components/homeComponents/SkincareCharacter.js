@@ -21,7 +21,7 @@ export default function SkincareCharacter() {
 
   return (
     <svg ref={root} viewBox="0 0 240 240" className="h-full w-full" aria-hidden="true" focusable="false">
-      <circle cx="120" cy="124" r="93" fill="#D8E7E6" opacity="0.65" />
+      <circle cx="120" cy="124" r="105" fill="#E8846C" />
       <circle cx="120" cy="124" r="105" fill="none" stroke="#FAF7F2" strokeWidth="1.5" />
       <ellipse cx="120" cy="221" rx="60" ry="5" fill="#355D59" opacity="0.08" />
       <g data-body="">
