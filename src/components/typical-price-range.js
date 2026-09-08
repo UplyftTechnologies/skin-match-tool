@@ -43,7 +43,7 @@ export default function TypicalPriceRange({ currentPrice, prices }) {
         >
           {formatPrice(price)} is typical
         </span>
-        <span className="block h-1 rounded-full bg-gradient-to-r from-[#198754] via-[#ff9517] to-[#ff2d63]" />
+        <span className="block h-1 rounded-full bg-gradient-to-r from-[#198754] via-[#ff9517] to-[#D17A6D]" />
         <span
           className="absolute top-[-3px] h-2.5 w-2.5 -translate-x-1/2 rounded-full border-2 border-white bg-[#ff9517] shadow"
           style={{ left: `${pricePosition}%` }}

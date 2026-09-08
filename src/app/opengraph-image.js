@@ -10,7 +10,7 @@ export default function OpenGraphImage() {
       <div
         style={{
           alignItems: "center",
-          background: "linear-gradient(135deg, #fff9f2 0%, #f5e5ef 55%, #fff2df 100%)",
+          background: "linear-gradient(135deg, #fff9f2 0%, #D17A6D26 55%, #fff2df 100%)",
           color: "#3d3341",
           display: "flex",
           height: "100%",
@@ -20,7 +20,7 @@ export default function OpenGraphImage() {
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", maxWidth: "980px" }}>
-          <div style={{ color: "#963d7e", fontSize: 28, fontWeight: 700, letterSpacing: 3 }}>
+          <div style={{ color: "#D17A6D", fontSize: 28, fontWeight: 700, letterSpacing: 3 }}>
             ROOPSEE MATCH STUDIO
           </div>
           <div style={{ fontSize: 76, fontWeight: 700, lineHeight: 1.05, marginTop: 24 }}>

@@ -9,11 +9,11 @@ function CardIcon() {
 }
 
 function GiftIcon() {
-  return <svg viewBox="0 0 72 66" aria-hidden="true"><path d="M8 25h56v39H8z" fill="#3485ef"/><path d="M3 19h66v14H3z" fill="#f14b6b"/><path d="M32 19h9v45h-9z" fill="#3156a6"/><path d="M35 19C20 18 17 4 25 3c7-1 11 9 11 16Zm2 0C52 18 56 4 48 3c-7-1-11 9-11 16Z" fill="none" stroke="#3156a6" strokeWidth="5" strokeLinejoin="round"/></svg>;
+  return <svg viewBox="0 0 72 66" aria-hidden="true"><path d="M8 25h56v39H8z" fill="#3485ef"/><path d="M3 19h66v14H3z" fill="#D17A6D"/><path d="M32 19h9v45h-9z" fill="#3156a6"/><path d="M35 19C20 18 17 4 25 3c7-1 11 9 11 16Zm2 0C52 18 56 4 48 3c-7-1-11 9-11 16Z" fill="none" stroke="#3156a6" strokeWidth="5" strokeLinejoin="round"/></svg>;
 }
 
 function SearchIcon() {
-  return <svg viewBox="0 0 66 82" aria-hidden="true"><circle cx="29" cy="28" r="21" fill="none" stroke="#2678e4" strokeWidth="5"/><path d="m43 45 12 29" stroke="#e63055" strokeWidth="7" strokeLinecap="round"/></svg>;
+  return <svg viewBox="0 0 66 82" aria-hidden="true"><circle cx="29" cy="28" r="21" fill="none" stroke="#2678e4" strokeWidth="5"/><path d="m43 45 12 29" stroke="#D17A6D" strokeWidth="7" strokeLinecap="round"/></svg>;
 }
 
 function Confetti() {

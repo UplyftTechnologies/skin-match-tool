@@ -75,7 +75,7 @@ export default function DontKnowSkinTypeModal({ open, onClose }) {
                     <IoClose size={22} />
                 </button>
 
-                <h2 className="font-cormorant italic text-2xl md:text-3xl text-[#ff00e6] mb-6 pr-6">
+                <h2 className="font-cormorant italic text-2xl md:text-3xl text-[#D17A6D] mb-6 pr-6">
                     Don&apos;t know your skin type?
                 </h2>
 

@@ -219,7 +219,7 @@ export default async function ProductPage({ params }) {
             </div> */}
 
             <div className="mt-3 hidden rounded-3xl border border-slate-100
-             bg-gradient-to-b from-rose-50/50 to-white p-6 lg:block">
+             bg-gradient-to-b from-[#D17A6D]/5 to-white p-6 lg:block">
               <div className="flex items-center gap-2">
                 <FiStar aria-hidden="true" className="h-4 w-4 shrink-0 text-[#e08a7d]" />
                 <span className="text-[13px] font-bold tracking-wide text-slate-800">Reasons for products score </span>
@@ -323,7 +323,7 @@ export default async function ProductPage({ params }) {
             <div className="max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
                 {/* {product.single_hero_ingredient ? (
-                  <span className="rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-[12.5px] font-semibold text-[#d77465]">
+                  <span className="rounded-full border border-[#D17A6D]/30 bg-[#D17A6D]/10 px-3.5 py-1.5 text-[12.5px] font-semibold text-[#d77465]">
                     {product.single_hero_ingredient}
                   </span>
                 ) : null}
@@ -390,7 +390,7 @@ export default async function ProductPage({ params }) {
             <div className="flex flex-wrap gap-2">
               {SKIN_GUIDES.map((guide) => (
                 <Link
-                  className="inline-flex items-center rounded-full bg-rose-50 px-3 py-1.5 text-[12px] font-bold text-[#d77465] transition-colors hover:bg-rose-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e08a7d]"
+                  className="inline-flex items-center rounded-full bg-[#D17A6D]/10 px-3 py-1.5 text-[12px] font-bold text-[#d77465] transition-colors hover:bg-[#D17A6D]/15 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#e08a7d]"
                   href={`/?guide=${guide.slug}#matcher`}
                   key={guide.slug}
                 >

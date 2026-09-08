@@ -151,11 +151,11 @@ function LoginPageContent() {
   return (
     <div className="relative min-h-[100svh] overflow-x-hidden bg-[#fffdfa] md:grid md:grid-cols-[minmax(280px,0.85fr)_minmax(420px,1.15fr)] lg:grid-cols-[minmax(340px,0.9fr)_minmax(500px,1.1fr)]">
       <aside className="relative hidden overflow-hidden bg-[#171417] px-6 py-8 text-white md:flex md:min-h-screen md:flex-col md:justify-between lg:px-10 lg:py-12 xl:px-16 xl:py-16">
-        <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-[#b852a4]/30 blur-3xl" aria-hidden="true" />
+        <div className="absolute -left-24 -top-24 h-80 w-80 rounded-full bg-[#D17A6D]/30 blur-3xl" aria-hidden="true" />
         <div className="absolute -bottom-28 -right-24 h-96 w-96 rounded-full bg-[#90f5da]/15 blur-3xl" aria-hidden="true" />
 
         <a href="/" className="relative text-[30px] font-semibold leading-none tracking-[-0.04em]">
-          roopsee<span className="text-[#ff00e6]">.</span>
+          roopsee<span className="text-[#D17A6D]">.</span>
         </a>
 
         <div className="relative max-w-lg">

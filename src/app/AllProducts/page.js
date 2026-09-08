@@ -188,7 +188,7 @@ function ProductCard({ product }) {
                 <span className="product-name-clamp">{product.product_name}</span>
             </Link>
             {product.scoring?.blocked && product.scoring.blockReason ? (
-                <p className="mb-1 text-[10.5px] leading-snug text-rose-700">
+                <p className="mb-1 text-[10.5px] leading-snug text-[#D17A6D]">
                     {product.scoring.blockReason}
                 </p>
             ) : null}

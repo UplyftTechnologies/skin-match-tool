@@ -55,11 +55,11 @@ export default function HowItWorksPage() {
 
       <main>
         <section className="relative overflow-hidden border-b border-[#eadfea] px-5 py-16 sm:px-8 sm:py-24 lg:py-28">
-          <div className="absolute -right-28 -top-32 h-80 w-80 rounded-full bg-[#f4dff2] blur-3xl" aria-hidden="true" />
+          <div className="absolute -right-28 -top-32 h-80 w-80 rounded-full bg-[#D17A6D26] blur-3xl" aria-hidden="true" />
           <div className="absolute -bottom-36 -left-28 h-72 w-72 rounded-full bg-[#dcece8] blur-3xl" aria-hidden="true" />
 
           <div className="relative mx-auto max-w-4xl text-center">
-            <p className="font-lato text-[10px] font-bold uppercase tracking-[0.24em] text-[#a15091]">
+            <p className="font-lato text-[10px] font-bold uppercase tracking-[0.24em] text-[#D17A6D]">
               Personalised skincare, made clearer
             </p>
             <h1 className="mt-5 font-cormorant text-5xl font-medium leading-[0.95] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
@@ -71,7 +71,7 @@ export default function HowItWorksPage() {
             <HowItWorksCta
               href="/#match-my-skin"
               position="hero"
-              className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#171417] px-6 py-3.5 font-lato text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[#a15091]"
+              className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#171417] px-6 py-3.5 font-lato text-xs font-bold uppercase tracking-[0.14em] text-white transition hover:bg-[#D17A6D]"
             >
               Find my match <FiArrowRight size={16} />
             </HowItWorksCta>
@@ -81,7 +81,7 @@ export default function HowItWorksPage() {
         <section className="px-5 py-16 sm:px-8 sm:py-20 lg:py-24">
           <div className="mx-auto max-w-7xl">
             <div className="mb-10 max-w-xl sm:mb-14">
-              <p className="font-lato text-[10px] font-bold uppercase tracking-[0.22em] text-[#a15091]">Four simple steps</p>
+              <p className="font-lato text-[10px] font-bold uppercase tracking-[0.22em] text-[#D17A6D]">Four simple steps</p>
               <h2 className="mt-3 font-cormorant text-4xl leading-none sm:text-5xl">From quiz to clarity</h2>
             </div>
 
@@ -89,14 +89,14 @@ export default function HowItWorksPage() {
               {steps.map(({ number, icon: Icon, title, text, detail }) => (
                 <article key={number} className="group bg-white p-6 sm:p-8">
                   <div className="flex items-center justify-between">
-                    <span className="font-cormorant text-lg italic text-[#a15091]">{number}</span>
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f4edf3] text-[#713564] transition group-hover:bg-[#171417] group-hover:text-white">
+                    <span className="font-cormorant text-lg italic text-[#D17A6D]">{number}</span>
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f4edf3] text-[#D17A6D] transition group-hover:bg-[#171417] group-hover:text-white">
                       <Icon size={19} />
                     </span>
                   </div>
                   <h3 className="mt-10 font-cormorant text-[27px] font-medium leading-tight">{title}</h3>
                   <p className="mt-4 font-lato text-sm leading-6 text-[#706770]">{text}</p>
-                  <p className="mt-7 border-t border-[#eee8ed] pt-5 font-lato text-[11px] leading-5 text-[#9a7091]">{detail}</p>
+                  <p className="mt-7 border-t border-[#eee8ed] pt-5 font-lato text-[11px] leading-5 text-[#D17A6D]">{detail}</p>
                 </article>
               ))}
             </div>
@@ -106,7 +106,7 @@ export default function HowItWorksPage() {
         <section className="bg-[#eee6ee] px-5 py-16 sm:px-8 sm:py-20">
           <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2 lg:gap-20">
             <div>
-              <p className="font-lato text-[10px] font-bold uppercase tracking-[0.22em] text-[#814474]">What you get</p>
+              <p className="font-lato text-[10px] font-bold uppercase tracking-[0.22em] text-[#D17A6D]">What you get</p>
               <h2 className="mt-3 max-w-lg font-cormorant text-4xl leading-[1.02] sm:text-5xl">
                 Less guesswork.<br /><em>More confident choices.</em>
               </h2>

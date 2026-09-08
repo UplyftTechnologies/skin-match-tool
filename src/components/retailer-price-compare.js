@@ -138,7 +138,7 @@ function OfferModal({ offer, offers, productName, onClose }) {
                 className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-t-3xl bg-white p-5 pb-safe-5 shadow-xl sm:rounded-3xl sm:p-7 sm:pb-safe-7"
             >
                 <div className="flex items-start justify-between gap-4">
-                    <span className="flex items-center rounded-full bg-rose-50 px-3 py-1.5">
+                    <span className="flex items-center rounded-full bg-[#D17A6D]/10 px-3 py-1.5">
                         <RetailerLogo site={offer.site} height={14} />
                     </span>
                     <button
@@ -184,7 +184,7 @@ function OfferModal({ offer, offers, productName, onClose }) {
                                     <span className="text-[13px] text-slate-400 line-through">
                                         {formatPrice(mrp)}
                                     </span>
-                                    <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-bold text-[#d77465]">
+                                    <span className="rounded-full bg-[#D17A6D]/10 px-2.5 py-0.5 text-[12px] font-bold text-[#d77465]">
                                         {Math.round(((mrp - offer.price) / mrp) * 100)}% off
                                     </span>
                                 </>
@@ -357,7 +357,7 @@ export default function RetailerPriceCompare({ productUid, productName, catalogP
                         {formatPrice(ownPrice)} is typical
                     </span>
                 ) : null}
-                <span className="block h-1 rounded-full bg-gradient-to-r from-[#198754] via-[#ff9517] to-[#ff2d63]" />
+                <span className="block h-1 rounded-full bg-gradient-to-r from-[#198754] via-[#ff9517] to-[#D17A6D]" />
                 {hasOwnPrice ? <span className="absolute top-[-3px] h-2.5 w-2.5 -translate-x-1/2 rounded-full border-2 border-white bg-[#ff9517] shadow" style={{ left: `${pricePosition}%` }} /> : null}
                 <div className="mt-1 flex justify-between text-[10px] font-semibold text-slate-600">
                     <span>{formatPrice(rangeStart)}</span><span>{formatPrice(rangeEnd)}</span>
@@ -378,7 +378,7 @@ export default function RetailerPriceCompare({ productUid, productName, catalogP
 
                 {displayRows.map((row) => (
                     row.site === 'roopsee' ? (
-                        <li className="flex items-center gap-2 rounded- bg-rose-50/70 px-1 py-2 sm:gap-3" key="roopsee">
+                        <li className="flex items-center gap-2 rounded- bg-[#D17A6D]/7 px-1 py-2 sm:gap-3" key="roopsee">
                             <span className="flex min-w-0 flex-1 items-center justify-between gap-3">
                                 <span className="min-w-0">
                                     <RetailerLogo site="roopsee" height={36} />

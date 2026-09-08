@@ -31,7 +31,7 @@ export default function FooterPage() {
                 className="inline-block text-[32px] font-semibold leading-none tracking-[-0.04em] text-white xl:text-[36px]"
                 aria-label="Roopsee home"
               >
-                roopsee<span className="text-[#ff00e6]">.</span>
+                roopsee<span className="text-[#D17A6D]">.</span>
               </Link>
               <p className="mt-5 font-cormorant text-2xl italic leading-snug text-white/85 sm:text-[28px] xl:text-[30px]">
                 Better skincare starts with knowing your skin.
@@ -51,7 +51,7 @@ export default function FooterPage() {
                     <li key={link.label}>
                       <Link
                         href={link.href}
-                        className="font-lato text-sm text-white/80 transition-colors hover:text-[#ff8ff4]"
+                        className="font-lato text-sm text-white/80 transition-colors hover:text-[#D17A6D]"
                       >
                         {link.label}
                       </Link>
@@ -82,7 +82,7 @@ export default function FooterPage() {
                 />
                 <button
                   type="submit"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center text-white transition-colors hover:text-[#ff8ff4]"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center text-white transition-colors hover:text-[#D17A6D]"
                   aria-label="Subscribe to newsletter"
                 >
                   <FiArrowRight size={19} />
@@ -100,7 +100,7 @@ export default function FooterPage() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={label}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/70 transition hover:border-[#ff8ff4] hover:text-[#ff8ff4]"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/70 transition hover:border-[#D17A6D] hover:text-[#D17A6D]"
                 >
                   <Icon size={15} />
                 </a>

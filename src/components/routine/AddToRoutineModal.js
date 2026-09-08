@@ -120,7 +120,7 @@ export default function AddToRoutineModal({ open, onClose, product }) {
                             }
                             className="mt-4 inline-block
                              rounded-full bg-[#D17A6D] px-5 py-2.5 text-xs
-                             font-semibold text-white hover:bg-[#D17A9D]"
+                             font-semibold text-white hover:bg-[#D17A6D]"
                         >
                             View your routine
                         </Link>
@@ -139,7 +139,7 @@ export default function AddToRoutineModal({ open, onClose, product }) {
                                     className={`flex w-full items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors ${
                                         justAdded
                                             ? 'border-emerald-200 bg-emerald-50'
-                                            : 'border-gray-100 hover:border-[#f3c9d2] hover:bg-[#fdeef1]'
+                                            : 'border-gray-100 hover:border-[#D17A6D26] hover:bg-[#D17A6D26]'
                                     }`}
                                 >
                                     <span className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold ${justAdded ? 'bg-emerald-100 text-emerald-700' : badge}`}>

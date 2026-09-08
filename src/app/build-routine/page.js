@@ -66,7 +66,7 @@ function StepRow({ stepNumber, label, optional, product, isExplicit, onChange, o
                         onClick={onRemove}
                         aria-label="Remove selection"
                         title="Remove selection"
-                        className="flex h-7 w-7 items-center justify-center rounded-full border border-transparent text-gray-400 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                        className="flex h-7 w-7 items-center justify-center rounded-full border border-transparent text-gray-400 transition-colors hover:border-[#D17A6D]/30 hover:bg-[#D17A6D]/10 hover:text-[#D17A6D]"
                     >
                         <FiX aria-hidden="true" size={16} />
                     </button>
@@ -280,7 +280,7 @@ function BuildRoutinePageContent() {
                                         onClick={() => handleTimeTabChange(time)}
                                         className={`-mb-px shrink-0 border-b-2 px-1 pb-3 text-sm font-bold uppercase tracking-wide transition-colors ${
                                             activeTime === time
-                                                ? 'border-[#e01a7f] text-[#e01a7f]'
+                                                ? 'border-[#D17A6D] text-[#D17A6D]'
                                                 : 'border-transparent text-gray-400 hover:text-gray-600'
                                         }`}
                                     >
@@ -356,7 +356,7 @@ function BuildRoutinePageContent() {
                                                     })
                                                     setPickerStep(weakestStep)
                                                 }}
-                                                className="mt-3 w-full rounded-full border border-[#d77465] px-4 py-2 text-xs font-semibold text-[#d77465] hover:bg-[#fdeef1]"
+                                                className="mt-3 w-full rounded-full border border-[#d77465] px-4 py-2 text-xs font-semibold text-[#d77465] hover:bg-[#D17A6D26]"
                                             >
                                                 See better {weakestStep.label.toLowerCase()} matches
                                             </button>
@@ -378,7 +378,7 @@ function BuildRoutinePageContent() {
                                         className="flex-[1.4] whitespace-nowrap 
                                         rounded-full bg-[#D17A6D]
                                          px-2  text-[14px] font-semibold text-white
-                                          hover:bg-[#D17A8D] disabled:cursor-not-allowed
+                                          hover:bg-[#D17A6D] disabled:cursor-not-allowed
                                            disabled:opacity-40"
                                     >
                                         Compare prices
@@ -387,7 +387,7 @@ function BuildRoutinePageContent() {
                                         type="button"
                                         onClick={handleShop}
                                         className="flex-1 whitespace-nowrap rounded-full border border-[#D17A6D] px-2 py-2.5
-                                         text-xs font-semibold text-[#D17A6D] hover:bg-[#fdeef1]"
+                                         text-xs font-semibold text-[#D17A6D] hover:bg-[#D17A6D26]"
                                     >
                                         Shop
                                     </button>
@@ -402,7 +402,7 @@ function BuildRoutinePageContent() {
                                 </button>
                             </div>
 
-                            <div className="rounded-2xl bg-[#fdeef1] p-4 sm:p-5">
+                            <div className="rounded-2xl bg-[#D17A6D26] p-4 sm:p-5">
                                 <p className="text-xs font-bold uppercase tracking-wide text-[#c76557]">Roopsee tip</p>
                                 <p className="mt-1 text-xs leading-relaxed text-[#9a6b62]">
                                     Your routine can change with your skin. Update your profile anytime to

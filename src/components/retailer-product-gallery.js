@@ -37,7 +37,7 @@ export default function RetailerProductGallery({ imageUrls, primaryImage, produc
             className="object-contain p-3 sm:p-5"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-7xl font-semibold text-rose-200">
+          <div className="flex h-full items-center justify-center text-7xl font-semibold text-[#D17A6D]">
             R
           </div>
         )}

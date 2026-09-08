@@ -64,7 +64,7 @@ export default function RetailerLogo({ site, height = 18, className = '' }) {
                 className={`font-semibold text-black ${className}`}
                 style={{ fontSize: height * 0.62, letterSpacing: '-0.02em' }}
             >
-                roopsee<span style={{ color: '#ff00e6' }}>.</span>
+                roopsee<span style={{ color: '#D17A6D' }}>.</span>
             </span>
         )
     }

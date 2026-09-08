@@ -32,7 +32,7 @@ function SimilarCard({ product }) {
             {Number.isFinite(score) ? (
                 <span
                     className={`absolute right-1.5 top-1.5 z-10 flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold text-white shadow ${
-                        score >= 80 ? 'bg-emerald-600' : score >= 50 ? 'bg-amber-500' : 'bg-rose-500'
+                        score >= 80 ? 'bg-emerald-600' : score >= 50 ? 'bg-amber-500' : 'bg-[#D17A6D]/100'
                     }`}
                     title={product.scoring?.label}
                 >

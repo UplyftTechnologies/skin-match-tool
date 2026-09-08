@@ -67,7 +67,7 @@ export default function Routine() {
                         type="button"
                         onClick={() => handleBuildRoutine('teaser_cta')}
                         className="mt-6 inline-flex items-center gap-2
-                        rounded-full bg-[#D17A6D] px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#D17A8D]"
+                        rounded-full bg-[#D17A6D] px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-[#D17A6D]"
                     >
                         Build My Routine
                         <FiArrowRight aria-hidden="true" />
@@ -129,7 +129,7 @@ export default function Routine() {
                     <button
                         type="button"
                         onClick={() => handleBuildRoutine('teaser_score_banner')}
-                        className="mt-2 flex w-full items-center justify-between rounded-xl bg-[#fdeef1] px-4 py-3 text-left transition-colors hover:bg-[#fbe4ea]"
+                        className="mt-2 flex w-full items-center justify-between rounded-xl bg-[#D17A6D26] px-4 py-3 text-left transition-colors hover:bg-[#D17A6D26]"
                     >
                         <span className="text-xs text-[#c76557]">Your routine, matched to your skin</span>
                         <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#D77465]">

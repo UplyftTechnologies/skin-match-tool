@@ -168,7 +168,7 @@ export default function ProductPickerModal({ open, onClose, title, categories, a
                 </div>
 
                 <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2" aria-busy={loading}>
-                    {error ? <div role="alert" className="p-4 text-center text-sm text-rose-700">
+                    {error ? <div role="alert" className="p-4 text-center text-sm text-[#D17A6D]">
                         <p>{error}</p>
                         <button type="button" onClick={() => setRetry(value => value + 1)} className="mt-2 underline">Try again</button>
                     </div> : null}

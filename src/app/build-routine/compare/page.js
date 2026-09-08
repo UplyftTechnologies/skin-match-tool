@@ -118,7 +118,7 @@ export default async function BuildRoutineComparePage({ searchParams }) {
                         return (
                           <li
                             key={offer.id}
-                            className={`flex items-center gap-3 px-3 py-3 ${isLowest ? "bg-rose-50/60" : "bg-white"}`}
+                            className={`flex items-center gap-3 px-3 py-3 ${isLowest ? "bg-[#D17A6D]/6" : "bg-white"}`}
                           >
                             <div className="min-w-0 flex-1">
                               <RetailerLogo site={offer.site} height={40} />

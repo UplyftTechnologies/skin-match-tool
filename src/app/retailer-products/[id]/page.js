@@ -231,7 +231,7 @@ export default async function RetailerProductPage({ params }) {
                 />
               </RetailerProductGallery>
 
-              <div className="mt-3 hidden rounded-3xl border border-slate-100 bg-gradient-to-b from-rose-50/50 to-white p-6 lg:block">
+              <div className="mt-3 hidden rounded-3xl border border-slate-100 bg-gradient-to-b from-[#D17A6D]/5 to-white p-6 lg:block">
                 <div className="flex items-center gap-2">
                   <FiStar aria-hidden="true" className="h-4 w-4 shrink-0 text-[#e08a7d]" />
                   <span className="text-[13px] font-bold tracking-wide text-slate-800">
@@ -349,7 +349,7 @@ export default async function RetailerProductPage({ params }) {
                         return (
                           <li
                             key={item.id}
-                            className={`flex items-center gap-3 px-3 py-3 sm:px-4 ${isLowest ? "bg-rose-50/60" : "bg-white"}`}
+                            className={`flex items-center gap-3 px-3 py-3 sm:px-4 ${isLowest ? "bg-[#D17A6D]/6" : "bg-white"}`}
                           >
                             <div className="min-w-0 flex-1">
                               <RetailerLogo site={item.site} height={46} />
@@ -434,7 +434,7 @@ export default async function RetailerProductPage({ params }) {
                     {keyIngredients.map((item) => (
                       <span
                         key={item}
-                        className="rounded-full border border-rose-200 bg-rose-50 px-3.5 py-1.5 text-[12.5px] font-semibold text-[#d77465]"
+                        className="rounded-full border border-[#D17A6D]/30 bg-[#D17A6D]/10 px-3.5 py-1.5 text-[12.5px] font-semibold text-[#d77465]"
                       >
                         {item}
                       </span>

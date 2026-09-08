@@ -58,7 +58,7 @@ function WishlistCard({ product, onVisit, onRemove }) {
             <button
                 type="button"
                 onClick={() => onRemove(product)}
-                className="mt-2 text-[11px] font-medium text-rose-500 hover:text-rose-600 hover:underline"
+                className="mt-2 text-[11px] font-medium text-[#D17A6D]0 hover:text-[#D17A6D] hover:underline"
             >
                 Remove from wishlist
             </button>
@@ -341,7 +341,7 @@ export default function ProfilePage() {
                     </div>
                 ) : wishlistItems.length === 0 ? (
                     <div className="rounded-2xl bg-white border border-gray-100 px-6 py-8 text-center">
-                        <BiHeart className="mx-auto mb-3 text-rose-300" size={26} />
+                        <BiHeart className="mx-auto mb-3 text-[#D17A6D]" size={26} />
                         <p className="text-sm text-gray-500 mb-4">
                             Nothing saved yet — products you wishlist will appear here.
                         </p>

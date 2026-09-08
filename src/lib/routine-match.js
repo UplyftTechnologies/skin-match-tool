@@ -13,6 +13,6 @@ export function matchLabel(score) {
 export function matchClasses(score) {
   const band = getScoreBand(score)
   if (band.key === 'caution') return 'bg-amber-50 text-amber-700'
-  if (band.key === 'low') return 'bg-rose-50 text-rose-700'
+  if (band.key === 'low') return 'bg-[#D17A6D]/10 text-[#D17A6D]'
   return 'bg-emerald-50 text-emerald-700'
 }

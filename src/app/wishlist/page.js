@@ -69,8 +69,8 @@ export default function WishlistPage() {
 
         <div className="flex items-center justify-center px-4 py-20">
           <div className="text-center max-w-sm">
-            <div className="mx-auto mb-6 w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center">
-              <BiHeart className="text-rose-400" size={30} />
+            <div className="mx-auto mb-6 w-16 h-16 rounded-full bg-[#D17A6D]/10 flex items-center justify-center">
+              <BiHeart className="text-[#D17A6D]" size={30} />
             </div>
             <h1 className="text-xl font-semibold text-gray-900 mb-2">
               Your wishlist is empty

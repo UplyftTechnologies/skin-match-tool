@@ -26,7 +26,7 @@ export const Logo = ({ dark, onClick }) => (
       flexShrink: 0,
     }}
   >
-    roopsee<span style={{ color: "#ff00e6", fontSize: 22 }}>.</span>
+    roopsee<span style={{ color: "#D17A6D", fontSize: 22 }}>.</span>
   </div>
 );
 
@@ -54,7 +54,7 @@ const announcements = [
   const track = [...announcements, ...announcements]
 
   return (
-    <div className="w-full overflow-hidden bg-black ring-1 ring-inset ring-[#ca58ff]">
+    <div className="w-full overflow-hidden bg-black ring-1 ring-inset ring-[#D17A6D]">
       {/* screen-reader accessible copy, marquee itself is aria-hidden */}
       <span className="sr-only">{announcements.join(', ')}</span>
 
@@ -66,7 +66,7 @@ const announcements = [
               className="flex shrink-0 items-center gap-2 px-3 py-2 font-lato text-[11px] font-semibold uppercase leading-none tracking-wide text-white whitespace-nowrap sm:gap-3 sm:px-4 sm:py-2 sm:text-[12px] md:text-[13px]"
             >
               {item}
-              <span className="text-[#ca58ff]" aria-hidden="true">•</span>
+              <span className="text-[#D17A6D]" aria-hidden="true">•</span>
             </span>
           ))}
         </div>
@@ -170,7 +170,7 @@ export default function Header({ className = "" }) {
               </span>
               {sessionLoaded && userSession ? <span>My Routine</span> : null}
               {routineCount > 0 ? (
-              <span className="absolute -top-1 -right-1 bg-[#e01a7f] text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-[#D17A6D] text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
                 {routineCount}
               </span>
               ) : null}
