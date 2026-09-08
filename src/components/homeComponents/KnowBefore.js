@@ -1,15 +1,19 @@
 'use client'
 
 import Animation2 from '../Animation2'
+import SkincareCharacter from './SkincareCharacter'
 export default function KnowBefore() {
   return (
-      <section aria-labelledby="skin-match-heading" className="overflow-hidden bg-[#FAF7F2] bg-[linear-gradient(120deg,#FAF7F2_0%,#F5F6F1_45%,#D8E7E6_100%)] px-4 py-4 sm:px-6 sm:py-9">
+      <section aria-labelledby="skin-match-heading" className="relative overflow-hidden bg-[#FAF7F2] bg-[linear-gradient(120deg,#FAF7F2_0%,#F5F6F1_45%,#D8E7E6_100%)] px-4 py-4 sm:px-6 sm:py-9">
+        {/* <div className="pointer-events-none mx-auto mb-2 h-24 w-24 sm:h-28 sm:w-28 lg:absolute lg:left-[max(16px,calc(50%-590px))] lg:top-1/2 lg:mb-0 lg:h-48 lg:w-48 lg:-translate-y-1/2">
+          <SkincareCharacter />
+        </div> */}
         <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
-          <div className="skin-match-tagline mb-1.5 flex w-full items-center justify-center gap-2 text-[clamp(7px,2.1vw,10px)] font-semibold uppercase leading-relaxed tracking-[0.06em] text-[#69796f] sm:mb-3 sm:gap-3 sm:text-[11px] sm:tracking-[0.22em]">
+          {/* <div className="skin-match-tagline mb-1.5 flex w-full items-center justify-center gap-2 text-[clamp(7px,2.1vw,10px)] font-semibold uppercase leading-relaxed tracking-[0.06em] text-[#69796f] sm:mb-3 sm:gap-3 sm:text-[11px] sm:tracking-[0.22em]">
             <span aria-hidden="true" className="hidden h-px w-10 shrink-0 bg-[#b8c8bd] sm:block" />
             <span className="whitespace-nowrap">Your skin. Your match score. Better choices.</span>
             <span aria-hidden="true" className="hidden h-px w-10 shrink-0 bg-[#b8c8bd] sm:block" />
-          </div>
+          </div> */}
           <h2 id="skin-match-heading" className="whitespace-nowrap font-cormorant text-[clamp(1.5rem,8vw,3.5rem)] font-medium leading-[1.12] tracking-[-0.025em] text-[#253b33] sm:text-[clamp(2rem,5vw,3.5rem)]">
             <span className="heading-intro">Know your</span>{' '}<em className="relative inline-block whitespace-nowrap font-normal italic text-[#0f766e]">
               skin match

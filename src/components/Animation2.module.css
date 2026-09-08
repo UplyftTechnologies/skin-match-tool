@@ -49,14 +49,14 @@
     justify-content: center;
     flex: 0 0 1.15em;
     width: 1.15em;
-    height: 1.15em;
-    font-size: 1.05em;
+    height: 2em;
+    font-size: 2em;
 }
 .heading-text { min-width: 0; }
 .home {
     --row-height: 2.5em;
     padding: 0;
-    font-size: 16px;
+    font-size: 17px;
     background-color: transparent;
 }
 .home .word-track {
@@ -66,17 +66,17 @@
     font-weight: 500;
 }
 .home .word {
-    gap: 0.7em;
+    gap: 0.8em;
     line-height: 1.3;
     overflow-wrap: normal;
 }
 .home .heading-icon {
-    flex: 0 0 1.9em;
-    width: 1.9em;
-    height: 1.9em;
+    flex: 0 0 2.2em;
+    width: 2.2em;
+    height: 2.2em;
     border-radius: 50%;
     background: #D8E7E6;
-    font-size: 0.95em;
+    font-size: 1.15em;
 }
 @media (max-width: 520px) {
     .concern-animation {
