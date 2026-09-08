@@ -351,7 +351,7 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
                             <h2 style={{ letterSpacing: '0.1em' }} className="font-lato text-lg uppercase md:text-3xl text-center tracking- mb-1">
                                 SKIN QUIZ
                             </h2>
-                            <div className="mx-auto flex justify-center w-[auto]  lg:w-[20%] text-center">
+                            {/* <div className="mx-auto flex justify-center w-[auto]  lg:w-[20%] text-center">
                                 <div className="mt-1 flex items-center gap-2 rounded-full mx-auto
                              border border-[#197a4d]/20 bg-[#eafaf3] w-[auto] px-3.5 py-1
                               sm:mt-1 sm:px-4 sm:py-1">
@@ -361,7 +361,7 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
                                         Doctor Verified Scores
                                     </span>
                                 </div>
-                            </div>
+                            </div> */}
                             {hasCompletedQuiz ? (
                                 <div className="mx-auto mt-3 max-w-3xl rounded-2xl border border-[#ead8d3] bg-white px-4 py-3">
                                     <p className="text-center text-[11px] font-bold uppercase tracking-widest text-[#d77465]">

@@ -13,7 +13,7 @@ const HEADINGS = [
     'Save wishlist and get price alerts',
 ]
 
-const HEADING_COLORS = ['#0f766e','#0f766e','#0f766e','#0f766e','#0f766e']
+const HEADING_COLORS = ['#D17A6D','#D17A6D','#D17A6D','#D17A6D','#D17A6D']
 const HEADING_ICONS = [FiUserCheck, FiCheckSquare, FiTag, FiShoppingBag, FiBell]
 
 const HOLD_DURATION = 2.8

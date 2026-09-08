@@ -1,0 +1,48 @@
+.messages {
+  --message-height: 2.4em;
+  margin-top: 0;
+  font-family: 'lato';
+  font-size: clamp(13px, 3.4vw, 24px);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: #253b33;
+}
+
+.window {
+  height: var(--message-height);
+  overflow: hidden;
+}
+
+.track {
+  animation: scroll-headings 10.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.line {
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  height: var(--message-height);
+  margin: 0;
+  white-space: nowrap;
+  
+}
+
+@keyframes scroll-headings {
+  0%, 27% { transform: translateY(0); }
+  33.333%, 60% { transform: translateY(-25%); }
+  66.666%, 93% { transform: translateY(-50%); }
+  100% { transform: translateY(-75%); }
+}
+
+@media (max-width: 639px) {
+  .messages {
+    font-size: 1.2rem;
+    letter-spacing: 0.02em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track { animation: none; }
+}
