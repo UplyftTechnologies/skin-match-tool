@@ -1,8 +1,9 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import DontKnowSkinTypeModal from '../DontKnowSkinTypeModal'
 import { trackingService } from '@/lib/tracking/trackingClient.js'
 import { EVENTS } from '@/lib/tracking/events.js'
+import { trackMetaPixelCustom } from '@/lib/tracking/metaPixel.js'
 import { getSessionId } from '@/lib/tracking/identity'
 import { quizAnswersToResultProfile } from '@/lib/quiz-profile'
 import { supabase } from '@/lib/supabase/client'
@@ -63,6 +64,8 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
     const [hasCompletedQuiz, setHasCompletedQuiz] = useState(false)
     const [isQuizEditing, setIsQuizEditing] = useState(true)
     const [quizInteractionStarted, setQuizInteractionStarted] = useState(false)
+    const quizStartedRef = useRef(false)
+    const quizCompletedRef = useRef(false)
 
     useEffect(() => {
         const activelyFillingQuiz = isQuizEditing && (startEditing || quizInteractionStarted)
@@ -95,6 +98,7 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
         const applySavedAnswers = (savedAnswers) => {
             if (!savedAnswers) return
 
+            quizCompletedRef.current = true
             setHasCompletedQuiz(true)
             setIsQuizEditing(startEditing || new URLSearchParams(window.location.search).get('editQuiz') === '1')
             setSkinType(savedAnswers.skinType || null)
@@ -140,6 +144,10 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
     }, [startEditing])
 
     const trackOption = (question, value) => {
+        if (!quizStartedRef.current && !quizCompletedRef.current) {
+            quizStartedRef.current = true
+            trackMetaPixelCustom('quiz_started')
+        }
         trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
             question,
             answer: value,
@@ -231,6 +239,13 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
 
         setSavingQuiz(true)
         setSaveError('')
+
+        // Only the first valid submission is a completion; edits and retries
+        // must not record another Meta conversion.
+        if (!quizCompletedRef.current) {
+            quizCompletedRef.current = true
+            trackMetaPixelCustom('quiz_completed')
+        }
 
         trackingService.trackEvent(hasCompletedQuiz ? EVENTS.QUIZ_UPDATED : EVENTS.QUIZ_COMPLETED, {
             skin_type: skinType,
