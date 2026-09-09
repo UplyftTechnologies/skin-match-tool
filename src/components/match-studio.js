@@ -3,9 +3,10 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackingService } from '@/lib/tracking/trackingClient';
 import { EVENTS } from '@/lib/tracking/events';
+import { trackMetaPixelCustom } from '@/lib/tracking/metaPixel';
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { productPath, scoredProductPath } from "@/lib/site";
 import { supabase } from "@/lib/supabase/client";
@@ -427,6 +428,11 @@ export default function MatchStudio({ initialData }) {
   // NEW: Becomes true once the user tries to submit the quiz — turns on inline per-question errors
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
+  // Tracks whether this browser already has a completed quiz on file (null = not checked yet).
+  const quizCompletedRef = useRef(null);
+  // Fires the Meta Pixel quiz_started event once per session, on the first quiz interaction.
+  const quizStartedRef = useRef(false);
+
   // NEW: Check if all quiz fields are selected
   const isQuizComplete = Boolean(
     profile.selectedSkinType &&
@@ -621,7 +627,14 @@ export default function MatchStudio({ initialData }) {
     setProfile((current) => ({ ...current, [key]: value }));
   }
 
+  function markQuizStarted() {
+    if (quizStartedRef.current) return;
+    quizStartedRef.current = true;
+    trackMetaPixelCustom('quiz_started');
+  }
+
   function selectGender(gender) {
+    markQuizStarted();
     const specials = gender === "male"
       ? profile.selectedSpecialConditions.filter((item) => !["Pregnant", "Breastfeeding"].includes(item))
       : profile.selectedSpecialConditions;
@@ -639,6 +652,7 @@ export default function MatchStudio({ initialData }) {
   }
 
   function selectSpecial(item) {
+    markQuizStarted();
     if (item === "None") {
       update("selectedSpecialConditions", ["None"]);
       trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
@@ -741,6 +755,7 @@ export default function MatchStudio({ initialData }) {
     // second click from recording another completion event.
     if (!quizCompletedRef.current) {
       quizCompletedRef.current = true;
+      trackMetaPixelCustom('quiz_completed');
       try {
         localStorage.setItem(QUIZ_COMPLETED_KEY, "true");
       } catch {
@@ -932,6 +947,7 @@ export default function MatchStudio({ initialData }) {
                     type="button"
                     className={`chip skin-type-card ${active ? "active" : ""}`}
                     onClick={() => {
+                      markQuizStarted();
                       update("selectedSkinType", item);
                       trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
                         field: "skin_type",
@@ -970,6 +986,7 @@ export default function MatchStudio({ initialData }) {
                       type="button"
                       className={`toggle-btn ${active ? "active" : ""}`}
                       onClick={() => {
+                        markQuizStarted();
                         update("selectedSensitive", item === "Yes");
                         trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
                           field: "sensitivity",
@@ -1011,6 +1028,7 @@ export default function MatchStudio({ initialData }) {
                     type="button"
                     className={`concern-pill ${active ? "active" : ""}`}
                     onClick={() => {
+                      markQuizStarted();
                       update("selectedFaceBodyConcerns", [item]);
                       trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
                         field: "skin_concern",
@@ -1071,6 +1089,7 @@ export default function MatchStudio({ initialData }) {
                 id="quiz-age-select"
                 value={profile.age}
                 onChange={(event) => {
+                  markQuizStarted();
                   update("age", event.target.value);
                   trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
                     field: "age",

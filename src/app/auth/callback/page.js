@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
+import { trackMetaPixelStandard } from '@/lib/tracking/metaPixel'
 
 // Google (and any other Supabase-native OAuth provider) redirects here after
 // consent. supabase-js auto-exchanges the `?code=` param for a session on
@@ -160,6 +161,9 @@ function AuthCallbackContent() {
             EVENTS.LOGIN_SUCCESSFUL,
             { userId: session.user.id, method: 'google', is_new_user: isNewUser },
           )
+          if (isNewUser) {
+            trackMetaPixelStandard('CompleteRegistration')
+          }
 
           // Google never hands us a phone number, so first-time Google
           // sign-ins stop here to collect one before we sync + redirect.

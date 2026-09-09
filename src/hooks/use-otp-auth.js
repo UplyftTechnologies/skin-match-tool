@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { trackingService } from '@/lib/tracking/trackingClient.js'
 import { EVENTS } from '@/lib/tracking/events.js'
+import { trackMetaPixelStandard } from '@/lib/tracking/metaPixel.js'
 
 // Shared MSG91-backed phone/OTP flow. `active` controls when the widget
 // script loads (mirrors a modal's isOpen, or true for an always-visible page).
@@ -91,6 +92,9 @@ export function useOtpAuth({ active = true, onSuccess } = {}) {
           userId: backendData.user?.id,
           is_new_user: backendData.is_new_user,
         })
+        if (backendData.is_new_user) {
+          trackMetaPixelStandard('CompleteRegistration')
+        }
         await supabase.auth.setSession({
           access_token: backendData.token,
           refresh_token: backendData.refresh_token,

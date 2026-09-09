@@ -126,9 +126,9 @@
     }
     .home .heading-icon {
         flex-basis: 1.9em;
-        width: 1.9em;
-        height: 1.9em;
-        font-size: 1em;
+        width: 2.2em;
+        height: 2.2em;
+        font-size: 1.4em;
     }
 }
 .accessible-copy {
