@@ -36,6 +36,8 @@ const INITIAL_DELAY = 1.2
 export default function Animation2({ className = '', prefix = '' }) {
      const rootRef = useRef(null)
     const trackRef = useRef(null)
+    const iconRefs = useRef([])
+    const textRefs = useRef([])
 
     useEffect(() => {
         const media = gsap.matchMedia()
@@ -52,6 +54,29 @@ export default function Animation2({ className = '', prefix = '' }) {
                 }, index * HOLD_DURATION + INITIAL_DELAY)
             })
             timeline.set(track, { yPercent: 0 })
+
+            // Icon slides in from alternating sides, heading fades/slides in
+            // just after — synced to the same moment each row becomes active.
+            const rowCount = HEADINGS.length + 1
+            for (let row = 0; row < rowCount; row += 1) {
+                const startTime = row === 0 ? 0 : (row - 1) * HOLD_DURATION + INITIAL_DELAY
+                const fromLeft = row % 2 === 0
+                const icon = iconRefs.current[row]
+                const text = textRefs.current[row]
+
+                if (icon) {
+                    timeline.fromTo(icon,
+                        { xPercent: fromLeft ? -160 : 160, opacity: 0 },
+                        { xPercent: 0, opacity: 1, duration: 0.45, ease: 'power2.out' },
+                        startTime)
+                }
+                if (text) {
+                    timeline.fromTo(text,
+                        { opacity: 0, y: 8 },
+                        { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
+                        startTime + 0.12)
+                }
+            }
         }, rootRef)
 
         return () => media.revert()
@@ -72,11 +97,11 @@ export default function Animation2({ className = '', prefix = '' }) {
                             key={`${heading}-${index}`}
                             style={{ color: HEADING_COLORS[index % HEADINGS.length] }}
                         >
-                            <span className={styles['heading-icon']}>
+                            <span className={styles['heading-icon']} ref={(el) => { iconRefs.current[index] = el }}>
                                 <Image src={ICON_IMAGES[index % HEADINGS.length]}
                                 width={40} height={40} sizes="40px" alt="" />
                             </span>
-                            <span className={`${styles['heading-text']} text-[#000]`}>{heading}</span>
+                            <span className={`${styles['heading-text']} text-[#000]`} ref={(el) => { textRefs.current[index] = el }}>{heading}</span>
                         </span>
                         )
                     })}
