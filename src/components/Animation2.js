@@ -16,7 +16,8 @@ const HEADINGS = [
     'Build your best routine',
     'Compare prices',
     'Choose where to buy',
-    'Save wishlist and get price alerts',
+    'Save wishlist',
+    'Get price alerts',
     'Doctor verified',
 ]
 
@@ -26,6 +27,7 @@ const ICON_IMAGES = [
     routineImage,
     comparePricesImage,
     shopImage,
+    priceAlertsImage,
     priceAlertsImage,
     doctorVerifiedImage,
 ]
@@ -66,15 +68,15 @@ export default function Animation2({ className = '', prefix = '' }) {
 
                 if (icon) {
                     timeline.fromTo(icon,
-                        { xPercent: fromLeft ? -160 : 160, opacity: 0 },
-                        { xPercent: 0, opacity: 1, duration: 0.45, ease: 'power2.out' },
+                        { xPercent: fromLeft ? -70 : 70, opacity: 0 },
+                        { xPercent: 0, opacity: 1, duration: TRANSITION_DURATION, ease: 'power4.out' },
                         startTime)
                 }
                 if (text) {
                     timeline.fromTo(text,
-                        { opacity: 0, y: 8 },
-                        { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' },
-                        startTime + 0.12)
+                        { opacity: 0, y: 4 },
+                        { opacity: 1, y: 0, duration: TRANSITION_DURATION, ease: 'power4.out' },
+                        startTime)
                 }
             }
         }, rootRef)

@@ -40,7 +40,7 @@ export default function KnowBefore() {
   return (
       <section aria-labelledby="skin-match-heading" className="relative overflow-hidden
        bg-[#fff]
-        bg-[length:16px_16px] px-4 py-4 sm:px-6 sm:py-8">
+        bg-[length:16px_16px] px-2 py-0 sm:px-6 sm:py-8">
         {/* <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
           <h3 id="skin-match-heading" className={`${styles.heading} whitespace-nowrap font-cormorant
           text-[12px] font-medium leading-[1.12] tracking-[-0.025em]
@@ -53,7 +53,7 @@ export default function KnowBefore() {
           <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full sm:h-24 sm:w-24">
            <Image src={mmsimg} width={96} height={96} sizes="96px" alt="" />
           </div>
-          <div className="flex
+          <div className="flex w-full
             items-center justify-center rounded-lg bg-[#D8E7E6]
             px-1 py-2 sm:px-4">
             <Animation2 className="concern-animation-home" />
