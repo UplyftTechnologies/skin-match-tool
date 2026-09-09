@@ -87,12 +87,11 @@
 }
 @media (max-width: 520px) {
     .concern-animation {
-        --row-height: 1.80em;
-        padding: 0px 12px;
+       
         font-size: 16px;
     }
     .home {
-        --row-height: 4.4em;
+        --row-height: 2.4em;
         padding: 0;
         font-size: 14px;
     }
@@ -105,7 +104,7 @@
 }
 @media (max-width: 639px) {
     .home {
-        --row-height: 4.4em;
+        --row-height: 2.4em;
         padding: 0;
         font-size:17px;
     }
