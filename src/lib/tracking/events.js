@@ -1,6 +1,7 @@
 export const EVENTS = {
   CLICKED_ROUTINE_MODE_TOGGLE: 'clicked_routine_mode_toggle',
 
+  QUIZ_STARTED: 'quiz_started',
   QUIZ_UPDATED: 'quiz_updated',
   QUIZ_COMPLETED: 'quiz_completed',
   CLICKED_QUIZ_OPTION: 'clicked_quiz_option',

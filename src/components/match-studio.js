@@ -631,6 +631,7 @@ export default function MatchStudio({ initialData }) {
     if (quizStartedRef.current) return;
     quizStartedRef.current = true;
     trackMetaPixelCustom('quiz_started');
+    trackingService.trackEvent(EVENTS.QUIZ_STARTED);
   }
 
   function selectGender(gender) {
