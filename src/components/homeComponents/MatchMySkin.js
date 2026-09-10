@@ -146,7 +146,8 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
     const trackOption = (question, value) => {
         if (!quizStartedRef.current && !quizCompletedRef.current) {
             quizStartedRef.current = true
-            trackMetaPixelCustom('quiz_started')
+            trackMetaPixelCustom(EVENTS.QUIZ_STARTED)
+            trackingService.trackEvent(EVENTS.QUIZ_STARTED)
         }
         trackingService.trackEvent(EVENTS.CLICKED_QUIZ_OPTION, {
             question,
@@ -244,7 +245,7 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
         // must not record another Meta conversion.
         if (!quizCompletedRef.current) {
             quizCompletedRef.current = true
-            trackMetaPixelCustom('quiz_completed')
+            trackMetaPixelCustom(EVENTS.QUIZ_COMPLETED)
         }
 
         trackingService.trackEvent(hasCompletedQuiz ? EVENTS.QUIZ_UPDATED : EVENTS.QUIZ_COMPLETED, {

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
-import { trackMetaPixelStandard } from '@/lib/tracking/metaPixel'
+import { trackMetaPixelCustom, trackMetaPixelStandard } from '@/lib/tracking/metaPixel'
 
 // Google (and any other Supabase-native OAuth provider) redirects here after
 // consent. supabase-js auto-exchanges the `?code=` param for a session on
@@ -157,6 +157,7 @@ function AuthCallbackContent() {
           const isNewUser = session.user?.created_at && session.user?.last_sign_in_at
             && Math.abs(new Date(session.user.last_sign_in_at) - new Date(session.user.created_at)) < 5000
 
+          trackMetaPixelCustom(EVENTS.LOGIN_SUCCESSFUL)
           trackingService.trackEvent(
             EVENTS.LOGIN_SUCCESSFUL,
             { userId: session.user.id, method: 'google', is_new_user: isNewUser },
