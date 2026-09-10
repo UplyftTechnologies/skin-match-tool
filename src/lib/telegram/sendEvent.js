@@ -34,6 +34,7 @@ const SECOND_GROUP_EVENTS = new Set([
 ]);
 
 const REPORTS_GROUP_EVENTS = new Set([
+  'quiz_started',
   'quiz_completed',
   'quiz_updated',
   'clicked_send_otp',

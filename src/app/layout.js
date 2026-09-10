@@ -134,7 +134,7 @@ export default function RootLayout({ children }) {
             </Script>
             <MetaPixelPageView />
             <noscript
-              dangerouslySetInnerHTML={{
+              dangerouslySetInnerHTML={{  
                 __html: '<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1721498525601686&amp;ev=PageView&amp;noscript=1" alt="" />',
               }}
             />
