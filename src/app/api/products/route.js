@@ -24,8 +24,7 @@ export async function GET(request) {
         const products = await loadProducts()
         const summary = new URL(request.url).searchParams.get('summary') === '1'
         return Response.json({
-            // Card-only screens do not need ingredient text, long descriptions
-            // or the raw scoring matrix for every catalog product.
+        
             products: summary
                 ? products.map(productListItem)
                 : products.map(({ scores, ...product }) => ({

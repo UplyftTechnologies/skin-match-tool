@@ -12,6 +12,17 @@ import {
 } from './identity.js';
 import { supabase } from '../supabase/client.js';
 import { EVENTS } from './events.js';
+import { trackMetaPixelCustom } from './metaPixel.js';
+
+// Events that should also fire to Meta Pixel (as trackCustom), in addition
+// to whatever else trackEvent() already sends them to. Keep this list to
+// funnel-relevant actions — it's not meant to mirror every EVENTS entry.
+const META_PIXEL_EVENTS = new Set([
+  EVENTS.OTP_VERIFIED,
+  EVENTS.CLICKED_ADD_TO_WISHLIST,
+  EVENTS.CLICKED_PRODUCT_CARD,
+  EVENTS.CLICKED_BUY_FROM_RETAILER,
+]);
 
 // Hard ceiling on how long location lookup may delay an event.
 const LOCATION_BUDGET_MS = 4000;
@@ -325,6 +336,10 @@ class TrackingService {
 
     if (this.config.telegramEnabled) {
       trackingPromises.push(this.trackToTelegram(eventName, enrichedProperties));
+    }
+
+    if (META_PIXEL_EVENTS.has(eventName)) {
+      trackMetaPixelCustom(eventName);
     }
 
     const results = await Promise.allSettled(trackingPromises);

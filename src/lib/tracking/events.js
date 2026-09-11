@@ -84,6 +84,6 @@ export const EVENTS = {
   CLICKED_SAVE_ROUTINE: 'clicked_save_routine',
   OPENED_ADD_TO_ROUTINE_MODAL: 'opened_add_to_routine_modal',
   CLICKED_ADD_TO_ROUTINE_SLOT: 'clicked_add_to_routine_slot',
-  CLICKED_ADD_TO_ROUTINE_EXTRA_STEP: 'clicked_add_to_routine_extra_step',
+  CLICKED_ADD_TO_ROUTINE_EXTRA_STEP: 'clicked_add_to_routine_extra_step',   
 
 };
