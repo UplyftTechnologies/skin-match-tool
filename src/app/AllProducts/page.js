@@ -679,7 +679,7 @@ function ProductsPageContent() {
                         />
                     </div>
                 </div>
-            ) : savedProfileLoaded && quizAnswers !== undefined ? (
+            ) : savedProfileLoaded && quizAnswers !== undefined && !quizEditorOpen ? (
                 <div className="bg-white px-3 py-2 sm:px-6">
                     <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 rounded-xl border border-[#ead8d3] bg-[#fdf7f5] px-4 py-3">
                         <div>
@@ -772,7 +772,7 @@ function ProductsPageContent() {
                 </div>
 
                 {!scoringProfile ? (
-                    savedProfileLoaded && quizAnswers !== undefined ? (
+                    savedProfileLoaded && quizAnswers !== undefined && !quizEditorOpen ? (
                         <div className="py-12 text-center">
                             <p className="text-sm text-gray-500">
                                 Complete the skin quiz above to see products matched to your skin.
