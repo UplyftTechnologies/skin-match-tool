@@ -48,7 +48,7 @@ export default function Routine() {
     }
 
     return (
-        <div className="bg-[#faf7f2] px-4 py-10 md:py-16">
+        <div className="bg-[#faf7f2] px-4 py-10 md:py-12">
             <div className="mx-auto grid max-w-6xl items-center gap-8 lg:grid-cols-2 lg:gap-14">
                 {/* Left — pitch + CTA */}
                 <div className="text-center lg:text-left">

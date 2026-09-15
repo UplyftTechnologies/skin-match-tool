@@ -3,6 +3,7 @@
 @theme {
   --font-cormorant: var(--font-cormorant);
   --font-lato: var(--font-lato);
+  --font-public-sans: var(--font-public-sans);
 }
 
 :root {

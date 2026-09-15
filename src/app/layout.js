@@ -11,7 +11,7 @@ import QuizSessionExpiry from "@/components/tracking/quiz-session-expiry";
 import BottomNav from "@/components/bottom-nav";
 import GlobalQuizPrompt from "@/components/global-quiz-prompt";
 import MetaPixelPageView from "@/components/tracking/meta-pixel-page-view";
-import { Cormorant_Garamond, Lato } from 'next/font/google'
+import { Cormorant_Garamond, Lato, Public_Sans } from 'next/font/google'
 
 export const viewport = {
   width: "device-width",
@@ -99,9 +99,15 @@ const lato = Lato({
   variable: '--font-lato',
 })
 
+const publicSans = Public_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-public-sans',
+})
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${lato.variable}`}>
+    <html lang="en" className={`${cormorant.variable} ${lato.variable} ${publicSans.variable}`}>
       <body suppressHydrationWarning>
         <ScrollRestoreGuard />
         <SiteExitTracker />

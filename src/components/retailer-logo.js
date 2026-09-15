@@ -85,8 +85,9 @@ export default function RetailerLogo({ site, height = 18, className = '' }) {
 
     const domain = SITE_LOGO_DOMAINS[site]
     if (domain) {
-        return <OnlineLogo domain={domain} alt={siteName(site)} height={height} className={className} />
+        return <OnlineLogo domain={domain} alt={siteName(site)}
+         height={height} className={className} />
     }
 
-    return <span className={`font-bold ${className}`}>{siteName(site)}</span>
+    return <span style={{color: "#740C99"}} className={`font-bold ${className}`}>{siteName(site)}</span>
 }

@@ -14,12 +14,14 @@ import RequireQuizGate from "@/components/require-quiz-gate"
 import BrandSlider from '@/components/BrandSlider'
 import AnimatedSkinShowcase from '@/components/homeComponents/AnimatedSkinShowcase'
 import Animation2 from '@/components/Animation2'
+import KnowMatch from '@/components/homeComponents/KnowMatch'
 
 function page() {
   return (
     <div>
       <Header />
-      <KnowBefore />
+      {/* <KnowBefore /> */}
+      <KnowMatch />
       <QuizSteps />
       {/* <Animation2  className="concern-animation-home" /> */}
       {/* <AnimatedSkinShowcase /> */}
