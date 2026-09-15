@@ -7,6 +7,7 @@ import SiteExitTracker from "@/components/tracking/site-exit-tracker";
 import ScrollRestoreGuard from "@/components/scroll-restore-guard";
 import ScrollTracker from "@/components/tracking/scroll-tracker";
 import QuizRehydrator from "@/components/tracking/quiz-rehydrator";
+import QuizSessionExpiry from "@/components/tracking/quiz-session-expiry";
 import BottomNav from "@/components/bottom-nav";
 import GlobalQuizPrompt from "@/components/global-quiz-prompt";
 import MetaPixelPageView from "@/components/tracking/meta-pixel-page-view";
@@ -106,6 +107,7 @@ export default function RootLayout({ children }) {
         <SiteExitTracker />
         <ScrollTracker />
         <QuizRehydrator />
+        <QuizSessionExpiry />
         <GlobalQuizPrompt />
         <WishlistProvider>
           <div className="pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">

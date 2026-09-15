@@ -19,6 +19,7 @@ import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { useIsInRoutine } from '@/hooks/use-in-routine'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
 import { getLoggedInUserId } from '@/lib/tracking/identity'
+import QuizAnswersBar from '@/components/quiz-answers-bar'
 import VisualSearch from '@/components/visual-search'
 import MatchMySkin from '@/components/homeComponents/MatchMySkin'
 import { getScoreBand } from '@/lib/score-band'
@@ -667,34 +668,15 @@ function ProductsPageContent() {
             {scoringProfile ? (
                 <div className="bg-white px-3 py-2 sm:px-6">
                     <div className="mx-auto max-w-7xl">
-                        <section className="quiz-answers-disclosure" aria-label="Completed skin quiz answers">
-                            <div className="quiz-answers-bar !px-4 !py-2.5">
-                                <span className="quiz-complete-message">
-                                    <span className="quiz-complete-check" aria-hidden="true">&#10003;</span>
-                                    <span>Quiz answers</span>
-                                </span>
-                                <div className="flex items-center gap-1 lg:gap-2">
-                                    <button
-                                        className="quiz-update-btn inline-flex !min-h-8 items-center !px-4 !py-1.5"
-                                        type="button"
-                                        onClick={() => setQuizEditorOpen(true)}
-                                    >
-                                        Update Quiz
-                                    </button>
-                                    <button
-                                        className="quiz-answers-toggle !h-8 !w-8"
-                                        type="button"
-                                        aria-label="View quiz answers"
-                                        aria-expanded={quizEditorOpen}
-                                        onClick={() => setQuizEditorOpen((open) => !open)}
-                                    >
-                                        <svg className="quiz-answers-chevron" aria-hidden="true" viewBox="0 0 20 20" fill="none">
-                                            <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </section>
+                        <QuizAnswersBar
+                            isLoggedIn={isLoggedIn}
+                            redirectPath={`/AllProducts${routeStateKey ? `?${routeStateKey}` : ''}`}
+                            source="all_products_quiz_bar"
+                            onUpdateQuiz={() => setQuizEditorOpen(true)}
+                            expanded={quizEditorOpen}
+                            onToggle={() => setQuizEditorOpen((open) => !open)}
+                            compact
+                        />
                     </div>
                 </div>
             ) : savedProfileLoaded && quizAnswers !== undefined ? (

@@ -1,6 +1,8 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import DontKnowSkinTypeModal from '../DontKnowSkinTypeModal'
+import QuizAnswersBar from '@/components/quiz-answers-bar'
 import { trackingService } from '@/lib/tracking/trackingClient.js'
 import { EVENTS } from '@/lib/tracking/events.js'
 import { trackMetaPixelCustom } from '@/lib/tracking/metaPixel.js'
@@ -66,6 +68,16 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
     const [quizInteractionStarted, setQuizInteractionStarted] = useState(false)
     const quizStartedRef = useRef(false)
     const quizCompletedRef = useRef(false)
+    const pathname = usePathname()
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => setIsLoggedIn(Boolean(session)))
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setIsLoggedIn(Boolean(session))
+        })
+        return () => subscription.unsubscribe()
+    }, [])
 
     useEffect(() => {
         const activelyFillingQuiz = isQuizEditing && (startEditing || quizInteractionStarted)
@@ -327,35 +339,15 @@ export default function MatchMySkin({ hideCompletedHeader = false, onComplete, s
              '>
                 {hasCompletedQuiz && !hideCompletedHeader ? (
                     <div className={`mx-auto max-w-md px-4 lg:max-w-6xl lg:px-8 xl:max-w-7xl ${isQuizEditing ? 'pt-6 pb-0 md:pt-12' : 'py-2 md:py-8'}`}>
-                        <section className={`quiz-answers-disclosure ${isQuizEditing ? 'quiz-answers-disclosure-open' : ''}`} aria-label="Completed skin quiz answers">
-                            <div className="quiz-answers-bar">
-                                <span className="quiz-complete-message">
-                                    <span className="quiz-complete-check" aria-hidden="true">&#10003;</span>
-                                    <span>Quiz answers</span>
-                                </span>
-                                <div className="flex items-center gap-1 lg:gap-2">
-                                    <button
-                                        className="quiz-update-btn"
-                                        type="button"
-                                        disabled={savingQuiz}
-                                        onClick={() => setIsQuizEditing(true)}
-                                    >
-                                        Update Quiz
-                                    </button>
-                                    <button
-                                        className="quiz-answers-toggle"
-                                        type="button"
-                                        aria-expanded={isQuizEditing}
-                                        aria-label={isQuizEditing ? 'Collapse quiz answers' : 'Expand quiz answers'}
-                                        onClick={() => setIsQuizEditing((expanded) => !expanded)}
-                                    >
-                                        <svg className="quiz-answers-chevron" aria-hidden="true" viewBox="0 0 20 20" fill="none">
-                                            <path d="M5 7.5l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </section>
+                        <QuizAnswersBar
+                            isLoggedIn={isLoggedIn}
+                            redirectPath={pathname || '/'}
+                            source="quiz_answers_bar"
+                            onUpdateQuiz={() => setIsQuizEditing(true)}
+                            updateDisabled={savingQuiz}
+                            expanded={isQuizEditing}
+                            onToggle={() => setIsQuizEditing((expanded) => !expanded)}
+                        />
                     </div>
                 ) : null}
                 {!hasCompletedQuiz || isQuizEditing ? (
