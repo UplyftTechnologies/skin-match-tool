@@ -22,6 +22,7 @@ export default function QuizAnswersBar({
     compact = false,
 }) {
     const buttonClassName = compact ? 'quiz-update-btn inline-flex !min-h-8 items-center !px-4 !py-1.5' : 'quiz-update-btn'
+    const saveButtonClassName = compact ? 'quiz-save-btn inline-flex !min-h-8 items-center !px-4 !py-1.5' : 'quiz-save-btn'
 
     return (
         <section
@@ -33,11 +34,11 @@ export default function QuizAnswersBar({
                     <span className="quiz-complete-check" aria-hidden="true">&#10003;</span>
                     <span>{label}</span>
                 </span>
-                <div className="flex items-center gap-1 lg:gap-2">
+                <div className="quiz-answers-actions flex items-center gap-1.5 lg:gap-2">
                     {!isLoggedIn ? (
                         <Link
                             href={`/login?redirect=${encodeURIComponent(redirectPath)}`}
-                            className={buttonClassName}
+                            className={saveButtonClassName}
                             onClick={() => trackingService.trackEvent(EVENTS.CLICKED_LOGIN, { method: 'save_quiz', source })}
                         >
                             Save Quiz
