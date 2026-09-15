@@ -24,7 +24,7 @@ export default function QuizSteps() {
           <ol className="relative mx-auto grid max-w-2xl grid-cols-4 py-2.5 sm:py-3">
             <span
               aria-hidden="true"
-              className="absolute left-[12.5%] right-[12.5%] top-3 h-px bg-[#ead8d3] sm:top-[14px]"
+              className="absolute left-[12.5%] right-[12.5%] top-[22px] h-px bg-[#ead8d3] sm:top-[26px]"
             />
             {STEPS.map(({ label, icon: Icon }) => (
               <li
