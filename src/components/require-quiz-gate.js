@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
+import { getLoggedInUserId } from '@/lib/tracking/identity'
 import MatchMySkin from '@/components/homeComponents/MatchMySkin'
 
 // Blocks its children — a product grid, a brand list, a product detail view —
@@ -15,11 +16,13 @@ export default function RequireQuizGate({ children, title, description, hideCta 
     const [savedProfile, setSavedProfile] = useState(null)
     const [savedProfileLoaded, setSavedProfileLoaded] = useState(false)
     const [quizOpen, setQuizOpen] = useState(false)
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setSavedProfile(getSavedSkinProfile()?.profile || null)
             setSavedProfileLoaded(true)
+            setIsLoggedIn(Boolean(getLoggedInUserId()))
         }, 0)
         return () => clearTimeout(timer)
     }, [quizAnswers])
@@ -41,6 +44,15 @@ export default function RequireQuizGate({ children, title, description, hideCta 
             <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
                 {description || 'Answer a few quick questions so every product here is scored for your skin.'}
             </p>
+            {!isLoggedIn && (
+                <p className="mx-auto mt-3 max-w-md text-xs text-gray-400">
+                    Want your results saved for next time?{' '}
+                    <Link href="/login" className="font-semibold text-[#e08a7d] hover:underline">
+                        Log in
+                    </Link>{' '}
+                    before you start the quiz.
+                </p>
+            )}
             {hideCta ? null : navigateToHomeQuiz ? (
                 <Link
                     href="/MatchStudio#match-my-skin"

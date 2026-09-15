@@ -14,7 +14,6 @@ import { supabase } from '../supabase/client.js';
 import { EVENTS } from './events.js';
 import { trackMetaPixelCustom } from './metaPixel.js';
 
-// Events that should also fire to Meta Pixel (as trackCustom), in addition
 // to whatever else trackEvent() already sends them to. Keep this list to
 // funnel-relevant actions — it's not meant to mirror every EVENTS entry.
 const META_PIXEL_EVENTS = new Set([

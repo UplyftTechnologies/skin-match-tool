@@ -188,7 +188,7 @@ export default function ProfilePage() {
         try {
             clearWishlist?.();
             localStorage.removeItem("wishlist_products");
-            localStorage.removeItem("roopsee_skin_profile");
+            sessionStorage.removeItem("roopsee_skin_profile");
             sessionStorage.removeItem("roopsee_matcher_history");
             sessionStorage.removeItem("quiz_submitted");
             sessionStorage.removeItem("quiz_login_popup_due_at");

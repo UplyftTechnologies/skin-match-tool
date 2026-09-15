@@ -28,6 +28,7 @@ import TypicalPriceRange from "@/components/typical-price-range";
 import RetailerLogo from "@/components/retailer-logo";
 import { siteName } from "@/lib/site-name";
 import RequireQuizGate from "@/components/require-quiz-gate";
+import RefreshPricesButton from "@/components/refresh-prices-button";
 
 export const dynamic = "force-dynamic";
 
@@ -334,12 +335,15 @@ export default async function RetailerProductPage({ params }) {
                       <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
                         Compare prices
                       </p>
-                      {lowestPrice !== null && highestPrice !== null && highestPrice > lowestPrice ? (
-                        <p className="text-[11px] text-slate-400">
-                          ₹{Math.ceil(lowestPrice).toLocaleString("en-IN")} – ₹
-                          {Math.ceil(highestPrice).toLocaleString("en-IN")}
-                        </p>
-                      ) : null}
+                      <div className="flex shrink-0 items-center gap-2">
+                        {lowestPrice !== null && highestPrice !== null && highestPrice > lowestPrice ? (
+                          <p className="text-[11px] text-slate-400">
+                            ₹{Math.ceil(lowestPrice).toLocaleString("en-IN")} – ₹
+                            {Math.ceil(highestPrice).toLocaleString("en-IN")}
+                          </p>
+                        ) : null}
+                        <RefreshPricesButton />
+                      </div>
                     </div>
 
                     <ul className="mt-2 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100">

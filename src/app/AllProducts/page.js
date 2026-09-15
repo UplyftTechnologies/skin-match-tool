@@ -18,6 +18,7 @@ import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { useIsInRoutine } from '@/hooks/use-in-routine'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
+import { getLoggedInUserId } from '@/lib/tracking/identity'
 import VisualSearch from '@/components/visual-search'
 import MatchMySkin from '@/components/homeComponents/MatchMySkin'
 import { getScoreBand } from '@/lib/score-band'
@@ -467,6 +468,7 @@ function ProductsPageContent() {
     const [isMobile, setIsMobile] = useState(false)
     const [quizEditorOpen, setQuizEditorOpen] = useState(false)
     const [savedProfileLoaded, setSavedProfileLoaded] = useState(false)
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(max-width: 639px)')
@@ -483,18 +485,20 @@ function ProductsPageContent() {
     // Live quiz answers, so retaking the quiz rescores this page immediately.
     const quizAnswers = useQuizAnswers()
 
-    // ...but those live in sessionStorage, which is per-tab: opening this page
-    // in a new tab loses them even though the shopper has taken the quiz. The
-    // durable copy in localStorage is the fallback, so scores survive a new tab
-    // rather than silently disappearing.
+    // ...but those live in sessionStorage, which is per-tab and cleared once
+    // the browser closes. getSavedSkinProfile() falls back to a derived copy
+    // (also sessionStorage) so a fresh read within the same tab/session still
+    // works without redoing the quiz — logged-in shoppers get a durable copy
+    // from the server instead, via QuizRehydrator.
     const [savedProfile, setSavedProfile] = useState(null)
     useEffect(() => {
-        // Deferred rather than read synchronously: localStorage does not exist
+        // Deferred rather than read synchronously: sessionStorage does not exist
         // during the server render, and setting state in the effect body makes
         // the first paint cascade. Same shape as useQuizAnswers.
         const timer = setTimeout(() => {
             setSavedProfile(getSavedSkinProfile()?.profile || null)
             setSavedProfileLoaded(true)
+            setIsLoggedIn(Boolean(getLoggedInUserId()))
         }, 0)
         return () => clearTimeout(timer)
     }, [quizAnswers])
@@ -699,6 +703,15 @@ function ProductsPageContent() {
                         <div>
                             <p className="text-sm font-bold text-slate-900">Find products for your skin</p>
                             <p className="text-xs text-slate-500">Complete the skin quiz to see your match scores.</p>
+                            {!isLoggedIn && (
+                                <p className="mt-1 text-[11px] text-slate-400">
+                                    Want it saved for next time?{' '}
+                                    <Link href="/login" className="font-semibold text-[#e08a7d] hover:underline">
+                                        Log in
+                                    </Link>{' '}
+                                    first.
+                                </p>
+                            )}
                         </div>
                         <button
                             type="button"
@@ -778,9 +791,20 @@ function ProductsPageContent() {
 
                 {!scoringProfile ? (
                     savedProfileLoaded && quizAnswers !== undefined ? (
-                        <p className="py-12 text-center text-sm text-gray-500">
-                            Complete the skin quiz above to see products matched to your skin.
-                        </p>
+                        <div className="py-12 text-center">
+                            <p className="text-sm text-gray-500">
+                                Complete the skin quiz above to see products matched to your skin.
+                            </p>
+                            {!isLoggedIn && (
+                                <p className="mt-2 text-xs text-gray-400">
+                                    Want to save your quiz?{' '}
+                                    <Link href="/login" className="font-semibold text-[#e08a7d] hover:underline">
+                                        Log in
+                                    </Link>{' '}
+                                    and save it.
+                                </p>
+                            )}
+                        </div>
                     ) : null
                 ) : (
                     <>
