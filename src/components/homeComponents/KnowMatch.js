@@ -6,6 +6,7 @@ import bgheroimg from "../../assets/images/bg-6.webp"
 import RetailerLogo from '@/components/retailer-logo'
 
 function KnowMatch() {
+    
     const scrollToQuiz = () => {
         document.getElementById('match-my-skin')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }

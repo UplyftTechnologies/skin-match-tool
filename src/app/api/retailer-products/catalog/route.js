@@ -4,7 +4,8 @@ import { attachScores } from "@/lib/scoring/catalog-scores";
 
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 50;
 const PUBLIC_CATALOG_CACHE_HEADERS = {
   "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600",
 };
@@ -211,6 +212,10 @@ export async function GET(request) {
     ? Math.max(0, Math.min(100, Number(requestedMinScore)))
     : null;
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
+  const requestedPageSize = Number(searchParams.get("pageSize"));
+  const pageSize = Number.isFinite(requestedPageSize) && requestedPageSize > 0
+    ? Math.min(MAX_PAGE_SIZE, Math.floor(requestedPageSize))
+    : DEFAULT_PAGE_SIZE;
 
   let catalog;
   try {
@@ -251,7 +256,7 @@ export async function GET(request) {
     Number.isFinite(Number(product.scoring.score)) && Number(product.scoring.score) >= minScore,
   );
   const sorted = sortProducts(scoreFiltered, sort);
-  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const safePage = Math.min(page, totalPages);
 
   const forBrand = applyFilters(catalog, filters, { except: "brand" });
@@ -259,7 +264,7 @@ export async function GET(request) {
   const forSite = applyFilters(catalog, filters, { except: "site" });
   const forPrice = applyFilters(catalog, filters, { except: "price" });
 
-  const pageProducts = sorted.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  const pageProducts = sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
   // Scoring the whole filtered set is needed to rank or filter by score — done
   // above, and `sorted` already carries `.scoring` for every item in that
   // case. Any other sort (price, rating, name...) only needs scores for the
@@ -279,7 +284,7 @@ export async function GET(request) {
     requiredSites: TARGET_RETAILERS,
     page: safePage,
     totalPages,
-    pageSize: PAGE_SIZE,
+    pageSize,
     facets: {
       brand: countBy(forBrand, (product) => product.brand_name),
       category: countBy(forCategory, (product) => product.category),

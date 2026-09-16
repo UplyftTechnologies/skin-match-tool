@@ -12,10 +12,16 @@ const CATEGORY_OPTIONS = [
     'Toner', 'Mask', 'Exfoliator', 'Eye Care', 'Lip Care', 'Body Care', 'Hair Care', 'Treatment',
 ]
 
+// A small page size keeps this modal's list snappy to load — it's a quick
+// picker, not the main browse grid, so shoppers page through a handful of
+// results at a time rather than waiting on a bigger batch every request.
+const PAGE_SIZE = 5
+
 function buildQuery({ categories, profile, search, minScore, sort, page }) {
     const params = new URLSearchParams()
     params.set('sort', sort)
     params.set('page', String(page))
+    params.set('pageSize', String(PAGE_SIZE))
     if (search.trim()) params.set('search', search.trim())
     if (minScore) params.set('minScore', minScore)
     categories.forEach((category) => params.append('category', category))
