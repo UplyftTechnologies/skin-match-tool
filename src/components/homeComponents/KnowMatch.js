@@ -39,13 +39,15 @@ function KnowMatch() {
                     </div>
 
                     {/* Product match card + CTA */}
-                    <div className="mx-2 p-2 rounded-2xl bg-white/32 shadow-lg backdrop-blur-[2px] ring-1 ring-white/50 sm:px-5 sm:py-4 lg:mx-0 lg:w-[380px] lg:shrink-0 lg:self-center lg:p-5">
+                    <div className="mx-2 p-2 rounded-2xl bg-white/45 shadow-lg
+                     backdrop-blur-[1.2px] ring-1 ring-white/60 sm:px-5 sm:py-4
+                     lg:mx-0 lg:w-[380px] lg:shrink-0 lg:self-center lg:p-5">
                         <div className="relative px-4
                         py-3 pr-7 ">
                             <p className="text-[11px] font-bold uppercase tracking-wide text-gray-800 sm:text-xs">
                                 Your Product Match
                             </p>
-                            <p className="text-[10px] text-gray-600 sm:text-[11px]">Compare prices</p>
+                            <p className="text-[10px] text-gray-700 sm:text-[11px]">Compare prices</p>
 
                             <div className="mt-1 space-y-0.5">
                                 <div className="flex items-center justify-between">
@@ -57,7 +59,7 @@ function KnowMatch() {
                                     <span className="text-xs font-medium text-gray-700 sm:text-sm">&#8377;849</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <RetailerLogo site="purplle" height={42} />
+                                    <RetailerLogo site="purplle" height={42} className="text-[#7B2D8E]" />
                                     <span className="text-xs font-medium text-gray-700 sm:text-sm">&#8377;825</span>
                                 </div>
                             </div>
@@ -73,9 +75,9 @@ function KnowMatch() {
                             type="button"
                             onClick={scrollToQuiz}
                             className=" w-full rounded-full
-                             bg-[#e57a63] py-3 text-xs font-bold uppercase 
+                             bg-[#FF7E67] py-3 text-xs font-bold uppercase
                              tracking-[0.15em] text-white shadow-md transition-colors
-                              duration-200 hover:bg-[#d96b53] sm:text-sm"
+                              duration-200 hover:bg-[#2c4d4a] sm:text-sm"
                         >
                             Take the Quiz
                         </button>
