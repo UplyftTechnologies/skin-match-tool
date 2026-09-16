@@ -195,7 +195,7 @@ export default async function ProductPage({ params }) {
               alt={product.product_name}
               images={product.images?.length ? product.images : [product.image].filter(Boolean)}
             >
-              <ProductScoreBadge />
+              <ProductScoreBadge category={product.category} />
               <SaveProductButton
                 product={wishlistProduct}
                 label=""

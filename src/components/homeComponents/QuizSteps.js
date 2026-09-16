@@ -5,7 +5,7 @@ import { FiEdit3, FiCheckCircle, FiShoppingBag, FiShoppingCart } from "react-ico
 const STEPS = [
   { label: 'Take Quiz', icon: FiEdit3 },
   { label: 'Check Skin Match', icon: FiCheckCircle },
-  { label: 'Compare Products', icon: FiShoppingBag },
+  { label: 'Compare Prices', icon: FiShoppingBag },
   { label: 'Buy', icon: FiShoppingCart },
 ]
 
@@ -29,13 +29,16 @@ export default function QuizSteps() {
             {STEPS.map(({ label, icon: Icon }) => (
               <li
                 key={label}
-                className="relative flex min-w-0 flex-col items-center gap-1.5 px-1 text-center text-[9px] font-medium leading-tight text-gray-600 sm:text-xs"
+                className="relative flex min-w-0 flex-col items-center gap-1.5 px-1
+                 text-center text-[9px] font-medium leading-tight text-gray-600
+                  sm:text-[17px]"
               >
-                <span className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full border border-[#d9aaa2] bg-white sm:h-7 sm:w-7">
-                  <Icon aria-hidden="true" className="h-3 w-3 text-[#d17a6d] sm:h-3.5 sm:w-3.5" />
+                <span className="relative z-10 flex h-6 w-6 items-center justify-center rounded-full border
+                 border-[#d9aaa2] bg-white sm:h-10 sm:w-10">
+                  <Icon aria-hidden="true" className="h-3 w-3 text-[#d17a6d] sm:h-5 sm:w-5" />
                 </span>
                 <span className="block max-w-full">{label}</span>
-              </li>
+              </li> 
             ))}
           </ol>
         </nav>

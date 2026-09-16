@@ -1,6 +1,7 @@
 "use client"
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { allowsConcernScore } from '@/lib/concern-area'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { GoPlus } from "react-icons/go";
 import Image from 'next/image'
@@ -14,7 +15,7 @@ import { useWishlist } from '@/context/WishlistContext'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
 import { useRetailerCatalog } from '@/hooks/use-retailer-catalog'
-import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
+import { quizAnswersToScoringProfile, resultProfileToQuizAnswers } from '@/lib/quiz-profile'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { useIsInRoutine } from '@/hooks/use-in-routine'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
@@ -69,7 +70,7 @@ function copyFilters(filters) {
     )
 }
 
-function ProductCard({ product }) {
+function ProductCard({ product, concernArea }) {
     const router = useRouter()
     const { isWishlisted, toggleWishlist } = useWishlist()
     const [imageFailed, setImageFailed] = useState(false)
@@ -131,7 +132,7 @@ function ProductCard({ product }) {
             className="h-full bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
         >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/3] mb-3">
-                {product.scoring ? (() => {
+                {product.scoring && allowsConcernScore(product, concernArea || 'face') ? (() => {
                     const band = getScoreBand(product.scoring.score)
                     return (
                         <span
@@ -221,23 +222,25 @@ function ProductCard({ product }) {
                 </span>
             </div>
             <div className="mx-auto flex flex-col w-[90%] items-center gap-2">
-                <div onClick={(event) => {
-                    event.stopPropagation()
-                    setRoutineModalOpen(true)
-                }}
-                    className="flex w-full p-1 rounded-full border border-[#e08a7d] items-center justify-center gap-1 lg:gap-2">
-                    <button
-                        type="button"
-                        aria-label="Add to routine"
-                        aria-pressed={inRoutine}
+                {concernArea !== 'body' ? (
+                    <div onClick={(event) => {
+                        event.stopPropagation()
+                        setRoutineModalOpen(true)
+                    }}
+                        className="flex w-full p-1 rounded-full border border-[#e08a7d] items-center justify-center gap-1 lg:gap-2">
+                        <button
+                            type="button"
+                            aria-label="Add to routine"
+                            aria-pressed={inRoutine}
 
-                        className="flex h-5 w-5 lg:h-6 lg:w-6 shrink-0 items-center justify-center 
-                         text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
-                    >
-                        {inRoutine ? <GoPlus /> : <GoPlus />}
-                    </button>
-                    <span className="font-lato text-[11px] lg:text-[15px]">Add Routine</span>
-                </div>
+                            className="flex h-5 w-5 lg:h-6 lg:w-6 shrink-0 items-center justify-center
+                             text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
+                        >
+                            {inRoutine ? <GoPlus /> : <GoPlus />}
+                        </button>
+                        <span className="font-lato text-[11px] lg:text-[15px]">Add Routine</span>
+                    </div>
+                ) : null}
                 <button
                     type="button"
                     onClick={handleBuyNow}
@@ -510,6 +513,11 @@ function ProductsPageContent() {
         // superset of quizAnswersToScoringProfile.
         return savedProfile?.selectedSkinType ? savedProfile : null
     }, [quizAnswers, savedProfile])
+
+    // AM/PM routines are a face concept — a body-concern shopper gets no
+    // "Add Routine" affordance on the product cards here either.
+    const concernArea = quizAnswers?.concernArea
+        || (savedProfile ? resultProfileToQuizAnswers(savedProfile)?.concernArea : null)
 
     useEffect(() => {
         if (scoringProfile && !hasChosenSort.current) {
@@ -802,7 +810,7 @@ function ProductsPageContent() {
 
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 mt-3 md:gap-6">
                             {products.map((product) => (
-                                <ProductCard key={product.product_uid} product={product} />
+                                <ProductCard key={product.product_uid} product={product} concernArea={concernArea} />
                             ))}
                         </div>
 

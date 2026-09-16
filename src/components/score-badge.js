@@ -1,6 +1,7 @@
 import { clampScore, getScoreBand } from '@/lib/score-band'
 
 export default function ScoreBadge({ score }) {
+    if (score === null || score === undefined || !Number.isFinite(Number(score))) return null
     const value = clampScore(score)
     const band = getScoreBand(value)
 

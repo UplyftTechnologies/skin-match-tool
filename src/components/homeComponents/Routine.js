@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { FiArrowRight, FiCircle, FiSquare, FiSun } from 'react-icons/fi'
 import { BsDiamond } from 'react-icons/bs'
 import { useQuizGate } from '@/hooks/use-quiz-gate'
+import { useQuizAnswers } from '@/hooks/use-quiz-answers'
+import { getSavedSkinProfile } from '@/lib/profile-storage'
+import { resultProfileToQuizAnswers } from '@/lib/quiz-profile'
 import RequireQuizModal from '@/components/RequireQuizModal'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
@@ -24,6 +27,20 @@ export default function Routine() {
     const router = useRouter()
     const { guard, modalOpen, closeModal } = useQuizGate()
     const [activeTime, setActiveTime] = useState('am')
+    const quizAnswers = useQuizAnswers()
+    const [savedProfile, setSavedProfile] = useState(null)
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSavedProfile(getSavedSkinProfile()?.profile || null)
+        }, 0)
+        return () => clearTimeout(timer)
+    }, [quizAnswers])
+
+    // AM/PM skincare routines are a face concept — a shopper who picked a
+    // body concern in the quiz has nothing to build a routine around here.
+    const concernArea = quizAnswers?.concernArea
+        || (savedProfile ? resultProfileToQuizAnswers(savedProfile)?.concernArea : null)
 
     const handleBuildRoutine = (source) => {
         trackingService.trackEvent(EVENTS.CLICKED_BUILD_ROUTINE_CTA, { source })
@@ -46,6 +63,8 @@ export default function Routine() {
         })
         setActiveTime(time)
     }
+
+    if (concernArea === 'body') return null
 
     return (
         <div className="bg-[#faf7f2] px-4 py-10 md:py-12">

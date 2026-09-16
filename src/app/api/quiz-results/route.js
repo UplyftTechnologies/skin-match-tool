@@ -23,6 +23,7 @@ function normalizeProfile(value) {
   const profile = value && typeof value === "object" ? value : {};
   return {
     age: cleanText(profile.age),
+    concernArea: profile.concernArea === "body" ? "body" : profile.concernArea === "face" ? "face" : undefined,
     selectedGender: cleanText(profile.selectedGender),
     selectedSkinType: cleanText(profile.selectedSkinType),
     selectedSensitive: typeof profile.selectedSensitive === "boolean"

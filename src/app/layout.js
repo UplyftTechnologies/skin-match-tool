@@ -11,6 +11,7 @@ import QuizSessionExpiry from "@/components/tracking/quiz-session-expiry";
 import BottomNav from "@/components/bottom-nav";
 import GlobalQuizPrompt from "@/components/global-quiz-prompt";
 import MetaPixelPageView from "@/components/tracking/meta-pixel-page-view";
+import ConditionalFooter from "@/components/conditional-footer";
 import { Cormorant_Garamond, Lato, Public_Sans } from 'next/font/google'
 
 export const viewport = {
@@ -118,6 +119,7 @@ export default function RootLayout({ children }) {
         <WishlistProvider>
           <div className="pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
             {children}
+            <ConditionalFooter />
           </div>
           <BottomNav />
         </WishlistProvider>

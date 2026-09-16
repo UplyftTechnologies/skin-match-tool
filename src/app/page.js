@@ -3,7 +3,6 @@ import AllProduct from "@/app/AllProducts/page.js";
 import { DEFAULT_PROFILE } from "@/lib/default-profile";
 import { recommend } from "@/lib/engine";
 import { absoluteUrl, SITE_NAME, SITE_URL } from "@/lib/site";
-import FooterPage from "./footer/page";
 
 export default async function Home() {
   const initialData = await recommend(DEFAULT_PROFILE, 500);
@@ -122,8 +121,6 @@ export default async function Home() {
           melasma, dehydration and barrier repair.
         </p>
       </section>
-
-      <FooterPage />
     </>
   );
 }

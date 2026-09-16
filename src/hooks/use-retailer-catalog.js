@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { concernAreaFor } from '@/lib/concern-area'
 
 function buildQuery({ search, filters, sort, page, profile, bands, productUids }) {
     const params = new URLSearchParams()
     // Bump when card fields or category mapping change so the browser does
     // not reuse catalogue responses with outdated classifications.
-    params.set('schema', '3')
+    params.set('schema', '5')
     if (search.trim()) params.set('search', search.trim())
     for (const productUid of productUids || []) params.append('productUid', productUid)
     for (const key of ['brand', 'category', 'site', 'price']) {
@@ -22,6 +23,7 @@ function buildQuery({ search, filters, sort, page, profile, bands, productUids }
     // unscored rather than scoring it against a profile nobody chose.
     if (profile?.selectedSkinType) {
         params.set('skinType', profile.selectedSkinType)
+        params.set('concernArea', concernAreaFor(profile))
         params.set('sensitive', profile.selectedSensitive ? '1' : '0')
         params.set('age', profile.age || 'Adult')
         // The engine scores one concern at a time; the quiz collects a list.

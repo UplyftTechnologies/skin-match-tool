@@ -196,6 +196,7 @@ export async function GET(request) {
   const profile = skinType
     ? {
         skinType,
+        concernArea: searchParams.get("concernArea"),
         sensitive: searchParams.get("sensitive") === "1",
         age: searchParams.get("age") || "Adult",
         concern: searchParams.get("concern") || "None",

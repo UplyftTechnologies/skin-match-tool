@@ -2,9 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-// Clamps the product title to 3 lines and only shows the toggle when the
-// title actually overflows that clamp — measured via scrollHeight vs
-// clientHeight rather than a character-count guess, since the same title
+
 // wraps differently at the mobile vs sm:+ font size.
 export default function ExpandableProductTitle({ text, className = '' }) {
     const [expanded, setExpanded] = useState(false)

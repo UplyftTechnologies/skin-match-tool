@@ -22,12 +22,35 @@ function emptyRoutine() {
 }
 
 function StepRow({ stepNumber, label, optional, product, isExplicit, onChange, onRemove }) {
+    const router = useRouter()
     const score = product?.scoring?.score
     const hasScore = score != null && Number.isFinite(Number(score))
+    // A picked product's own retailer_products row — same catalogue the
+    // picker draws from — so clicking it views the real product page.
+    // With nothing picked yet there's nothing to view, so it opens the
+    // picker instead, same as the "Select" button.
+    const handleRowActivate = () => {
+        if (product?.product_uid) {
+            router.push(`/retailer-products/${encodeURIComponent(product.product_uid)}`)
+        } else {
+            onChange()
+        }
+    }
 
     return (
         <div className="flex flex-col gap-3 px-4 py-4 sm:px-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-center gap-3">
+            <div
+                role="button"
+                tabIndex={0}
+                onClick={handleRowActivate}
+                onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        handleRowActivate()
+                    }
+                }}
+                className="-m-1 flex min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-lg p-1 transition-colors hover:bg-gray-50"
+            >
                 <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-gray-50">
                     {product?.image ? (
                         <Image src={product.image} alt="" fill sizes="44px" className="object-contain" />
@@ -143,8 +166,17 @@ function BuildRoutinePageContent() {
         ? scoredSteps.reduce((weakest, step) =>
             Number(step.product.scoring.score) < Number(weakest.product.scoring.score) ? step : weakest)
         : null
+    // A step already scoring 90+ is a great match — nothing to suggest
+    // improving, so the "see better matches" nudge only applies below that.
+    const stepNeedingImprovement = weakestStep && Number(weakestStep.product.scoring.score) < 90
+        ? weakestStep
+        : null
 
     function updateStepProduct(stepId, product) {
+        // A fresh pick makes the last "Saved!" confirmation stale — back to
+        // "Save my routine" so it's clear this new selection hasn't been
+        // explicitly saved yet.
+        setSavedMessage('')
         setRoutine((current) => ({
             ...current,
             [activeTime]: { ...current[activeTime], [stepId]: product },
@@ -159,6 +191,7 @@ function BuildRoutinePageContent() {
             time: activeTime,
             step: stepId,
         })
+        setSavedMessage('')
         setRoutine((current) => ({
             ...current,
             [activeTime]: { ...current[activeTime], [stepId]: null },
@@ -197,7 +230,6 @@ function BuildRoutinePageContent() {
             saveRoutine(routine)
             trackingService.trackEvent(EVENTS.CLICKED_SAVE_ROUTINE, { source: 'build_routine_page' })
             setSavedMessage('Saved!')
-            setTimeout(() => setSavedMessage(''), 2500)
         } catch {
             setSavedMessage('Could not save. Please try again.')
         } finally {
@@ -341,24 +373,24 @@ function BuildRoutinePageContent() {
                                                 : overallScore >= 60
                                                     ? 'A workable routine, with a couple of steps worth a closer look.'
                                                     : 'A few steps here may not suit your skin — worth reviewing.'}
-                                            {weakestStep
-                                                ? ` Your ${weakestStep.label.toLowerCase()} could be a better fit for your skin profile.`
+                                            {stepNeedingImprovement
+                                                ? ` Your ${stepNeedingImprovement.label.toLowerCase()} could be a better fit for your skin profile.`
                                                 : ''}
                                         </p>
-                                        {weakestStep ? (
+                                        {stepNeedingImprovement ? (
                                             <button
                                                 type="button"
                                                 onClick={() => {
                                                     trackingService.trackEvent(EVENTS.CLICKED_SEE_BETTER_ROUTINE_MATCH, {
                                                         time: activeTime,
-                                                        step: weakestStep.id,
-                                                        currentScore: weakestStep.product?.scoring?.score ?? null,
+                                                        step: stepNeedingImprovement.id,
+                                                        currentScore: stepNeedingImprovement.product?.scoring?.score ?? null,
                                                     })
-                                                    setPickerStep(weakestStep)
+                                                    setPickerStep(stepNeedingImprovement)
                                                 }}
                                                 className="mt-3 w-full rounded-full border border-[#d77465] px-4 py-2 text-xs font-semibold text-[#d77465] hover:bg-[#D17A6D26]"
                                             >
-                                                See better {weakestStep.label.toLowerCase()} matches
+                                                See better {stepNeedingImprovement.label.toLowerCase()} matches
                                             </button>
                                         ) : null}
                                     </>

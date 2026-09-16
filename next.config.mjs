@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingIncludes: {
+    "/api/retailer-products/rescrape": ["./scripts/price_scraper.py"],
+  },
   // Standalone output exists for the Render container, which runs `npm start`
   // against a self-contained server bundle. Vercel builds its own output and
   // treats this as redundant work, so skip it there.

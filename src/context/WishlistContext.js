@@ -1,140 +1,104 @@
-// context/WishlistContext.js
-"use client";
+﻿"use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { triggerWishlistReminder } from "@/lib/push/wishlist-reminder";
 import { supabase } from "@/lib/supabase/client";
+import { WishlistStore, wishlistMatches } from "@/lib/wishlist-store";
 
 const WishlistContext = createContext(null);
-const STORAGE_KEY = "wishlist_products";
 
 export function WishlistProvider({ children }) {
     const router = useRouter();
     const pathname = usePathname();
-    const [wishlistItems, setWishlistItems] = useState([]); // array of full product objects
-    const [hydrated, setHydrated] = useState(false);
-    const [userSession, setUserSession] = useState(null);
+    const storeRef = useRef(null);
+    const [state, setState] = useState({ items: [], hydrated: false, error: "", syncing: false });
 
     useEffect(() => {
         let active = true;
-
-        const applySession = async (session) => {
-            if (!active) return;
-            setUserSession(session);
-
-            if (!session) {
-                localStorage.removeItem(STORAGE_KEY);
-                setWishlistItems([]);
-                setHydrated(true);
-                return;
-            }
-
-            // Local storage paints instantly while the DB fetch (source of
-            // truth, so wishlist survives logout/login) is in flight.
-            try {
-                setWishlistItems(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
-            } catch {
-                setWishlistItems([]);
-            }
-
-            try {
-                const response = await fetch("/api/wishlist", {
-                    headers: { Authorization: `Bearer ${session.access_token}` },
-                });
-                const payload = await response.json().catch(() => ({}));
-                if (active && response.ok && Array.isArray(payload.products)) {
-                    setWishlistItems(payload.products);
-                }
-            } catch (error) {
-                console.warn("[wishlist] Failed to fetch saved wishlist:", error);
-            } finally {
-                if (active) setHydrated(true);
-            }
-        };
-
-        supabase.auth.getSession().then(({ data: { session } }) => applySession(session));
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            applySession(session);
+        let authEventReceived = false;
+        const store = new WishlistStore({
+            storage: {
+                getItem: key => window.localStorage.getItem(key),
+                setItem: (key, value) => window.localStorage.setItem(key, value),
+            },
+            request: (url, options) => fetch(url, { ...options, signal: AbortSignal.timeout(15000) }),
+            onChange: next => { if (active) setState(next); },
         });
-
+        storeRef.current = store;
+        // Supabase emits INITIAL_SESSION too. Ignore an older getSession result
+        // if an auth event has already established a newer session.
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (active && !authEventReceived) void store.setSession(session);
+        }).catch(() => {
+            if (active && !authEventReceived) {
+                setState({ items: [], hydrated: true, syncing: false,
+                    error: "Could not check your account. Please reload to retry." });
+            }
+        });
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            authEventReceived = true;
+            if (active) void store.setSession(session);
+        });
+        const retryOnline = () => { void store.retry(); };
+        window.addEventListener("online", retryOnline);
         return () => {
             active = false;
+            store.dispose();
             subscription.unsubscribe();
+            window.removeEventListener("online", retryOnline);
         };
     }, []);
 
-    useEffect(() => {
-        if (hydrated && userSession) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(wishlistItems));
-        }
-    }, [wishlistItems, hydrated, userSession]);
-
-    const wishlistIds = wishlistItems.map((item) => item.product_uid);
-
-    function isWishlisted(productUid) {
-        return wishlistIds.includes(productUid);
-    }
-
-    function syncToServer(productUid, isAdding) {
-        if (!userSession?.access_token) return;
-
-        fetch("/api/wishlist", {
-            method: isAdding ? "POST" : "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${userSession.access_token}`,
-            },
-            body: JSON.stringify({ productUid }),
-        }).catch((error) => {
-            console.warn("[wishlist] Failed to sync change to server:", error);
-        });
+    const wishlistItems = state.items;
+    const wishlistIds = wishlistItems.map(item => String(item.product_uid));
+    function isWishlisted(uid) {
+        return wishlistItems.some(item => wishlistMatches(item, uid));
     }
 
     function toggleWishlist(product) {
-        if (!userSession) {
-            const redirect = pathname && pathname !== "/login" ? pathname : "/";
-            router.push(`/login?redirect=${encodeURIComponent(redirect)}`);
+        const store = storeRef.current;
+        if (!store?.hydrated) return false;
+        if (!store.session) {
+            router.push(`/login?redirect=${encodeURIComponent(pathname && pathname !== "/login" ? pathname : "/")}`);
             return false;
         }
-
-        const isAdding = !wishlistIds.includes(product.product_uid);
-        setWishlistItems((current) =>
-            current.some((item) => item.product_uid === product.product_uid)
-                ? current.filter((item) => item.product_uid !== product.product_uid)
-                : [...current, product]
-        );
-        syncToServer(product.product_uid, isAdding);
-
-        // Ask for push permission and schedule the 15-minute "cart is waiting"
-        // reminder. Called straight from the click handler so the user-gesture
-        // context browsers require for the permission prompt is still active.
-        if (isAdding) {
-            triggerWishlistReminder(product);
-        }
-
-        return true;
+        const existing = store.items.find(item => wishlistMatches(item, product.product_uid));
+        const changed = store.change(existing || product, !existing);
+        if (changed && !existing) triggerWishlistReminder(product);
+        return changed;
     }
 
-    function removeFromWishlist(productUid) {
-        setWishlistItems((current) => current.filter((item) => item.product_uid !== productUid));
-        syncToServer(productUid, false);
+    function removeFromWishlist(uid) {
+        const store = storeRef.current;
+        const product = store?.items.find(item => wishlistMatches(item, uid));
+        if (product) store.change(product, false);
     }
+
     function clearWishlist() {
-        setWishlistItems([]);
+        // Used after sign-out: clear the screen, keep this account's durable cache.
+        void storeRef.current?.setSession(null);
     }
 
     return (
-        <WishlistContext.Provider
-            value={{ wishlistItems, wishlistIds, isWishlisted, toggleWishlist, removeFromWishlist, clearWishlist, hydrated }}
-        >
+        <WishlistContext.Provider value={{
+            wishlistItems, wishlistIds, isWishlisted, toggleWishlist, removeFromWishlist,
+            clearWishlist, hydrated: state.hydrated, error: state.error, syncing: state.syncing,
+            retryWishlist: () => storeRef.current?.retry(),
+        }}>
             {children}
+            {state.error ? (
+                <div role="alert" className="fixed bottom-5 left-1/2 z-[100] w-[min(90vw,420px)] -translate-x-1/2 rounded-xl border border-amber-200 bg-white p-4 text-sm text-slate-700 shadow-lg">
+                    {state.error}
+                    <button type="button" onClick={() => storeRef.current?.retry()} className="ml-2 font-bold text-[#b8503f] underline">Retry</button>
+                </div>
+            ) : null}
         </WishlistContext.Provider>
     );
 }
 
 export function useWishlist() {
-    const ctx = useContext(WishlistContext);
-    if (!ctx) throw new Error("useWishlist must be used within WishlistProvider");
-    return ctx;
+    const context = useContext(WishlistContext);
+    if (!context) throw new Error("useWishlist must be used within WishlistProvider");
+    return context;
 }

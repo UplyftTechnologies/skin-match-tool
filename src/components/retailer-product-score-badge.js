@@ -5,6 +5,7 @@ import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
 import { getScoreBand } from '@/lib/score-band'
+import { concernAreaFor } from '@/lib/concern-area'
 
 // Mirrors the profile shape /api/retailer-products/catalog expects (built
 // from URL params in use-retailer-catalog.js's buildQuery) — the scoring
@@ -20,6 +21,7 @@ function toCatalogScoringProfile(profile) {
 
     return {
         skinType: profile.selectedSkinType,
+        concernArea: concernAreaFor(profile),
         sensitive: Boolean(profile.selectedSensitive),
         age: profile.age || 'Adult',
         concern: concern || 'None',
@@ -30,7 +32,7 @@ function toCatalogScoringProfile(profile) {
 export default function RetailerProductScoreBadge({ productUrl, restricted, fallbackUrls }) {
     const quizAnswers = useQuizAnswers()
     const [savedProfile, setSavedProfile] = useState(null)
-    const [scoring, setScoring] = useState(null)
+    const [scoreResult, setScoreResult] = useState(null)
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -49,9 +51,10 @@ export default function RetailerProductScoreBadge({ productUrl, restricted, fall
 
     const catalogProfile = useMemo(() => toCatalogScoringProfile(scoringProfile), [scoringProfile])
 
+    const requestKey = JSON.stringify([productUrl, fallbackUrls, restricted, catalogProfile])
+
     useEffect(() => {
         if (!catalogProfile || !productUrl) {
-            setScoring(null)
             return undefined
         }
 
@@ -63,14 +66,17 @@ export default function RetailerProductScoreBadge({ productUrl, restricted, fall
             signal: controller.signal,
         })
             .then((response) => response.json())
-            .then((payload) => setScoring(payload.scoring || null))
+            .then((payload) => {
+                if (!controller.signal.aborted) setScoreResult({ key: requestKey, value: payload.scoring || null })
+            })
             .catch((error) => {
-                if (error.name !== 'AbortError') setScoring(null)
+                if (error.name !== 'AbortError') setScoreResult(null)
             })
 
         return () => controller.abort()
-    }, [productUrl, fallbackUrls, restricted, catalogProfile])
+    }, [productUrl, fallbackUrls, restricted, catalogProfile, requestKey])
 
+    const scoring = scoreResult?.key === requestKey ? scoreResult.value : null
     if (!scoring || !Number.isFinite(Number(scoring.score))) return null
 
     const score = Math.max(0, Math.min(100, Math.round(Number(scoring.score))))

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { allowsConcernScore } from '@/lib/concern-area'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -18,7 +19,8 @@ import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
 import { useRetailerCatalog } from '@/hooks/use-retailer-catalog'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
-import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
+import { quizAnswersToScoringProfile, resultProfileToQuizAnswers } from '@/lib/quiz-profile'
+import { getSavedSkinProfile } from '@/lib/profile-storage'
 import { useIsInRoutine } from '@/hooks/use-in-routine'
 import ScoreBadge from '@/components/score-badge'
 import VisualSearch from '@/components/visual-search'
@@ -115,7 +117,7 @@ function wishlistProduct(product) {
     }
 }
 
-function ProductCard({ product }) {
+function ProductCard({ product, concernArea }) {
     const { isWishlisted, toggleWishlist } = useWishlist()
     const router = useRouter()
     const [imageFailed, setImageFailed] = useState(false)
@@ -178,7 +180,7 @@ function ProductCard({ product }) {
             className="h-full bg-white rounded-lg p-3 flex flex-col cursor-pointer transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#e08a7d] focus:ring-offset-2"
         >
             <div className="relative w-full aspect-[3/2] lg:aspect-[3/2] mb-3">
-                <ScoreBadge score={product.score} />
+                <ScoreBadge score={allowsConcernScore(product, concernArea || 'face') ? product.score : undefined} />
                 <button
                     type="button"
                     onClick={handleSaveMatch}
@@ -224,25 +226,27 @@ function ProductCard({ product }) {
             </div>
 
             <div className="mx-auto flex flex-col w-[90%] items-center gap-1 lg:gap-2">
-                <div onClick={(event) => {
-                    event.stopPropagation()
-                    setRoutineModalOpen(true)
-                }}
-                    className="flex w-full p-1 rounded-full border border-[#e08a7d] items-center
-                     justify-center  lg:gap-2">
-                    <button
-                        type="button"
-                        aria-label="Add to routine"
-                        aria-pressed={inRoutine}
+                {concernArea !== 'body' ? (
+                    <div onClick={(event) => {
+                        event.stopPropagation()
+                        setRoutineModalOpen(true)
+                    }}
+                        className="flex w-full p-1 rounded-full border border-[#e08a7d] items-center
+                         justify-center  lg:gap-2">
+                        <button
+                            type="button"
+                            aria-label="Add to routine"
+                            aria-pressed={inRoutine}
 
-                        className="flex h-5 w-5 lg:h-6 lg:w-6 shrink-0 items-center
-                         justify-center
-                          transition-colors duration-200 hover:bg-[#f8eeeb]"
-                    >
-                        {inRoutine ? <GoPlus /> : <GoPlus />}
-                    </button>
-                    <span className="font-lato text-[11px] lg:text-[15px]">Add Routine</span>
-                </div>
+                            className="flex h-5 w-5 lg:h-6 lg:w-6 shrink-0 items-center
+                             justify-center
+                              transition-colors duration-200 hover:bg-[#f8eeeb]"
+                        >
+                            {inRoutine ? <GoPlus /> : <GoPlus />}
+                        </button>
+                        <span className="font-lato text-[11px] lg:text-[15px]">Add Routine</span>
+                    </div>
+                ) : null}
                 <button
                     type="button"
                     onClick={handleBuyNow}
@@ -268,6 +272,21 @@ export default function Products() {
     const [activeView, setActiveView] = useState('products')
     const [search, setSearch] = useState('')
     const quizAnswers = useQuizAnswers()
+    const [savedProfile, setSavedProfile] = useState(null)
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSavedProfile(getSavedSkinProfile()?.profile || null)
+        }, 0)
+        return () => clearTimeout(timer)
+    }, [quizAnswers])
+
+    // AM/PM routines are a face concept — a body-concern shopper gets no
+    // "Add Routine" affordance on the product cards, same as the home
+    // page's routine teaser section.
+    const concernArea = quizAnswers?.concernArea
+        || (savedProfile ? resultProfileToQuizAnswers(savedProfile)?.concernArea : null)
+
     // Must go through quizAnswersToScoringProfile, not be assembled by hand:
     // the quiz stores raw widget answers (concern "redness", sensitive "no",
     // condition "excessive dryness") while the engine keys on its own column
@@ -354,7 +373,7 @@ export default function Products() {
                         onClick={() => setActiveView('products')}
                         className={`transition-colors ${activeView === 'products' ? 'text-black' : 'text-gray-400 hover:text-gray-600'}`}
                     >
-                        Products
+                        PRODUCTS
                     </button>
 
                 </div>
@@ -462,7 +481,7 @@ export default function Products() {
                                     >
                                         {sectionProducts.map((product) => (
                                             <SwiperSlide key={product.product_uid} className="!h-auto">
-                                                <ProductCard product={product} />
+                                                <ProductCard product={product} concernArea={concernArea} />
                                             </SwiperSlide>
                                         ))}
                                         {sectionProducts.length > 1 ? (
@@ -521,7 +540,7 @@ export default function Products() {
                                                     {tierLabel}
                                                 </p>
                                                 {item?.product ? (
-                                                    <ProductCard product={item.product} />
+                                                    <ProductCard product={item.product} concernArea={concernArea} />
                                                 ) : (
                                                     <div className="flex min-h-52 items-center justify-center rounded-lg bg-white p-4 text-center text-xs text-gray-400">
                                                         No {tierLabel.toLowerCase()} match found

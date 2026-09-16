@@ -14,8 +14,10 @@
 // products and scoreColumnIndex — which scoreAll() supplies through a closure
 // rather than by editing the block.
 //
-// Update path: re-copy lines 3-67 and 135-549 from app.js. Do not hand-edit.
-import { SCORED_DATASET } from "./dataset";
+// Update path: re-copy lines 3-67 and 135-549 from app.js, preserving the explicit
+// concern-area guard in categoryRelevanceCap and the area-filtered input below.
+import { SCORED_DATASET } from "./dataset.js";
+import { concernAreaFor, matchesConcernArea } from "../concern-area.js";
 
 // ---------------------------------------------------------------- VERBATIM
 const CONCERN_FAMILIES = {
@@ -99,7 +101,8 @@ const COMFORT_CLEANSER_TERMS = [
 export function scoreAll(profile, subset) {
   const loaded = SCORED_DATASET();
   const scoreColumnIndex = loaded.scoreColumnIndex;
-  const products = subset?.length ? subset : loaded.products;
+  const concernArea = concernAreaFor(profile);
+  const products = (subset ?? loaded.products).filter(product => matchesConcernArea(product, concernArea));
   // The block reads weights off dataset.metadata; the trimmed file stores them
   // at the top level, so they are re-nested here rather than edited in-block.
   const dataset = {
@@ -184,6 +187,8 @@ function currentConcern() {
 }
 
 function categoryRelevanceCap(product, concern = currentConcern()) {
+  // Area is explicit now: body Dryness/Uneven Skin Tone are not face concerns.
+  if (matchesConcernArea(product, concernArea)) return 100;
   if (!concern || concern === "None") return 100;
   if (concern === "Body Acne") return ["Body", "Face & Body"].includes(product.category) ? 100 : 82;
   if (FACE_CONCERNS.has(concern) && product.category === "Body") return 74;

@@ -1,6 +1,7 @@
 import { AGE_COLUMNS, CONCERN_COLUMNS, QUIZ_OPTIONS, THRESHOLDS } from "./constants";
 import { cleanText, loadProducts, normKey, normLabel } from "./data";
 import { sanitizeProfile } from "./profiles";
+import { concernAreaFor, matchesConcernArea } from "./concern-area";
 
 function ageColumns(age) {
   return AGE_COLUMNS[normLabel(age)] || [];
@@ -423,7 +424,8 @@ function sortProducts(a, b) {
 export async function recommend(input = {}, requestedLimit = 500) {
   const [profile, profileAdjustments] = sanitizeProfile(input);
   const catalog = await loadProducts();
-  const sorted = catalog.map((product) => {
+  const eligible = profile.concernArea ? catalog.filter(product => matchesConcernArea(product, concernAreaFor(profile))) : catalog;
+  const sorted = eligible.map((product) => {
     const scored = scoreProduct(product, profile);
     if (profileAdjustments.length) scored.warnings = [...profileAdjustments, ...scored.warnings];
     return scored;

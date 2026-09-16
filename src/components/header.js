@@ -9,6 +9,9 @@ import { FaCartShopping } from "react-icons/fa6";
 import { supabase } from "@/lib/supabase/client";
 import { useWishlist } from "@/context/WishlistContext";
 import { useRoutineCount } from "@/hooks/use-routine-count";
+import { useQuizAnswers } from "@/hooks/use-quiz-answers";
+import { getSavedSkinProfile } from "@/lib/profile-storage";
+import { resultProfileToQuizAnswers } from "@/lib/quiz-profile";
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
 import { FiSunrise } from "react-icons/fi";
@@ -54,7 +57,7 @@ const announcements = [
   const track = [...announcements, ...announcements]
 
   return (
-    <div className="w-full overflow-hidden bg-black ring-1 ring-inset ring-[#D17A6D]">
+    <div className="w-full overflow-hidden bg-black ">
       {/* screen-reader accessible copy, marquee itself is aria-hidden */}
       <span className="sr-only">{announcements.join(', ')}</span>
 
@@ -100,6 +103,22 @@ export default function Header({ className = "" }) {
   const router = useRouter();
   const pathname = usePathname();
   const showNavigationFlow = pathname === "/";
+
+  const quizAnswers = useQuizAnswers();
+  const [savedProfile, setSavedProfile] = useState(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSavedProfile(getSavedSkinProfile()?.profile || null);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [quizAnswers]);
+
+  // AM/PM routines are a face concept — a body-concern shopper gets no
+  // routine link in the header either, same as the home page teaser and
+  // the "Add Routine" button on product cards.
+  const concernArea = quizAnswers?.concernArea
+    || (savedProfile ? resultProfileToQuizAnswers(savedProfile)?.concernArea : null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -153,7 +172,7 @@ export default function Header({ className = "" }) {
           <Logo dark={false} onClick={handleLogoClick} />
 
           <div className="flex items-center gap-2">
-          {(routineCount > 0 || (sessionLoaded && userSession)) && (
+          {concernArea !== "body" && (routineCount > 0 || (sessionLoaded && userSession)) && (
             <Link
               href="/build-routine"
               aria-label="View my routine"
@@ -168,7 +187,7 @@ export default function Header({ className = "" }) {
               <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-gray-300">
                 <FiSunrise size={15} />
               </span>
-              {sessionLoaded && userSession ? <span>My Routine</span> : null}
+              {sessionLoaded && userSession ? <span></span> : null}
               {routineCount > 0 ? (
               <span className="absolute -top-1 -right-1 bg-[#D17A6D] text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
                 {routineCount}
@@ -190,7 +209,8 @@ export default function Header({ className = "" }) {
               <IconButton>
                 <BiHeart size={18} />
               </IconButton>
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 
+              bg-[#D17A6D] text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
                 {wishlistIds.length}
               </span>
             </Link>

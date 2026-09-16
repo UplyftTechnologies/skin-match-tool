@@ -5,9 +5,10 @@
 // any one product's position is known. So a profile's scores are computed once
 // and memoised briefly: a listing page paginating through results reuses the
 // same pass rather than rescoring 14,119 products per page.
-import { SCORED_DATASET, retailerUrlKey } from "./dataset";
-import { scoreAll, scoreLabel } from "./engine";
-import { RESTRICTED_RULES } from "./ingredient-safety";
+import { SCORED_DATASET, retailerUrlKey } from "./dataset.js";
+import { scoreAll, scoreLabel } from "./engine.js";
+import { RESTRICTED_RULES } from "./ingredient-safety.js";
+import { concernAreaFor, matchesConcernArea, allowsConcernScore } from "../concern-area.js";
 
 const MEMO_TTL_MS = 60 * 1000;
 const MEMO_LIMIT = 8;
@@ -19,6 +20,7 @@ function profileKey(profile) {
     Boolean(profile.sensitive),
     profile.age,
     profile.concern,
+    concernAreaFor(profile),
     [...(profile.specialConditions || [])].sort(),
   ]);
 }
@@ -41,7 +43,7 @@ function datasetSubsetFor(urlKeys) {
 export function scoresByUrlKey(profile, urlKeys) {
   // The key includes the catalogue size so a rebuilt catalogue does not
   // keep serving scores ranked against the previous one.
-  const key = `${profileKey(profile)}|${urlKeys ? urlKeys.size : 0}`;
+  const key = `${profileKey(profile)}|${urlKeys ? [...urlKeys].sort().join('|') : 'all'}`;
   const hit = memo.get(key);
   if (hit && Date.now() - hit.builtAt < MEMO_TTL_MS) return hit.map;
 
@@ -118,12 +120,19 @@ export function attachScores(products, profile, scope) {
   const risk = riskyProfile(profile);
 
   return products.map((product) => {
+    if (!allowsConcernScore(product, concernAreaFor(profile))) return { ...product, scoring: null };
+    const knownProducts = urlKeysFor(product).map(key => SCORED_DATASET().byUrlKey.get(key)).filter(Boolean);
+    if (knownProducts.length && !knownProducts.some(item => matchesConcernArea(item, concernAreaFor(profile)))) {
+      return { ...product, scoring: null };
+    }
     let scoring = null;
     for (const key of urlKeysFor(product)) {
       scoring = scores.get(key);
       if (scoring) break;
     }
     scoring = scoring || null;
+    // A safety rule must not manufacture a personal score for an unscored area.
+    if (!scoring) return { ...product, scoring: null };
     const override = overriddenByIngredients(product, risk);
     if (!override) return { ...product, scoring };
 

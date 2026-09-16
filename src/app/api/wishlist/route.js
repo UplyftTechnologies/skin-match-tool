@@ -1,5 +1,5 @@
 import { supabaseAdmin, supabaseAuth } from "@/lib/supabase/server";
-import { findProduct } from "@/lib/data";
+import { findWishlistProduct } from "@/lib/wishlist-products";
 
 export const runtime = "nodejs";
 
@@ -15,7 +15,9 @@ async function authenticatedUser(request) {
 }
 
 function cleanProductUid(value) {
-  return typeof value === "string" ? value.trim().slice(0, 200) : "";
+  if (typeof value !== "string" && typeof value !== "number") return "";
+  const uid = String(value).trim();
+  return uid.length <= 200 ? uid : "";
 }
 
 export async function GET(request) {
@@ -34,10 +36,10 @@ export async function GET(request) {
     if (error) throw error;
 
     const products = (await Promise.all(
-      (data || []).map((row) => findProduct(row.product_uid)),
+      (data || []).map((row) => findWishlistProduct(String(row.product_uid))),
     )).filter(Boolean);
 
-    return Response.json({ ok: true, products });
+    return Response.json({ ok: true, products }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("[api/wishlist] Fetch failed:", error);
     return Response.json(
@@ -61,11 +63,13 @@ export async function POST(request) {
   }
 
   const productUid = cleanProductUid(body?.productUid);
-  if (!productUid || !(await findProduct(productUid))) {
+  if (!productUid) {
     return Response.json({ error: "A valid productUid is required" }, { status: 400 });
   }
 
   try {
+    const product = await findWishlistProduct(productUid);
+    if (!product) return Response.json({ error: "Product not found" }, { status: 404 });
     const { error } = await supabaseAdmin
       .from("wishlist")
       .upsert(
@@ -75,7 +79,7 @@ export async function POST(request) {
 
     if (error) throw error;
 
-    return Response.json({ ok: true }, { status: 201 });
+    return Response.json({ ok: true, product }, { status: 201 });
   } catch (error) {
     console.error("[api/wishlist] Add failed:", error);
     return Response.json(

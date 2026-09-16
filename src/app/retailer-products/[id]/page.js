@@ -7,7 +7,6 @@ import {
   FiCheckCircle,
   FiChevronDown,
   FiDroplet,
-  FiExternalLink,
   FiFileText,
   FiInfo,
   FiShield,
@@ -24,23 +23,34 @@ import { canonicalCategory } from "@/lib/retailer-catalog";
 import { detectRestrictedActives } from "@/lib/scoring/ingredient-safety";
 import RetailerSimilarProducts from "@/components/retailer-similar-products";
 import RetailerProductPlayground from "@/components/retailer-product-playground";
-import TypicalPriceRange from "@/components/typical-price-range";
-import RetailerLogo from "@/components/retailer-logo";
-import { siteName } from "@/lib/site-name";
 import RequireQuizGate from "@/components/require-quiz-gate";
-import RefreshPricesButton from "@/components/refresh-prices-button";
+import RetailerPriceComparison from "@/components/retailer-price-comparison";
 import ExpandableProductTitle from "@/components/expandable-product-title";
+import RetailerProductWishlistButton from "@/components/retailer-product-wishlist-button";
+import { findProduct } from "@/lib/data";
+import { rememberPriceListings } from "@/lib/price-refresh-listings";
 
 export const dynamic = "force-dynamic";
 
 const getProduct = cache(async (id) => {
-  if (!/^\d+$/.test(id)) return null;
+  const query = supabaseAdmin.from("retailer_products").select("*");
+  let data;
+  let error;
 
-  const { data, error } = await supabaseAdmin
-    .from("retailer_products")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+  if (/^\d+$/.test(id)) {
+    ({ data, error } = await query.eq("id", id).maybeSingle());
+  } else {
+    const savedProduct = await findProduct(id);
+    if (!savedProduct) return null;
+
+    ({ data, error } = await query
+      .ilike("product_name", savedProduct.product_name)
+      .ilike("brand", savedProduct.brand_name)
+      .eq("is_active", true)
+      .order("in_stock", { ascending: false })
+      .limit(1)
+      .maybeSingle());
+  }
 
   if (error) {
     console.error("Failed to fetch retailer product:", error.message);
@@ -49,17 +59,6 @@ const getProduct = cache(async (id) => {
 
   return data;
 });
-
-function formatPrice(value) {
-  const amount = Number(value);
-  return Number.isFinite(amount) && amount > 0
-    ? new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(Math.ceil(amount))
-    : null;
-}
 
 function formatAttribute(value) {
   if (Array.isArray(value)) return value.join(", ");
@@ -169,8 +168,8 @@ export default async function RetailerProductPage({ params }) {
     findSizeSiblings(product),
   ]);
   const sizeOptions = buildSizeOptions(product, sizeSiblings);
+  rememberPriceListings(product, comparableProducts);
 
-  const mrp = formatPrice(product.mrp);
   // Nykaa's copy is the best-scraped and most trusted, so it wins whenever a
   // sibling listing on Nykaa exists — the viewed retailer's own copy (and
   // then every other sibling) only fills in whatever Nykaa is missing.
@@ -185,16 +184,25 @@ export default async function RetailerProductPage({ params }) {
   const howToUse = pickFirst(detailSources, "how_to_use");
   const attributes = Object.entries(pickFirst(detailSources, "product_attributes") || {})
     .filter(([, value]) => value !== null && value !== "" && formatAttribute(value));
-  const availablePrices = comparableProducts
-    .map((item) => Number(item.mrp))
-    .filter((price) => Number.isFinite(price) && price > 0);
-  const lowestPrice = availablePrices.length ? Math.min(...availablePrices) : null;
-  const highestPrice = availablePrices.length ? Math.max(...availablePrices) : null;
   // Ingredient cautions come from the same screen the catalogue uses, so a
   // retinoid is flagged here even when the retailer's own copy does not.
   const restrictedRules = detectRestrictedActives(product);
   const restrictedNotes = [...new Set(restrictedRules.map((rule) => rule.reason))];
   const restrictedIds = [...new Set(restrictedRules.map((rule) => rule.id))];
+
+  // Same product_uid convention the catalogue API and other product cards
+  // use for wishlisting — the string form of this listing's own row id.
+  const wishlistProduct = {
+    product_uid: String(product.id),
+    product_name: product.product_name,
+    brand_name: product.brand || product.site,
+    image: product.image_url || "",
+    mrp: product.mrp,
+    selling_price: product.selling_price,
+    category: product.category || "Skincare",
+    product_type: product.product_type || "Product",
+    size: product.variant || canonicalSize(product.product_name) || "Standard size",
+  };
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[#FAF9F6] text-slate-800">
@@ -224,6 +232,7 @@ export default async function RetailerProductPage({ params }) {
                 imageUrls={product.image_urls}
                 productName={product.product_name}
               >
+                <RetailerProductWishlistButton product={wishlistProduct} />
                 <RetailerProductScoreBadge
                   productUrl={product.product_url}
                   restricted={restrictedIds}
@@ -263,11 +272,6 @@ export default async function RetailerProductPage({ params }) {
                 <span className="text-[#e08a7d] text-lato font-bold">{product.brand || product.site}</span>
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-500 text-lato font-bold">
                   {product.site}</span>
-                <span
-                  className={`rounded-full px-2.5 py-1 ${product.in_stock === false ? "bg-red-50 text-red-600 text-lato font-bold" : "bg-emerald-50 text-emerald-700 text-lato font-bold"}`}
-                >
-                  {product.in_stock === false ? "Out of stock" : "In stock"}
-                </span>
               </div>
 
               <ExpandableProductTitle
@@ -317,92 +321,13 @@ export default async function RetailerProductPage({ params }) {
                 </p>
               ) : null}
 
-              <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1 sm:mt-5">
-                <span className="text-[15px] font-extrabold leading-none text-slate-900 sm:text-[1.9rem]">
-                  {mrp || "Out of stock"}
-                </span>
-              </div>
-              <p className="mt-1 hidden text-[12px] text-slate-400 sm:block">Inclusive of all taxes</p>
-
-              <TypicalPriceRange
-                currentPrice={product.mrp}
-                prices={availablePrices}
+              <RetailerPriceComparison
+                key={product.id}
+                productId={product.id}
+                initialRows={[product, ...comparableProducts.filter(row => row.site !== product.site)].map(({ id, site, product_url, product_name, variant, selling_price, mrp, discount_pct, in_stock }) => ({
+                  id, site, product_url, variant: variant || canonicalSize(product_name), selling_price, mrp, discount_pct, in_stock,
+                }))}
               />
-
-              {/* ------------------------------------------ Retailer comparison */}
-              <div id="buy-options" className="mt-5">
-                {comparableProducts.length > 1 ? (
-                  <>
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                        Compare prices
-                      </p>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {lowestPrice !== null && highestPrice !== null && highestPrice > lowestPrice ? (
-                          <p className="text-[11px] text-slate-400">
-                            ₹{Math.ceil(lowestPrice).toLocaleString("en-IN")} – ₹
-                            {Math.ceil(highestPrice).toLocaleString("en-IN")}
-                          </p>
-                        ) : null}
-                        <RefreshPricesButton />
-                      </div>
-                    </div>
-
-                    <ul className="mt-2 divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100">
-                      {comparableProducts.map((item) => {
-                        const price = Number(item.mrp);
-                        const isLowest = lowestPrice !== null && price === lowestPrice;
-                        return (
-                          <li
-                            key={item.id}
-                            className={`flex items-center gap-3 px-3 py-3 sm:px-4 ${isLowest ? "bg-[#D17A6D]/6" : "bg-white"}`}
-                          >
-                            <div className="min-w-0 flex-1">
-                              <RetailerLogo site={item.site} height={46} />
-                              <p className="mt-1 truncate text-[11px] text-slate-400">
-                                {item.id === product.id ? "You are viewing this" : item.variant || canonicalSize(item.product_name) || "Standard size"}
-                              </p>
-                            </div>
-
-                            <div className="shrink-0 text-right">
-                              <p className="text-[14px] font-bold text-slate-900">
-                                {formatPrice(item.mrp) || "Out of stock"}
-                              </p>
-                              {isLowest ? (
-                                <p className="text-[10px] font-bold uppercase text-emerald-700">Lowest</p>
-                              ) : null}
-                            </div>
-
-                            {item.product_url ? (
-                              <a
-                                href={item.product_url}
-                                target="_blank"
-                                rel="noopener noreferrer nofollow sponsored"
-                                className="shrink-0 rounded-full border border-[#e08a7d] px-3.5 py-1.5 text-[12px] font-semibold text-[#d77465] transition-colors hover:bg-[#e08a7d] hover:text-white"
-                              >
-                                Buy now
-                              </a>
-                            ) : null}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                    <p className="mt-2 text-[11px] text-slate-400">
-                      Compared only when the barcode, or the brand, product name and size, match.
-                    </p>
-                  </>
-                ) : product.product_url ? (
-                  <a
-                    href={product.product_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[#f3a99a] px-7 py-3 text-sm font-bold text-white transition hover:bg-[#e08a7d]"
-                  >
-                    View on {siteName(product.site)}
-                    <FiExternalLink aria-hidden="true" />
-                  </a>
-                ) : null}
-              </div>
 
               <p className="mt-3 flex items-start gap-1.5 text-[11.5px] leading-relaxed text-slate-400 sm:text-[12px]">
                 <FiAlertTriangle aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />

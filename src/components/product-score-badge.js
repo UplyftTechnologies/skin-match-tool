@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useQuizAnswers } from "@/hooks/use-quiz-answers";
 import { clampScore, getScoreBand } from "@/lib/score-band";
+import { concernAreaFor, matchesConcernArea } from "@/lib/concern-area";
 
-export default function ProductScoreBadge() {
+export default function ProductScoreBadge({ category }) {
   const [score, setScore] = useState(null);
   const quizAnswers = useQuizAnswers();
 
@@ -27,7 +28,7 @@ export default function ProductScoreBadge() {
     return () => window.clearTimeout(updateTimer);
   }, [quizAnswers]);
 
-  if (score === null) return null;
+  if (score === null || !matchesConcernArea({ category }, concernAreaFor(quizAnswers || {}))) return null;
 
   const band = getScoreBand(score);
   return (

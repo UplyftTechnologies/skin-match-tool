@@ -5,13 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BiHeart, BiArrowBack } from "react-icons/bi";
 import { useWishlist } from "@/context/WishlistContext";
-import ProductCard from "@/components/ProductCard";
+import Header from "@/components/header";
+import WishlistProductCard from "@/components/WishlistProductCard";
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
 
 export default function WishlistPage() {
   const router = useRouter();
-  const { wishlistItems, hydrated } = useWishlist();
+  const { wishlistItems, hydrated, removeFromWishlist, error } = useWishlist();
 
   useEffect(() => {
     if (!hydrated) return;
@@ -20,7 +21,7 @@ export default function WishlistPage() {
       item_count: wishlistItems.length,
     });
   }, [hydrated]);
-  
+
   function handleVisit(product) {
     trackingService.trackEvent(EVENTS.CLICKED_PRODUCT_CARD, {
       productId: product.product_uid,
@@ -31,9 +32,19 @@ export default function WishlistPage() {
     });
   }
 
+  function handleRemove(product) {
+    trackingService.trackEvent(EVENTS.CLICKED_REMOVE_FROM_WISHLIST, {
+      productId: product.product_uid,
+      productName: product.product_name,
+      source: "wishlist_page",
+    });
+    removeFromWishlist(product.product_uid);
+  }
+
   if (!hydrated) {
     return (
       <div className="min-h-screen bg-[#FAFAF8]">
+        <Header />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
           <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-8" />
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -55,6 +66,7 @@ export default function WishlistPage() {
   if (wishlistItems.length === 0) {
     return (
       <div className="min-h-screen bg-[#FAFAF8]">
+        <Header />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
           <button
             type="button"
@@ -73,10 +85,10 @@ export default function WishlistPage() {
               <BiHeart className="text-[#D17A6D]" size={30} />
             </div>
             <h1 className="text-xl font-semibold text-gray-900 mb-2">
-              Your wishlist is empty
+              {error ? "Your wishlist could not load" : "Your wishlist is empty"}
             </h1>
             <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-              Products you save will show up here so you can come back to them anytime.
+              {error ? "Please use Retry to load your saved products." : "Products you save will show up here so you can come back to them anytime."}
             </p>
             <Link
               href="/"
@@ -92,6 +104,7 @@ export default function WishlistPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF8]">
+      <Header />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         <button
           type="button"
@@ -104,23 +117,27 @@ export default function WishlistPage() {
         </button>
 
         <div className="flex items-center justify-between mb-1">
-          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">
+          <h2
+            style={{ letterSpacing: "0.1em" }}
+            className="font-lato text-lg uppercase md:text-3xl text-center"
+          >
             Wishlist
-          </h1>
+          </h2>
           <span className="text-sm text-gray-500 bg-white border border-gray-200 rounded-full px-3 py-1">
             {wishlistItems.length} {wishlistItems.length === 1 ? "item" : "items"}
           </span>
         </div>
-        <p className="text-sm text-gray-500 mb-8">
+        {/* <p className="text-sm text-gray-500 mb-8">
           Products you&apos;ve saved for later.
-        </p>
+        </p> */}
 
-        <div className="wishlist-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 mt-3 lg:grid-cols-4 gap-3 sm:gap-5">
           {wishlistItems.map((product) => (
-            <ProductCard
+            <WishlistProductCard
               key={product.product_uid}
               product={product}
               onVisit={handleVisit}
+              onRemove={handleRemove}
             />
           ))}
         </div>

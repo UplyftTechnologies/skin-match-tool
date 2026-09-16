@@ -1,4 +1,5 @@
-import { DEFAULT_PROFILE } from '@/lib/default-profile'
+import { DEFAULT_PROFILE } from './default-profile.js'
+import { concernAreaFor } from './concern-area.js'
 
 const concernLabels = {
     'body acne': 'Body Acne',
@@ -39,6 +40,7 @@ export function quizAnswersToScoringProfile(answers) {
     const conditions = mappedConditions(answers)
 
     return {
+        concernArea: concernAreaFor(answers),
         age: answers.age || DEFAULT_PROFILE.age,
         selectedGender: normalizedLabel(answers.gender) || DEFAULT_PROFILE.selectedGender,
         selectedSkinType: answers.skinType || DEFAULT_PROFILE.selectedSkinType,
@@ -85,12 +87,11 @@ const conditionOptionsByKey = {
     'excessive dryness': 'Excessive dryness',
     none: 'None',
 }
-const BODY_ONLY_CONCERN_KEY = 'body acne'
 
 // Best-effort inverse of quizAnswersToResultProfile — the DB only stores the
 // normalized scoring profile, not the exact quiz-widget answer shape, so a
-// couple of fields (concern area, exact pill casing) are reconstructed
-// rather than round-tripped byte-for-byte.
+// exact pill casing is reconstructed. The explicit concern area is preserved;
+// older profiles without it can only infer Body from Body Acne.
 export function resultProfileToQuizAnswers(profile) {
     if (!profile) return null
 
@@ -101,7 +102,7 @@ export function resultProfileToQuizAnswers(profile) {
     return {
         skinType: skinTypeOptionsByKey[normalizedLabel(profile.selectedSkinType)] || profile.selectedSkinType || '',
         sensitive: profile.selectedSensitive === true ? 'Yes' : profile.selectedSensitive === false ? 'No' : '',
-        concernArea: normalizedLabel(concern) === BODY_ONLY_CONCERN_KEY ? 'body' : 'face',
+        concernArea: concernAreaFor(profile),
         concerns: concern ? [concern] : [],
         conditions: (profile.selectedSpecialConditions || [])
             .map((label) => conditionOptionsByKey[normalizedLabel(reverseConditionLabels[label] || label)] || label),
