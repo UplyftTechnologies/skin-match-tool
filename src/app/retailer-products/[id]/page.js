@@ -29,6 +29,7 @@ import RetailerLogo from "@/components/retailer-logo";
 import { siteName } from "@/lib/site-name";
 import RequireQuizGate from "@/components/require-quiz-gate";
 import RefreshPricesButton from "@/components/refresh-prices-button";
+import ExpandableProductTitle from "@/components/expandable-product-title";
 
 export const dynamic = "force-dynamic";
 
@@ -269,9 +270,10 @@ export default async function RetailerProductPage({ params }) {
                 </span>
               </div>
 
-              <h2 className="mt-1 break-words font-lato text-[16px] font-semibold leading-tight text-slate-950 sm:mt-2 sm:text-3xl">
-                {product.product_name}
-              </h2>
+              <ExpandableProductTitle
+                text={product.product_name}
+                className="mt-1 break-words font-lato text-[16px] font-semibold leading-tight text-slate-950 sm:mt-2 sm:text-3xl"
+              />
 
               {/* Size selector — unchanged. */}
               {sizeOptions.length ? (
