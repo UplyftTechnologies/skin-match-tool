@@ -60,6 +60,27 @@ class Prices(unittest.TestCase):
         html = '<script>window.__PRELOADED_STATE__ = ' + json.dumps(state) + ';</script>'
         self.assertEqual(extract(Selector(html), URL)["discount"], 20)
 
+    def test_nykaa_sku_variant(self):
+        # Top-level state is the default 12ml; the URL's skuId lists the 30ml.
+        state = {"productPage": {"product": {"id": "123", "mrp": 2650, "offerPrice": 2650, "inStock": True, "defaultPid": "1", "variants": [
+            {"childId": "1", "mrp": 2650, "offerPrice": 2650, "inStock": True},
+            {"childId": "2", "mrp": 5695, "offerPrice": 5695, "inStock": False},
+        ]}}}
+        url = URL + "?skuId=2&se=0"
+        ld = json.dumps({"@type": "Product", "offers": {"price": 5695, "url": URL}})
+        html = ('<meta property="product:price:amount" content="2650"><meta property="product:original_price:amount" content="2650">'
+                '<script type="application/ld+json">' + ld + '</script><script>window.__PRELOADED_STATE__ = ' + json.dumps(state) + ';</script>')
+        self.assertEqual(extract(Selector(html), url), {"selling_price": 5695, "mrp": 5695, "discount": 0, "in_stock": False})
+        self.assertEqual(extract(Selector(html.replace(ld, "{}")), URL)["selling_price"], 2650)
+        with self.assertRaises(ValueError):
+            extract(Selector(html), URL + "?skuId=9")
+
+    def test_sold_out_without_price(self):
+        self.assertEqual(extract(page({"price": "0", "availability": "https://schema.org/SoldOut"}), URL),
+                         {"selling_price": None, "mrp": None, "discount": None, "in_stock": False})
+        with self.assertRaises(ValueError):
+            extract(page({"price": "0"}), URL)
+
     def test_tira_scoped_mrp(self):
         html = '<span id="item_price">936</span><span class="oldAmount--abc">1,170</span>'
         self.assertEqual(extract(Selector(html), 'https://www.tirabeauty.com/product/example')["discount"], 20)

@@ -2,7 +2,8 @@
 // Next can bundle this module separately for pages and route handlers.
 const cacheKey = Symbol.for('roopsee.priceRefreshListings');
 const entries = globalThis[cacheKey] ||= new Map();
-const TTL = 60_000;
+// Listings change with catalogue imports, not per click; a reload re-primes them.
+const TTL = 10 * 60_000;
 export function rememberPriceListings(product, comparable) {
   const rows = [...new Map([product, ...comparable].map(row => [String(row.id), {
     id: row.id, site: row.site, product_url: row.product_url,

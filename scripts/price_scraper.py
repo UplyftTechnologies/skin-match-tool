@@ -6,7 +6,11 @@ import math
 import re
 import socket
 import sys
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import parse_qs, urljoin, urlsplit
+
+# Imported before stdin is read, so a pre-started process is ready to fetch
+# and a missing dependency fails immediately rather than mid-stream.
+from scrapling.fetchers import AsyncFetcher
 
 
 def amount(value):
@@ -84,16 +88,19 @@ def extract(page, url):
     currency = first('meta[property="product:price:currency"]::attr(content)')
     if currency and currency != "INR":
         raise ValueError("unsupported_currency")
-    price = amount(offer.get("price"))
+    offer_price = amount(offer.get("price"))
+    price = offer_price
     mrp = None
     specs = offer.get("priceSpecification", [])
     for spec in specs if isinstance(specs, list) else [specs]:
         if isinstance(spec, dict) and str(spec.get("priceType", "")).rsplit("/", 1)[-1] in ("StrikethroughPrice", "ListPrice", "MSRP"):
             mrp = amount(spec.get("price"))
+    offer_mrp = mrp
+    offer_availability = stock(offer.get("availability"))
     # Product-scoped metadata works across retailers without scanning page text.
     price = price or amount(first('meta[property="product:price:amount"]::attr(content)'))
     mrp = mrp or amount(first('meta[property="product:original_price:amount"]::attr(content)'))
-    availability = stock(offer.get("availability"))
+    availability = offer_availability
     if availability is None:
         availability = stock(first('meta[property="product:availability"]::attr(content)'))
     host = (urlsplit(url).hostname or "").removeprefix("www.")
@@ -108,6 +115,17 @@ def extract(page, url):
                 product = state.get("productPage", {}).get("product", {})
                 product_id = re.search(r"/p/(\d+)", urlsplit(url).path)
                 if product_id and str(product.get("id")) == product_id[1]:
+                    # Multi-size products keep the default size at the top level;
+                    # ?skuId= picks the listed size, as JSON-LD and meta tags do.
+                    variants = [v for v in product.get("variants") or [] if isinstance(v, dict)]
+                    if variants:
+                        sku_id = parse_qs(urlsplit(url).query).get("skuId", [None])[0] or product.get("defaultPid")
+                        selected = [v for v in variants if sku_id and str(v.get("childId")) == str(sku_id)]
+                        if len(selected) != 1:
+                            raise ValueError("ambiguous_variant")
+                        product = selected[0]
+                        # Meta tags describe the default size; keep only JSON-LD values.
+                        price, mrp, availability = offer_price, offer_mrp, offer_availability
                     live_price = amount(product.get("offerPrice"))
                     if price and live_price and price != live_price:
                         raise ValueError("conflicting_prices")
@@ -141,6 +159,9 @@ def extract(page, url):
         if availability is None:
             availability = stock((first('#availability span::text') or "").strip().rstrip("."))
     if price is None:
+        # Sold-out pages often publish price 0; the stock status is still news.
+        if availability is False:
+            return {"selling_price": None, "mrp": None, "discount": None, "in_stock": False}
         raise ValueError("no_price_found")
     if mrp is not None and mrp < price:
         raise ValueError("invalid_mrp")
@@ -159,7 +180,6 @@ async def validate_url(url):
 
 
 async def scrape_one(row, semaphore):
-    from scrapling.fetchers import AsyncFetcher
     result = {"id": row.get("id"), "site": row.get("site"), "ok": False}
     try:
         async with semaphore, asyncio.timeout(15):

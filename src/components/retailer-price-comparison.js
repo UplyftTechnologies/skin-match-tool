@@ -23,6 +23,8 @@ export default function RetailerPriceComparison({ productId, initialRows }) {
       const result = nextResults.find(item => String(item.id) === String(row.id))
       if (!result?.ok) return row
       const { selling_price, mrp, discount, in_stock } = result.data
+      // Sold out with no published price: keep the last price, just mark stock.
+      if (selling_price === null) return { ...row, in_stock: false }
       return { ...row, selling_price, mrp, discount_pct: discount,
         in_stock: in_stock ?? row.in_stock }
     }))

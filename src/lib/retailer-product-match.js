@@ -233,15 +233,19 @@ export function dedupeByRetailer(matches) {
 }
 
 export async function findComparableProducts(product) {
-  const byGtin = await findByGtin(product);
+  // The barcode and brand lookups are independent, so run them together.
+  const brandQuery = product.brand
+    ? supabaseAdmin
+      .from("retailer_products")
+      .select(COMPARISON_FIELDS)
+      .ilike("brand", product.brand)
+      .neq("site", product.site)
+      .limit(1000)
+    : null;
+  const [byGtin, brandResult] = await Promise.all([findByGtin(product), brandQuery]);
   if (!product.brand) return dedupeByRetailer([product, ...byGtin]);
 
-  const { data, error } = await supabaseAdmin
-    .from("retailer_products")
-    .select(COMPARISON_FIELDS)
-    .ilike("brand", product.brand)
-    .neq("site", product.site)
-    .limit(1000);
+  const { data, error } = brandResult;
 
   if (error) {
     console.error("Failed to find comparable retailer products:", error.message);
