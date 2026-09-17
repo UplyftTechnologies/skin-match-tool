@@ -38,6 +38,18 @@ class Prices(unittest.TestCase):
             with self.subTest(offer=offer), self.assertRaises(ValueError):
                 extract(page(offer), URL)
 
+    def test_uri_qualified_type(self):
+        # Kindlife (and other sites) write the fully-qualified schema.org URI
+        # instead of the bare type name.
+        html = '<script type="application/ld+json">' + json.dumps({
+            "@type": "http://schema.org/Product",
+            "offers": {"@type": "http://schema.org/Offer", "price": 1599, "priceCurrency": "INR",
+                       "availability": "http://schema.org/InStock"},
+        }) + '</script>'
+        result = extract(Selector(html), URL)
+        self.assertEqual(result["selling_price"], 1599)
+        self.assertTrue(result["in_stock"])
+
     def test_no_recommendation_price(self):
         html = '<script type="application/ld+json">' + json.dumps({"@type": "ItemList", "itemListElement": [{"@type": "Product", "offers": {"price": 10}}]}) + '</script>'
         with self.assertRaises(ValueError):

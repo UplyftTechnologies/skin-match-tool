@@ -36,7 +36,10 @@ def stock(value):
 
 def types(node, kind):
     value = node.get("@type", [])
-    return kind in (value if isinstance(value, list) else [value])
+    values = value if isinstance(value, list) else [value]
+    # Some sites (e.g. Kindlife) write the fully-qualified schema.org URI
+    # ("http://schema.org/Product") instead of the bare type name.
+    return any(str(entry).rsplit("/", 1)[-1] == kind for entry in values)
 
 
 def products(value):
