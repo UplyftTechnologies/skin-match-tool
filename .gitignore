@@ -30,3 +30,6 @@ node_modules/
 .next/
 out/
 npm-debug.log*
+
+# Android Studio workspace settings (per machine).
+android/.idea/
