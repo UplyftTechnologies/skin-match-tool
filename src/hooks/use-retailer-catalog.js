@@ -7,7 +7,7 @@ function buildQuery({ search, filters, sort, page, profile, bands, productUids }
     const params = new URLSearchParams()
     // Bump when card fields or category mapping change so the browser does
     // not reuse catalogue responses with outdated classifications.
-    params.set('schema', '5')
+    params.set('schema', '6')
     if (search.trim()) params.set('search', search.trim())
     for (const productUid of productUids || []) params.append('productUid', productUid)
     for (const key of ['brand', 'category', 'site', 'price']) {

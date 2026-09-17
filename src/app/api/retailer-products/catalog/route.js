@@ -42,9 +42,23 @@ const PRICE_BUCKETS = [
   { value: "over_1000", label: "Over ₹1,000", test: (price) => price !== null && price > 1000 },
 ];
 
+const SCORE_CUTOFFS = {
+  score_below_90: 90,
+  score_below_80: 80,
+  score_below_70: 70,
+  score_below_60: 60,
+};
+
 function priceOf(product) {
   const value = Number(product.mrp);
   return Number.isFinite(value) && value > 0 ? value : null;
+}
+
+function matchesScoreCutoff(product, scoreCutoff) {
+  if (scoreCutoff === null) return true;
+  const score = Number(product.scoring?.score);
+  if (product.scoring?.blocked || !Number.isFinite(score)) return false;
+  return score < scoreCutoff;
 }
 
 // `pick` may return a single value or a list — a product stocked on three
@@ -123,7 +137,9 @@ function sortProducts(products, sort) {
   if (sort === "name_asc") {
     return copy.sort((left, right) => left.product_name.localeCompare(right.product_name));
   }
-  if (sort === "score_desc") {
+  // A score cutoff still needs score ordering: "Below 90" should begin with
+  // 89, then 88, then 87 — never a ratings-based mix of qualifying products.
+  if (sort === "score_desc" || sort in SCORE_CUTOFFS) {
     return copy.sort((left, right) => {
       const a = left.scoring;
       const b = right.scoring;
@@ -207,6 +223,7 @@ export async function GET(request) {
     : null;
 
   const sort = searchParams.get("sort") || "rating";
+  const scoreCutoff = SCORE_CUTOFFS[sort] ?? null;
   const requestedMinScore = searchParams.get("minScore");
   const minScore = requestedMinScore !== null && requestedMinScore.trim() !== "" &&
     Number.isFinite(Number(requestedMinScore))
@@ -250,12 +267,15 @@ export async function GET(request) {
   }
 
   // Score the full set before score filtering or ranking, then paginate.
-  const needsFullScores = sort === "score_desc" || minScore !== null;
+  const needsFullScores = sort === "score_desc" || minScore !== null || scoreCutoff !== null;
   const scored = needsFullScores ? attachScores(matching, profile, matching) : matching;
-  const scoreFiltered = minScore === null ? scored : scored.filter((product) =>
-    product.scoring?.score != null && !product.scoring.blocked &&
-    Number.isFinite(Number(product.scoring.score)) && Number(product.scoring.score) >= minScore,
-  );
+  const scoreFiltered = scored.filter((product) => {
+    if (!matchesScoreCutoff(product, scoreCutoff)) return false;
+    return minScore === null || (
+      product.scoring?.score != null && !product.scoring.blocked &&
+      Number.isFinite(Number(product.scoring.score)) && Number(product.scoring.score) >= minScore
+    );
+  });
   const sorted = sortProducts(scoreFiltered, sort);
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const safePage = Math.min(page, totalPages);

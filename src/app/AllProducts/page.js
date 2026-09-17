@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { allowsConcernScore } from '@/lib/concern-area'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { GoPlus } from "react-icons/go";
@@ -40,15 +40,19 @@ const emptyFilters = {
     site: [],
 }
 
-// Match score is only available once the quiz has been taken; the rest rank on
-// what the retailers publish, so the listing still sorts sensibly without it.
 const sortOptions = [
-    { label: 'Match score', value: 'score_desc' },
     { label: 'Best rated', value: 'rating' },
     { label: 'Price: Low to High', value: 'price_asc' },
     { label: 'Price: High to Low', value: 'price_desc' },
     { label: 'Biggest discount', value: 'discount' },
     { label: 'Name: A to Z', value: 'name_asc' },
+]
+
+const scoreSortOptions = [
+    { value: 'score_below_90', label: 'Match score: Below 90' },
+    { value: 'score_below_80', label: 'Match score: Below 80' },
+    { value: 'score_below_70', label: 'Match score: Below 70' },
+    { value: 'score_below_60', label: 'Match score: Below 60' },
 ]
 
 const SITE_LABELS = {
@@ -273,7 +277,7 @@ function FilterPanel({
 }) {
     const [activeTab, setActiveTab] = useState('brand')
     const [optionSearch, setOptionSearch] = useState('')
-    const visibleOptions = options[activeTab].filter((option) =>
+    const visibleOptions = (options[activeTab] || []).filter((option) =>
         option.label.toLowerCase().includes(optionSearch.trim().toLowerCase()),
     )
 
@@ -311,13 +315,13 @@ function FilterPanel({
                                     }`}
                             >
                                 {tab.label}
-                                {selected[tab.key].length ? ` (${selected[tab.key].length})` : ''}
+                                {selected[tab.key]?.length ? ` (${selected[tab.key].length})` : ''}
                             </button>
                         ))}
                     </div>
 
                     <div className="w-3/5 overflow-y-auto px-4 py-2">
-                        {options[activeTab].length > 10 ? (
+                        {(options[activeTab] || []).length > 10 ? (
                             <input
                                 type="search"
                                 value={optionSearch}
@@ -329,10 +333,10 @@ function FilterPanel({
                         {optionsLoading ? (
                             <p className="py-4 text-sm text-gray-500">Loading filters…</p>
                         ) : null}
-                        {!optionsLoading && options[activeTab].length === 0 ? (
+                        {!optionsLoading && (options[activeTab] || []).length === 0 ? (
                             <p className="py-4 text-sm text-gray-500">No options available.</p>
                         ) : null}
-                        {!optionsLoading && options[activeTab].length > 0 && visibleOptions.length === 0 ? (
+                        {!optionsLoading && (options[activeTab] || []).length > 0 && visibleOptions.length === 0 ? (
                             <p className="py-4 text-sm text-gray-500">No matching options.</p>
                         ) : null}
                         {visibleOptions.map((opt) => (
@@ -461,13 +465,19 @@ function ProductsPageContent() {
     const restoredState = rememberedProductListState?.routeStateKey === routeStateKey
         ? rememberedProductListState
         : null
-    const restoredFilters = restoredState?.appliedFilters || initialFilters
+    const restoredFilters = restoredState?.appliedFilters
+        ? { ...emptyFilters, ...restoredState.appliedFilters }
+        : initialFilters
     const [search, setSearch] = useState(() => restoredState?.search || '')
     const [filterOpen, setFilterOpen] = useState(false)
     const [draftFilters, setDraftFilters] = useState(() => copyFilters(restoredFilters))
     const [appliedFilters, setAppliedFilters] = useState(() => copyFilters(restoredFilters))
     const [sortOpen, setSortOpen] = useState(false)
-    const [selectedSort, setSelectedSort] = useState(() => restoredState?.selectedSort || 'rating')
+    const [selectedSort, setSelectedSort] = useState(() =>
+        [...sortOptions, ...scoreSortOptions].some((option) => option.value === restoredState?.selectedSort)
+            ? restoredState.selectedSort
+            : 'rating',
+    )
     const [currentPage, setCurrentPage] = useState(() => restoredState?.currentPage || 1)
     const [isMobile, setIsMobile] = useState(false)
     const [quizEditorOpen, setQuizEditorOpen] = useState(false)
@@ -482,10 +492,6 @@ function ProductsPageContent() {
         return () => mediaQuery.removeEventListener('change', updateIsMobile)
     }, [])
     const [visualProductUids, setVisualProductUids] = useState(() => restoredState?.visualProductUids || [])
-    // A remembered sort is a deliberate choice; a brand-new visit should
-    // switch to Match score as soon as its saved/quiz profile is available.
-    const hasChosenSort = useRef(Boolean(restoredState?.selectedSort))
-
     // Live quiz answers, so retaking the quiz rescores this page immediately.
     const quizAnswers = useQuizAnswers()
 
@@ -519,17 +525,13 @@ function ProductsPageContent() {
     const concernArea = quizAnswers?.concernArea
         || (savedProfile ? resultProfileToQuizAnswers(savedProfile)?.concernArea : null)
 
-    useEffect(() => {
-        if (scoringProfile && !hasChosenSort.current) {
-            setSelectedSort('score_desc')
-        }
-    }, [scoringProfile])
-
-    // Offering "Match score" with no profile gives a sort that changes nothing.
+    // Scores come from the shopper's quiz, so score thresholds only appear
+    // when there is a profile to calculate them against.
     const availableSortOptions = scoringProfile
-        ? sortOptions
-        : sortOptions.filter((option) => option.value !== 'score_desc')
+        ? [sortOptions[0], ...scoreSortOptions, ...sortOptions.slice(1)]
+        : sortOptions
     const currentSortLabel = sortOptions.find((s) => s.value === selectedSort)?.label
+        || scoreSortOptions.find((s) => s.value === selectedSort)?.label
     const appliedFilterCount = Object.values(appliedFilters)
         .reduce((total, values) => total + values.length, 0)
 
@@ -746,7 +748,6 @@ function ProductsPageContent() {
                 selectedSort={selectedSort}
                 options={availableSortOptions}
                 onSelectSort={(sort) => {
-                    hasChosenSort.current = true
                     setSelectedSort(sort)
                     setCurrentPage(1)
                 }}
