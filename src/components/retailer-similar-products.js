@@ -8,6 +8,7 @@ import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { quizAnswersToScoringProfile } from '@/lib/quiz-profile'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
 import SaveProductButton from '@/components/save-product-button'
+import { getScoreBand } from '@/lib/score-band'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
 
@@ -21,6 +22,8 @@ function SimilarCard({ product }) {
     const price = formatPrice(product.mrp)
     const href = `/retailer-products/${encodeURIComponent(product.product_uid)}`
     const score = product.scoring?.blocked ? null : product.scoring?.score
+    // Same colours and label as the product page's main score badge.
+    const band = Number.isFinite(score) ? getScoreBand(score) : null
 
     return (
         <div className="relative w-[150px] shrink-0 snap-start sm:w-[180px]">
@@ -31,12 +34,12 @@ function SimilarCard({ product }) {
             />
             {Number.isFinite(score) ? (
                 <span
-                    className={`absolute right-1.5 top-1.5 z-10 flex h-8 w-8 items-center justify-center rounded-full text-[11px] font-bold text-white shadow ${
-                        score >= 80 ? 'bg-emerald-600' : score >= 50 ? 'bg-amber-500' : 'bg-[#D17A6D]/100'
-                    }`}
+                    className="absolute right-1.5 top-1.5 z-10 flex h-10 w-10 flex-col items-center justify-center rounded-full text-white shadow"
+                    style={{ backgroundColor: band.fill }}
                     title={product.scoring?.label}
                 >
-                    {score}
+                    <span className="text-[12px] font-bold leading-none">{Math.round(score)}</span>
+                    <span className="mt-0.5 text-[6px] font-semibold uppercase leading-none">{band.label}</span>
                 </span>
             ) : null}
 

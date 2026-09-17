@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { recommend } from "@/lib/engine";
 import { getSkinGuide, SKIN_GUIDES } from "@/lib/seo-pages";
 import { absoluteUrl, productPath } from "@/lib/site";
+import { getScoreBand } from "@/lib/score-band";
 
 export const dynamicParams = false;
 
@@ -39,14 +40,15 @@ export async function generateMetadata({ params }) {
 
 function GuideProductCard({ product }) {
   const price = product.mrp;
+  const band = getScoreBand(product.score);
   return (
     <article className="product-card">
       <div className="product-image-wrap">
         {product.image
           ? <img alt={product.product_name} loading="lazy" src={product.image} />
           : <div className="image-fallback">R</div>}
-        <div className={`score-badge ${product.score >= 80 ? "score-good" : product.score >= 60 ? "score-present" : "score-weak"}`}>
-          <div>{Math.max(0, product.score)}<small>Match</small></div>
+        <div className={`score-badge score-${band.key}`} style={{ backgroundColor: band.fill }}>
+          <div>{Math.max(0, product.score)}<small>{band.label}</small></div>
         </div>
       </div>
       <div className="product-body">

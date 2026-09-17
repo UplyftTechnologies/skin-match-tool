@@ -1,6 +1,7 @@
 import { clampScore, getScoreBand } from '@/lib/score-band'
 
-export default function ScoreBadge({ score }) {
+// Positioned over a product image by default; pass `position` to place it elsewhere.
+export default function ScoreBadge({ score, position = 'absolute right-2 top-2 z-10' }) {
     if (score === null || score === undefined || !Number.isFinite(Number(score))) return null
     const value = clampScore(score)
     const band = getScoreBand(value)
@@ -9,7 +10,7 @@ export default function ScoreBadge({ score }) {
 
     return (
         <div
-            className="absolute right-2 top-2 z-10 flex h-12 w-12 items-center justify-center rounded-full p-[3px] md:h-16 md:w-16"
+            className={`${position} flex h-12 w-12 items-center justify-center rounded-full p-[3px] md:h-16 md:w-16`}
             style={{
                 background: `conic-gradient(${band.ring} ${progressDeg}deg, rgba(255,255,255,0.55) ${progressDeg}deg)`,
                 boxShadow: `0 6px 16px ${band.glow}, 0 1px 3px rgba(0,0,0,0.08)`,

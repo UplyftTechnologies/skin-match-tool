@@ -4,6 +4,7 @@ import React from 'react'
 import Image from 'next/image'
 import bgheroimg from "../../assets/images/bg-6.webp"
 import RetailerLogo from '@/components/retailer-logo'
+import ScoreBadge from '@/components/score-badge'
 
 function KnowMatch() {
     
@@ -50,26 +51,25 @@ function KnowMatch() {
                             </p>
                             <p className="text-[10px] text-gray-700 sm:text-[11px]">Compare prices</p>
 
-                            <div className="mt-1 space-y-0.5">
-                                <div className="flex items-center justify-between">
+                            {/* Logo files are square with the wordmark in the middle third,
+                                so rows get a fixed height instead of the full logo box. */}
+                            <div className="mt-2 space-y-1">
+                                <div className="flex h-7 items-center justify-between">
                                     <RetailerLogo site="tira" height={42} />
                                     <span className="text-xs font-medium text-gray-700 sm:text-sm">&#8377;799</span>
                                 </div>
-                                <div className="flex items-center justify-between">
+                                <div className="flex h-7 items-center justify-between">
                                     <RetailerLogo site="nykaa" height={42} />
                                     <span className="text-xs font-medium text-gray-700 sm:text-sm">&#8377;849</span>
                                 </div>
-                                <div className="flex items-center justify-between">
+                                <div className="flex h-7 items-center justify-between">
                                     <RetailerLogo site="purplle" height={42} className="text-[#7B2D8E]" />
                                     <span className="text-xs font-medium text-gray-700 sm:text-sm">&#8377;825</span>
                                 </div>
                             </div>
 
-                            {/* Match badge */}
-                            <div className="absolute -right-3 -top-3 flex h-12 w-12 flex-col items-center justify-center rounded-full bg-[#3fbf6f] text-white shadow-md ring-4 ring-white sm:h-14 sm:w-14">
-                                <span className="text-xs font-extrabold leading-none sm:text-sm">92%</span>
-                                <span className="text-[7px] font-semibold uppercase leading-none sm:text-[8px]">Match</span>
-                            </div>
+                            {/* Same badge as the product cards */}
+                            <ScoreBadge score={92} position="absolute -right-3 -top-3" />
                         </div>
 
                         <button
