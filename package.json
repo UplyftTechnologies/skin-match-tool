@@ -9,10 +9,20 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "cap:sync": "cap sync",
+    "cap:android": "cap open android",
+    "cap:ios": "cap open ios",
+    "android": "cap open android",
+    "ios": "cap open ios"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/browser": "^8.0.4",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.3",
     "@supabase/supabase-js": "^2.110.8",
     "next": "16.2.11",
     "nodemailer": "^9.0.5",
@@ -26,6 +36,9 @@
     "web-push": "^3.6.7"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "26.1.1",
     "@types/react": "19.2.17",

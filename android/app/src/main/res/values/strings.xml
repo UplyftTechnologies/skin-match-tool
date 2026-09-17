@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Match My Skin</string>
+    <string name="title_activity_main">Match My Skin</string>
+    <string name="package_name">com.roopsee.matchmyskin</string>
+    <string name="custom_url_scheme">com.roopsee.matchmyskin</string>
+</resources>

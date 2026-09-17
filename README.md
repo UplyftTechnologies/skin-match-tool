@@ -180,3 +180,34 @@ The included `render.yaml` contains the same Web Service configuration. Add the 
 ## Deploy on Vercel
 
 Import the repository, keep the detected framework as Next.js, add the Telegram variables from `.env.example`, and deploy.
+
+## Mobile apps (Android & iOS)
+
+The apps are Capacitor shells around the live site: they load `https://roopsee.com`
+(`server.url` in `capacitor.config.json`), so every web deploy updates the apps too.
+Only native changes (plugins, permissions, icons) need a new store release.
+
+- `src/components/native-app-bridge.js` — splash, status bar, Android back button,
+  deep links, and opens external/retailer links in an in-app browser tab.
+- `src/lib/native-app.js` — `isNativeApp()` / `useIsNativeApp()` for app-only behaviour.
+- `capacitor-www/offline.html` — shown when the site can't load.
+
+```bash
+npm run cap:sync      # after installing a Capacitor plugin or editing capacitor.config.json
+npm run cap:android   # open in Android Studio (needs Android Studio + JDK 21)
+npm run cap:ios       # open in Xcode (macOS only)
+```
+
+To test against a local dev server, temporarily set `server.url` to
+`http://<your-LAN-IP>:3000` and `server.cleartext` to `true`, then `npm run cap:sync`.
+Don't commit that change.
+
+Not done yet:
+- **Push notifications**: web push doesn't work in the app WebView. This needs
+  `@capacitor/push-notifications`, a Firebase project (`google-services.json`),
+  an APNs key, and a server path that sends via FCM.
+- **Google sign-in**: hidden in the app (Google blocks OAuth in WebViews). Add a native
+  Google sign-in plugin that posts the ID token to `/api/auth/google`.
+- **App links**: publish `public/.well-known/assetlinks.json` (Android) and
+  `apple-app-site-association` (iOS) with the release signing details.
+- App icons and splash images: `npx @capacitor/assets generate` from a 1024px source.

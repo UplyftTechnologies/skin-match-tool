@@ -9,6 +9,7 @@ import ScrollTracker from "@/components/tracking/scroll-tracker";
 import QuizRehydrator from "@/components/tracking/quiz-rehydrator";
 import BottomNav from "@/components/bottom-nav";
 import GlobalQuizPrompt from "@/components/global-quiz-prompt";
+import NativeAppBridge from "@/components/native-app-bridge";
 import { Cormorant_Garamond, Lato } from 'next/font/google'
 
 export const viewport = {
@@ -114,6 +115,7 @@ export default function RootLayout({ children }) {
         </WishlistProvider>
 
         <NotificationOptIn />
+        <NativeAppBridge />
 
         {process.env.NODE_ENV === "production" &&
           process.env.NEXT_PUBLIC_GA_ID ? (

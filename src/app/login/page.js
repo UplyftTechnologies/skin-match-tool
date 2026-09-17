@@ -6,6 +6,7 @@ import { FiUser, FiArrowLeft } from 'react-icons/fi'
 import { FcGoogle } from 'react-icons/fc'
 import { supabase } from '@/lib/supabase/client'
 import { useOtpAuth } from '@/hooks/use-otp-auth'
+import { useIsNativeApp } from '@/lib/native-app'
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
 
@@ -26,6 +27,9 @@ function LoginPageContent() {
   const [avatarError, setAvatarError] = useState('')
   const [googleLoading, setGoogleLoading] = useState(false)
   const [googleError, setGoogleError] = useState('')
+  // Google refuses OAuth inside embedded WebViews (disallowed_useragent), so
+  // the app offers phone OTP only until native Google sign-in is added.
+  const isNativeApp = useIsNativeApp()
 
   useEffect(() => {
     return () => {
@@ -315,26 +319,30 @@ function LoginPageContent() {
             </button>
           </form>
         )}
-        <div className="my-4 flex items-center gap-3 sm:my-5">
-          <span className="h-px flex-1 bg-gray-200" />
-          <span className="text-xs uppercase tracking-widest text-gray-400">Or</span>
-          <span className="h-px flex-1 bg-gray-200" />
-        </div>
+        {isNativeApp ? null : (
+          <>
+            <div className="my-4 flex items-center gap-3 sm:my-5">
+              <span className="h-px flex-1 bg-gray-200" />
+              <span className="text-xs uppercase tracking-widest text-gray-400">Or</span>
+              <span className="h-px flex-1 bg-gray-200" />
+            </div>
 
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          disabled={googleLoading}
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-wait disabled:opacity-60"
-        >
-          <FcGoogle size={18} />
-          {googleLoading ? 'Connecting to Google…' : 'Continue with Google'}
-        </button>
-        {googleError ? (
-          <p className="mt-3 text-center text-xs font-medium text-red-600" role="alert">
-            {googleError}
-          </p>
-        ) : null}
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={googleLoading}
+              className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-wait disabled:opacity-60"
+            >
+              <FcGoogle size={18} />
+              {googleLoading ? 'Connecting to Google…' : 'Continue with Google'}
+            </button>
+            {googleError ? (
+              <p className="mt-3 text-center text-xs font-medium text-red-600" role="alert">
+                {googleError}
+              </p>
+            ) : null}
+          </>
+        )}
 
         <div className="mt-6 grid grid-cols-3 divide-x divide-gray-300 text-center sm:mt-7">
           {benefits.map((benefit) => (

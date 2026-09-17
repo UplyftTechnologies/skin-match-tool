@@ -1,0 +1,31 @@
+{
+  "appId": "com.roopsee.matchmyskin",
+  "appName": "Match My Skin",
+  "webDir": "capacitor-www",
+  "server": {
+    "url": "https://roopsee.com",
+    "cleartext": false,
+    "errorPath": "offline.html",
+    "allowNavigation": ["roopsee.com", "www.roopsee.com"]
+  },
+  "android": {
+    "backgroundColor": "#fff9f2"
+  },
+  "ios": {
+    "backgroundColor": "#fff9f2",
+    "contentInset": "never"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": false,
+      "backgroundColor": "#fff9f2",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "overlaysWebView": false,
+      "style": "LIGHT",
+      "backgroundColor": "#fff9f2"
+    }
+  }
+}
