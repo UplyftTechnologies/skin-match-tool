@@ -1,6 +1,6 @@
 # Roopsee Match Studio
 
-A lightweight Next.js application that scores the live Roopsee catalog against a skincare profile and builds premium, value-fit, and weekly routines.
+A lightweight Next.js application that scores the live Roopsee catalog against a skincare profile.
 
 The complete application now runs in JavaScript. It does not require Python, Flask, pandas, or a separate API service.
 
@@ -43,7 +43,7 @@ The Excel files in `data/` remain source/reference files. Replace `products.csv`
 
 ### `POST /api/recommend`
 
-Returns ranked products, summary counts, component scores, explanations, and a routine.
+Returns ranked products, summary counts, component scores, and explanations.
 
 ```json
 {
@@ -56,10 +56,6 @@ Returns ranked products, summary counts, component scores, explanations, and a r
   "selectedSpecialConditions": ["None"]
 }
 ```
-
-### `POST /api/routine`
-
-Accepts the same profile and returns only the routine response.
 
 ### `GET /api/coverage`
 
@@ -134,12 +130,10 @@ src/
     globals.css          Responsive application styles
     layout.js
     page.js
-  components/
-    match-studio.js      Quiz, product grid, routines, and details
   lib/
     constants.js         Quiz and score-column definitions
     data.js              Lightweight CSV parser and catalog loader
-    engine.js            Scoring, ranking, routines, and coverage
+    engine.js            Scoring, ranking, and coverage
     profiles.js          Profile rules and coverage generators
 data/
   products.csv           Runtime catalog and scores

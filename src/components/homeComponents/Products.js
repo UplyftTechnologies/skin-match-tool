@@ -7,7 +7,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { FiSearch, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import { BsHeartFill } from 'react-icons/bs'
-import { GoPlus } from "react-icons/go";
 import { BiHeart } from 'react-icons/bi'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { FreeMode, Navigation } from 'swiper/modules'
@@ -21,10 +20,8 @@ import { useRetailerCatalog } from '@/hooks/use-retailer-catalog'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
 import { quizAnswersToScoringProfile, resultProfileToQuizAnswers } from '@/lib/quiz-profile'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
-import { useIsInRoutine } from '@/hooks/use-in-routine'
 import ScoreBadge from '@/components/score-badge'
 import VisualSearch from '@/components/visual-search'
-import AddToRoutineModal from '@/components/routine/AddToRoutineModal'
 
 
 const SCORE_BANDS = [
@@ -121,10 +118,8 @@ function ProductCard({ product, concernArea }) {
     const { isWishlisted, toggleWishlist } = useWishlist()
     const router = useRouter()
     const [imageFailed, setImageFailed] = useState(false)
-    const [routineModalOpen, setRoutineModalOpen] = useState(false)
     const savedProduct = wishlistProduct(product)
     const wishlisted = isWishlisted(savedProduct.product_uid)
-    const inRoutine = useIsInRoutine(savedProduct.product_uid)
     const productHref = `/retailer-products/${encodeURIComponent(product.product_uid)}`
     const mrp = formatPrice(product.mrp)
 
@@ -226,27 +221,6 @@ function ProductCard({ product, concernArea }) {
             </div>
 
             <div className="mx-auto flex flex-col w-[90%] items-center gap-1 lg:gap-2">
-                {concernArea !== 'body' ? (
-                    <div onClick={(event) => {
-                        event.stopPropagation()
-                        setRoutineModalOpen(true)
-                    }}
-                        className="flex w-full p-1 rounded-full border border-[#e08a7d] items-center
-                         justify-center  lg:gap-2">
-                        <button
-                            type="button"
-                            aria-label="Add to routine"
-                            aria-pressed={inRoutine}
-
-                            className="flex h-5 w-5 lg:h-6 lg:w-6 shrink-0 items-center
-                             justify-center
-                              transition-colors duration-200 hover:bg-[#f8eeeb]"
-                        >
-                            {inRoutine ? <GoPlus /> : <GoPlus />}
-                        </button>
-                        <span className="font-lato text-[11px] lg:text-[15px]">Add Routine</span>
-                    </div>
-                ) : null}
                 <button
                     type="button"
                     onClick={handleBuyNow}
@@ -258,11 +232,6 @@ function ProductCard({ product, concernArea }) {
                     View Details
                 </button>
             </div>
-            <AddToRoutineModal
-                open={routineModalOpen}
-                onClose={() => setRoutineModalOpen(false)}
-                product={product}
-            />
         </div>
     )
 }
@@ -281,9 +250,6 @@ export default function Products() {
         return () => clearTimeout(timer)
     }, [quizAnswers])
 
-    // AM/PM routines are a face concept — a body-concern shopper gets no
-    // "Add Routine" affordance on the product cards, same as the home
-    // page's routine teaser section.
     const concernArea = quizAnswers?.concernArea
         || (savedProfile ? resultProfileToQuizAnswers(savedProfile)?.concernArea : null)
 
@@ -509,51 +475,7 @@ export default function Products() {
                             )
                         })}
                     </div>
-                ) : (
-                    <div className="mx-auto mt-5 max-w-4xl space-y-6">
-                        {['cleanser', 'moisturiser'].map((slot) => {
-                            const valueFitItem = [
-                                ...(routine?.tiers?.value_fit?.am || []),
-                                ...(routine?.tiers?.value_fit?.pm || []),
-                            ].find((item) => item.slot === slot && item.product)
-                            const premiumItem = [
-                                ...(routine?.tiers?.premium?.am || []),
-                                ...(routine?.tiers?.premium?.pm || []),
-                            ].find((item) => item.slot === slot && item.product)
-                            const label = slot === 'moisturiser' ? 'Moisturiser' : 'Cleanser'
-
-                            return (
-                                <section key={slot}>
-                                    <h3 className="mb-2 text-center font-lato text-sm text-slate-700">
-                                        {label}
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-2 md:gap-6">
-                                        {[
-                                            ['Value Fit', valueFitItem],
-                                            ['Premium', premiumItem],
-                                        ].map(([tierLabel, item]) => (
-                                            <div key={tierLabel} className="flex min-w-0 flex-col">
-                                                <p className={`mx-auto mb-3 rounded-full border px-4 py-1.5 text-center font-lato text-[11px] font-semibold uppercase tracking-[0.14em] shadow-sm md:text-xs ${tierLabel === 'Premium'
-                                                    ? 'border-[#e7c8a0] bg-[#fff8ed] text-[#9a6428]'
-                                                    : 'border-[#c9dedc] bg-[#eef7f6] text-[#426d69]'
-                                                    }`}>
-                                                    {tierLabel}
-                                                </p>
-                                                {item?.product ? (
-                                                    <ProductCard product={item.product} concernArea={concernArea} />
-                                                ) : (
-                                                    <div className="flex min-h-52 items-center justify-center rounded-lg bg-white p-4 text-center text-xs text-gray-400">
-                                                        No {tierLabel.toLowerCase()} match found
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </section>
-                            )
-                        })}
-                    </div>
-                )}
+                ) : null}
 
                 <button
                     type="button"

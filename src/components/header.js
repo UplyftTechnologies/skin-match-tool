@@ -8,13 +8,8 @@ import { IoPersonCircleOutline } from "react-icons/io5";
 import { FaCartShopping } from "react-icons/fa6";
 import { supabase } from "@/lib/supabase/client";
 import { useWishlist } from "@/context/WishlistContext";
-import { useRoutineCount } from "@/hooks/use-routine-count";
-import { useQuizAnswers } from "@/hooks/use-quiz-answers";
-import { getSavedSkinProfile } from "@/lib/profile-storage";
-import { resultProfileToQuizAnswers } from "@/lib/quiz-profile";
 import { trackingService } from "@/lib/tracking/trackingClient";
 import { EVENTS } from "@/lib/tracking/events";
-import { FiSunrise } from "react-icons/fi";
 
 export const Logo = ({ dark, onClick }) => (
   <div
@@ -99,26 +94,9 @@ export default function Header({ className = "" }) {
   const [userSession, setUserSession] = useState(null);
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const { wishlistIds } = useWishlist();
-  const routineCount = useRoutineCount();
   const router = useRouter();
   const pathname = usePathname();
   const showNavigationFlow = pathname === "/";
-
-  const quizAnswers = useQuizAnswers();
-  const [savedProfile, setSavedProfile] = useState(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSavedProfile(getSavedSkinProfile()?.profile || null);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [quizAnswers]);
-
-  // AM/PM routines are a face concept — a body-concern shopper gets no
-  // routine link in the header either, same as the home page teaser and
-  // the "Add Routine" button on product cards.
-  const concernArea = quizAnswers?.concernArea
-    || (savedProfile ? resultProfileToQuizAnswers(savedProfile)?.concernArea : null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -172,29 +150,6 @@ export default function Header({ className = "" }) {
           <Logo dark={false} onClick={handleLogoClick} />
 
           <div className="flex items-center gap-2">
-          {concernArea !== "body" && (routineCount > 0 || (sessionLoaded && userSession)) && (
-            <Link
-              href="/build-routine"
-              aria-label="View my routine"
-              className="relative flex items-center gap-1.5 text-xs font-medium text-gray-700"
-              onClick={() =>
-                trackingService.trackEvent(EVENTS.CLICKED_VIEW_ALL_PRODUCTS, {
-                  source: "header_routine_icon",
-                  routine_count: routineCount,
-                })
-              }
-            >
-              <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full border border-gray-300">
-                <FiSunrise size={15} />
-              </span>
-              {sessionLoaded && userSession ? <span></span> : null}
-              {routineCount > 0 ? (
-              <span className="absolute -top-1 -right-1 bg-[#D17A6D] text-white text-[10px] leading-none rounded-full w-4 h-4 flex items-center justify-center">
-                {routineCount}
-              </span>
-              ) : null}
-            </Link>
-          )}
           {sessionLoaded && userSession && wishlistIds.length > 0 && (
             <Link
               href="/wishlist"

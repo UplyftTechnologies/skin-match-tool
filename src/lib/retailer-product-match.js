@@ -1,9 +1,7 @@
 import { supabaseAdmin } from "@/lib/supabase/server";
 
-// Shared by the retailer product detail page and the routine price-compare
-// page — the "which listings are the same physical product, sold by a
-// different retailer" matching logic, so both surfaces agree on what counts
-// as a match instead of drifting apart.
+// The "which listings are the same physical product, sold by a different
+// retailer" matching logic used by the retailer product detail page.
 
 const COMPARISON_FIELDS =
   "id,site,gtin,product_name,variant,mrp,selling_price,discount_pct,in_stock,product_url,image_url,categories,ingredients,description,how_to_use,key_ingredients,product_attributes";

@@ -9,7 +9,6 @@ import SearchByProducts from '@/components/homeComponents/SearchByProducts'
 import SearchByBrands from '@/components/homeComponents/SearchByBrands'
 import IndianRockstar from '@/components/homeComponents/IndianRockstar.js'
 import MeetDocter from "@/components/homeComponents/MeetDocter.js"
-import Routine from "@/components/homeComponents/Routine"
 import RequireQuizGate from "@/components/require-quiz-gate"
 import BrandSlider from '@/components/BrandSlider'
 import AnimatedSkinShowcase from '@/components/homeComponents/AnimatedSkinShowcase'
@@ -26,16 +25,11 @@ function page() {
       {/* <Animation2  className="concern-animation-home" /> */}
       {/* <AnimatedSkinShowcase /> */}
       <MatchMySkin />
-      <RequireQuizGate
-        title="Take the quiz above to see products"
-        description="Answer a few quick questions so every product here is scored for your skin."
-        hideCta
-      >
+      <RequireQuizGate hidePrompt>
         <Products />
       </RequireQuizGate>
       <BrandSlider />
       <MeetDocter />
-      <Routine />
       <SearchByCategory />
       <SearchByProducts />
       <SearchByBrands />

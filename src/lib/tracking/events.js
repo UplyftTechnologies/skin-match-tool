@@ -1,6 +1,4 @@
 export const EVENTS = {
-  CLICKED_ROUTINE_MODE_TOGGLE: 'clicked_routine_mode_toggle',
-
   QUIZ_STARTED: 'quiz_started',
   QUIZ_UPDATED: 'quiz_updated',
   QUIZ_COMPLETED: 'quiz_completed',
@@ -68,22 +66,4 @@ export const EVENTS = {
   // How it works page
   PAGE_VIEWED_HOW_IT_WORKS: 'page_viewed_how_it_works',
   CLICKED_HOW_IT_WORKS_CTA: 'clicked_how_it_works_cta',
-
-  // Routine builder — home teaser (Routine.js), /build-routine, and the
-  // "Add to Routine" picker (AddToRoutineModal.js)
-  PAGE_VIEWED_BUILD_ROUTINE: 'page_viewed_build_routine',
-  CLICKED_BUILD_ROUTINE_CTA: 'clicked_build_routine_cta',
-  CLICKED_ROUTINE_TEASER_ADD_STEP: 'clicked_routine_teaser_add_step',
-  CLICKED_ROUTINE_TIME_TAB: 'clicked_routine_time_tab',
-  CLICKED_ROUTINE_STEP_CHANGE: 'clicked_routine_step_change',
-  CLICKED_ROUTINE_STEP_REMOVE: 'clicked_routine_step_remove',
-  SELECTED_ROUTINE_STEP_PRODUCT: 'selected_routine_step_product',
-  CLICKED_SEE_BETTER_ROUTINE_MATCH: 'clicked_see_better_routine_match',
-  CLICKED_ROUTINE_COMPARE_SHOP: 'clicked_routine_compare_shop',
-  CLICKED_ROUTINE_SHOP: 'clicked_routine_shop',
-  CLICKED_SAVE_ROUTINE: 'clicked_save_routine',
-  OPENED_ADD_TO_ROUTINE_MODAL: 'opened_add_to_routine_modal',
-  CLICKED_ADD_TO_ROUTINE_SLOT: 'clicked_add_to_routine_slot',
-  CLICKED_ADD_TO_ROUTINE_EXTRA_STEP: 'clicked_add_to_routine_extra_step',   
-
 };

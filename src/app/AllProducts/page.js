@@ -3,7 +3,6 @@
 import { Suspense, useEffect, useMemo, useState } from 'react'
 import { allowsConcernScore } from '@/lib/concern-area'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { GoPlus } from "react-icons/go";
 import Image from 'next/image'
 import Link from 'next/link'
 import { FiSearch } from 'react-icons/fi'
@@ -17,14 +16,12 @@ import { EVENTS } from '@/lib/tracking/events'
 import { useRetailerCatalog } from '@/hooks/use-retailer-catalog'
 import { quizAnswersToScoringProfile, resultProfileToQuizAnswers } from '@/lib/quiz-profile'
 import { useQuizAnswers } from '@/hooks/use-quiz-answers'
-import { useIsInRoutine } from '@/hooks/use-in-routine'
 import { getSavedSkinProfile } from '@/lib/profile-storage'
 import { getLoggedInUserId } from '@/lib/tracking/identity'
 import QuizAnswersBar from '@/components/quiz-answers-bar'
 import VisualSearch from '@/components/visual-search'
 import MatchMySkin from '@/components/homeComponents/MatchMySkin'
 import { getScoreBand } from '@/lib/score-band'
-import AddToRoutineModal from '@/components/routine/AddToRoutineModal'
 
 const filterTabs = [
     { key: 'brand', label: 'Brand' },
@@ -78,10 +75,8 @@ function ProductCard({ product, concernArea }) {
     const router = useRouter()
     const { isWishlisted, toggleWishlist } = useWishlist()
     const [imageFailed, setImageFailed] = useState(false)
-    const [routineModalOpen, setRoutineModalOpen] = useState(false)
     const savedProduct = product
     const wishlisted = isWishlisted(savedProduct.product_uid)
-    const inRoutine = useIsInRoutine(savedProduct.product_uid)
     const productHref = `/retailer-products/${encodeURIComponent(product.product_uid)}`
 
     function handleSaveMatch(event) {
@@ -226,25 +221,6 @@ function ProductCard({ product, concernArea }) {
                 </span>
             </div>
             <div className="mx-auto flex flex-col w-[90%] items-center gap-2">
-                {concernArea !== 'body' ? (
-                    <div onClick={(event) => {
-                        event.stopPropagation()
-                        setRoutineModalOpen(true)
-                    }}
-                        className="flex w-full p-1 rounded-full border border-[#e08a7d] items-center justify-center gap-1 lg:gap-2">
-                        <button
-                            type="button"
-                            aria-label="Add to routine"
-                            aria-pressed={inRoutine}
-
-                            className="flex h-5 w-5 lg:h-6 lg:w-6 shrink-0 items-center justify-center
-                             text-[#e08a7d] transition-colors duration-200 hover:bg-[#f8eeeb]"
-                        >
-                            {inRoutine ? <GoPlus /> : <GoPlus />}
-                        </button>
-                        <span className="font-lato text-[11px] lg:text-[15px]">Add Routine</span>
-                    </div>
-                ) : null}
                 <button
                     type="button"
                     onClick={handleBuyNow}
@@ -256,11 +232,6 @@ function ProductCard({ product, concernArea }) {
                     View Details
                 </button>
             </div>
-            <AddToRoutineModal
-                open={routineModalOpen}
-                onClose={() => setRoutineModalOpen(false)}
-                product={product}
-            />
         </div>
     )
 }
@@ -520,8 +491,6 @@ function ProductsPageContent() {
         return savedProfile?.selectedSkinType ? savedProfile : null
     }, [quizAnswers, savedProfile])
 
-    // AM/PM routines are a face concept — a body-concern shopper gets no
-    // "Add Routine" affordance on the product cards here either.
     const concernArea = quizAnswers?.concernArea
         || (savedProfile ? resultProfileToQuizAnswers(savedProfile)?.concernArea : null)
 

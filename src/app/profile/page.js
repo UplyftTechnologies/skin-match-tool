@@ -284,11 +284,6 @@ export default function ProfilePage() {
                                 </div>
                             </div>
                         )}
-
-                        <Link href="/build-routine" className="mb-6 lg:mb-0 flex items-center justify-between gap-3 rounded-lg border border-gray-100 bg-white px-4 py-4 text-sm font-semibold text-gray-900">
-                            <span>My Routine</span>
-                            <BiChevronRight aria-hidden="true" size={20} />
-                        </Link>
                     </div>
 
                     {/* ------------------------------------------ Right column (desktop) */}

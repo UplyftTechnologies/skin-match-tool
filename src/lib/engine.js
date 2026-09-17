@@ -1,5 +1,5 @@
 import { AGE_COLUMNS, CONCERN_COLUMNS, QUIZ_OPTIONS, THRESHOLDS } from "./constants";
-import { cleanText, loadProducts, normKey, normLabel } from "./data";
+import { cleanText, loadProducts, normLabel } from "./data";
 import { sanitizeProfile } from "./profiles";
 import { concernAreaFor, matchesConcernArea } from "./concern-area";
 
@@ -19,11 +19,6 @@ function isUnder16(profile) {
   return JSON.stringify(ageColumns(profile.age)) === JSON.stringify(["<16"]);
 }
 
-function hasSpecialCondition(profile) {
-  const conditions = (profile.selectedSpecialConditions || []).map(normLabel).filter(Boolean);
-  return conditions.length > 0 && !(conditions.length === 1 && conditions[0] === "none");
-}
-
 function isDryOrSensitive(profile) {
   return normLabel(profile.selectedSkinType) === "dry" || isSensitive(profile);
 }
@@ -36,10 +31,6 @@ function hasAntiAgingConcern(profile) {
         || label.includes("wrinkle")
         || label.includes("fine line");
     });
-}
-
-function hasAging(profile) {
-  return (profile.selectedFaceBodyConcerns || []).some((concern) => normLabel(concern) === "aging");
 }
 
 function skinColumn(profile) {
@@ -138,25 +129,6 @@ function serumIsNightOnly(product, profile) {
   return specials.some((item) => ["pregnant", "breastfeeding"].includes(item))
     || isUnder16(profile)
     || isDryOrSensitive(profile);
-}
-
-function routineNotes(product, profile) {
-  const notes = [];
-  if (serumIsNightOnly(product, profile)) {
-    notes.push("For this profile, suggest this serum only at night.");
-  }
-  if (isRetinoid(product)) {
-    notes.push("Use only at night and pair with sunscreen the next morning.");
-    if (
-      hasAging(profile)
-      || isUnder16(profile)
-      || isDryOrSensitive(profile)
-      || hasSpecialCondition(profile)
-    ) {
-      notes.push("Use the sandwich method: apply moisturiser before retinol and again after retinol.");
-    }
-  }
-  return notes;
 }
 
 function matchLabel(score) {
@@ -277,7 +249,6 @@ function scoreProduct(product, profile) {
     ingredient_cautions: product.ingredient_cautions,
     usage_instructions: product.usage_instructions,
     ingredients: product.ingredients,
-    routine_notes: routineNotes(product, profile),
     image: product.image,
     component_scores: components,
     score_basis: "product_type_rule_with_hard_blocker_or_rounded_average",
@@ -315,104 +286,6 @@ function summarize(products) {
   };
 }
 
-function numberPrice(value) {
-  const cleaned = String(value || "").replace(/[^\d.]/g, "");
-  const number = Number(cleaned);
-  return cleaned && Number.isFinite(number) ? number : null;
-}
-
-function effectivePrice(product) {
-  return numberPrice(product.selling_price) || numberPrice(product.mrp);
-}
-
-function productSearchText(product) {
-  return [
-    product.product_name,
-    product.product_type,
-    product.hero_ingredient,
-    product.secondary_hero_ingredients,
-    product.ingredients,
-  ].join(" ").toLowerCase();
-}
-
-function matchesSlot(product, slot) {
-  const type = normalizedProductType(product.product_type);
-  const rawType = cleanText(product.product_type).toLowerCase();
-  const text = productSearchText(product);
-  if (slot === "cleanser") return type === "cleanser";
-  if (slot === "serum") return type === "serum";
-  if (slot === "moisturiser") return type === "moisturizer" || ["body lotion", "body cream"].includes(rawType);
-  if (slot === "sunscreen") return type === "sunscreen" || text.includes("sunscreen") || text.includes("spf");
-  return false;
-}
-
-const routineSlots = {
-  am: [["cleanser", "Cleanser"], ["moisturiser", "Moisturiser"], ["sunscreen", "Sunscreen"]],
-  pm: [["serum", "Serum"], ["moisturiser", "Moisturiser"], ["cleanser", "Cleanser"]],
-};
-
-const routineTiers = {
-  premium: {
-    label: "Premium",
-    description: "Score 90+ and effective price above Rs. 1000.",
-    matches: (product) => product.score >= 90 && effectivePrice(product) > 1000,
-  },
-  value_fit: {
-    label: "Value Fit",
-    description: "Best score with effective price below Rs. 1000.",
-    matches: (product) => {
-      const value = effectivePrice(product);
-      return value !== null && value < 1000;
-    },
-  },
-};
-
-function buildRoutine(products) {
-  const routine = {
-    tiers: {},
-    missing_slots: [],
-    selection_basis: "highest_scored_product_per_routine_slot_from_current_profile_results_with_price_tiers_and_top_two_weekly_masks",
-  };
-  for (const [tierKey, tier] of Object.entries(routineTiers)) {
-    const payload = { label: tier.label, description: tier.description, am: [], pm: [] };
-    for (const [period, slots] of Object.entries(routineSlots)) {
-      for (const [slot, label] of slots) {
-        const product = products.find((item) => matchesSlot(item, slot) && tier.matches(item)) || null;
-        payload[period].push({ tier: tierKey, period, slot, label, product });
-        if (!product) routine.missing_slots.push({ tier: tierKey, period, slot, label });
-      }
-    }
-    routine.tiers[tierKey] = payload;
-  }
-
-  const seen = new Set();
-  const masks = products.filter((product) => {
-    const key = normKey(product.product_uid || product.product_name);
-    const text = productSearchText(product);
-    const isMask = cleanText(product.product_type).toLowerCase().includes("mask")
-      || cleanText(product.product_type).toLowerCase().includes("masque")
-      || text.includes("mask")
-      || text.includes("masque");
-    if (!isMask || seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  }).slice(0, 2);
-
-  routine.weekly = [0, 1].map((index) => {
-    const item = {
-      period: "weekly",
-      slot: `mask_${index + 1}`,
-      label: `Best Mask ${index + 1}`,
-      product: masks[index] || null,
-    };
-    if (!item.product) routine.missing_slots.push({ period: item.period, slot: item.slot, label: item.label });
-    return item;
-  });
-  routine.am = routine.tiers.premium.am;
-  routine.pm = routine.tiers.premium.pm;
-  return routine;
-}
-
 function sortProducts(a, b) {
   if (a.score !== b.score) return b.score - a.score;
   if (a.category !== b.category) return a.category < b.category ? -1 : 1;
@@ -440,21 +313,7 @@ export async function recommend(input = {}, requestedLimit = 500) {
     total_matches: sorted.length,
     returned: products.length,
     summary: summarize(products),
-    routine: buildRoutine(sorted),
     products,
-  };
-}
-
-export async function routine(profile, limit = 1000) {
-  const response = await recommend(profile, limit);
-  return {
-    profile: response.profile,
-    input_profile: response.input_profile,
-    profile_adjustments: response.profile_adjustments,
-    target_sheets: response.target_sheets,
-    total_matches: response.total_matches,
-    returned: response.returned,
-    routine: response.routine,
   };
 }
 

@@ -2,8 +2,7 @@
 
 > A free personalised skincare product matcher. Users answer questions about
 > their skin type, sensitivity, concerns, age and gender, and get scored
-> product recommendations plus AM/PM/weekly routines built from a live
-> skincare catalog.
+> product recommendations from a live skincare catalog.
 
 ## Key pages
 - [Skin Match Tool](https://roopsee.com/): the main quiz and product matcher
@@ -13,4 +12,4 @@
 Roopsee is a skincare recommendation platform. The matcher scores products
 by skin type (oily, dry, normal, combination), sensitivity, concern
 (acne, dryness, pigmentation, etc.), age group and gender, then ranks
-catalog products and builds a two-tier (premium / value) routine.
+catalog products by match score.

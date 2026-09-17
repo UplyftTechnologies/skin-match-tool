@@ -45,7 +45,6 @@ function fetchScoredProducts(profile) {
 export function useScoredProducts() {
     const [quizAnswers, setQuizAnswers] = useState(undefined)
     const [products, setProducts] = useState([])
-    const [routine, setRoutine] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
@@ -82,7 +81,6 @@ export function useScoredProducts() {
 
                 if (!active) return
                 setProducts(payload.products || [])
-                setRoutine(payload.routine || null)
                 setError('')
             } catch (fetchError) {
                 if (active) {
@@ -99,5 +97,5 @@ export function useScoredProducts() {
         }
     }, [quizAnswers])
 
-    return { products, routine, loading, error, quizAnswers }
+    return { products, loading, error, quizAnswers }
 }

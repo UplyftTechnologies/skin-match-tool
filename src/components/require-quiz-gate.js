@@ -11,7 +11,7 @@ import MatchMySkin from '@/components/homeComponents/MatchMySkin'
 // until the shopper has a real quiz answer or saved profile. Nothing renders
 // until both signals have loaded, so a visitor without a profile never sees a
 // flash of gated products before this replaces them with the quiz prompt.
-export default function RequireQuizGate({ children, title, description, hideCta = false, navigateToHomeQuiz = false }) {
+export default function RequireQuizGate({ children, title, description, hideCta = false, hidePrompt = false, navigateToHomeQuiz = false }) {
     const quizAnswers = useQuizAnswers()
     const [savedProfile, setSavedProfile] = useState(null)
     const [savedProfileLoaded, setSavedProfileLoaded] = useState(false)
@@ -35,6 +35,7 @@ export default function RequireQuizGate({ children, title, description, hideCta 
 
     if (!resolved) return null
     if (hasProfile) return children
+    if (hidePrompt) return null
 
     return (
         <div className="mx-auto max-w-2xl px-4 py-14 text-center">
