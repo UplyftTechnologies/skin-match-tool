@@ -220,16 +220,16 @@ function ProductCard({ product, concernArea }) {
                         : SITE_LABELS[product.site] || product.site}
                 </span>
             </div>
-            <div className="mx-auto flex flex-col w-[90%] items-center gap-2">
+            <div className="mx-auto mt-auto flex w-[90%] flex-col items-center gap-2">
                 <button
                     type="button"
                     onClick={handleBuyNow}
                     style={{ fontSize: '11px' }}
                     className="flex-1 font-semibold border rounded-full
-                                py-[8px] transition-colors w-full duration-200 text-white bg-[#e08a7d] 
+                                py-[8px] transition-colors w-full duration-200 text-white bg-[#e08a7d]
                                 border-[#e08a7d] hover:bg-[#d17a6d]"
                 >
-                    View Details
+                    Shop Now
                 </button>
             </div>
         </div>

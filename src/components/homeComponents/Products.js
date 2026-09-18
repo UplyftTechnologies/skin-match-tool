@@ -229,7 +229,7 @@ function ProductCard({ product, concernArea }) {
                      py-[8px] transition-colors w-full duration-200 text-white bg-[#e08a7d] 
                      border-[#e08a7d] hover:bg-[#d17a6d]"
                 >
-                    View Details
+                    Shop Now
                 </button>
             </div>
         </div>
