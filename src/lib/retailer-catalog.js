@@ -8,6 +8,7 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 import { detectRestrictedActives } from "@/lib/scoring/ingredient-safety";
 import { listingSize, variantBaseKey } from "@/lib/variant-sizes";
 import { isMultipack } from "@/lib/retailer-match";
+import { isNonProductImageUrl } from "@/lib/product-image";
 
 const CATALOG_FIELDS = [
   "id",
@@ -142,6 +143,14 @@ export function deriveSkinFacts(rows, categoryRow) {
   };
 }
 
+// The primary listing's image can be a shade-swatch thumbnail rather than a
+// product photo; siblings selling the identical item on other retailers
+// usually have a real photo, so fall through to those before giving up.
+function pickCardImage(primary, group) {
+  const candidates = [primary.image_url, ...group.map((row) => row.image_url)];
+  return candidates.find((url) => url && !isNonProductImageUrl(url)) || primary.image_url || "";
+}
+
 function toCard(primary, group) {
   const prices = group.map(priceOf).filter((value) => value !== null);
   const rated = group.filter((row) => Number(row.rating) > 0);
@@ -168,7 +177,7 @@ function toCard(primary, group) {
     product_type: canonicalCategory(primary, group),
     size: listingSize(primary) || primary.variant || "",
     site: primary.site,
-    image: primary.image_url || "",
+    image: pickCardImage(primary, group),
     product_url: primary.product_url || "",
     // Every retailer URL selling this same GTIN, primary included. The scored
     // dataset is a snapshot that covers Nykaa well but barely touches

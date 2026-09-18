@@ -12,6 +12,7 @@ import BottomNav from "@/components/bottom-nav";
 import GlobalQuizPrompt from "@/components/global-quiz-prompt";
 import MetaPixelPageView from "@/components/tracking/meta-pixel-page-view";
 import ConditionalFooter from "@/components/conditional-footer";
+import PageTransition from "@/components/page-transition";
 import { Cormorant_Garamond, Lato, Public_Sans } from 'next/font/google'
 
 export const viewport = {
@@ -118,7 +119,7 @@ export default function RootLayout({ children }) {
         <GlobalQuizPrompt />
         <WishlistProvider>
           <div className="pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
-            {children}
+            <PageTransition>{children}</PageTransition>
             <ConditionalFooter />
           </div>
           <BottomNav />

@@ -4,6 +4,7 @@ import { FiChevronUp, FiExternalLink, FiStar, FiTag, FiThumbsUp, FiX } from 'rea
 import { trackingService } from '@/lib/tracking/trackingClient'
 import { EVENTS } from '@/lib/tracking/events'
 import RetailerLogo, { siteName } from '@/components/retailer-logo'
+import { isNonProductImageUrl } from '@/lib/product-image'
 
 function roopseeStoreUrl(productUid) {
     return `https://shop.roopsee.com/products/${encodeURIComponent(productUid)}`
@@ -154,7 +155,7 @@ function OfferModal({ offer, offers, productName, onClose }) {
 
                 <div className="mt-4 grid gap-5 sm:grid-cols-[minmax(0,160px)_minmax(0,1fr)]">
                     <div className="relative aspect-square overflow-hidden rounded-2xl border border-slate-100 bg-white p-3">
-                        {offer.image_url ? (
+                        {offer.image_url && !isNonProductImageUrl(offer.image_url) ? (
                             <img
                                 alt={offer.product_name}
                                 src={offer.image_url}

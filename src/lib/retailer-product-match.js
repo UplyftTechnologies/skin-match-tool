@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 // retailer" matching logic used by the retailer product detail page.
 
 const COMPARISON_FIELDS =
-  "id,site,gtin,product_name,variant,mrp,selling_price,discount_pct,in_stock,product_url,image_url,categories,ingredients,description,how_to_use,key_ingredients,product_attributes";
+  "id,site,gtin,sku,product_name,variant,mrp,selling_price,discount_pct,in_stock,product_url,image_url,categories,ingredients,description,how_to_use,key_ingredients,product_attributes";
 
 function normalizedProductName(name) {
   return String(name || "")

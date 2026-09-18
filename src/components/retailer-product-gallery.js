@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { isNonProductImageUrl } from "@/lib/product-image";
 
 function normalizeImages(primaryImage, imageUrls) {
   return [...new Set([primaryImage, ...(imageUrls || [])]
     .filter(Boolean)
     .map((url) => String(url).trim())
-    .filter((url) => /^https?:\/\//i.test(url)))];
+    .filter((url) => /^https?:\/\//i.test(url))
+    .filter((url) => !isNonProductImageUrl(url)))];
 }
 
 export default function RetailerProductGallery({ imageUrls, primaryImage, productName, children }) {

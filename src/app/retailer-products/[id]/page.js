@@ -279,6 +279,7 @@ export default async function RetailerProductPage({ params }) {
                 className="mt-1 break-words font-lato text-[16px] font-semibold leading-tight text-slate-950 sm:mt-2 sm:text-3xl"
               />
 
+
               {/* Size selector — unchanged. */}
               {sizeOptions.length ? (
                 <div className="mt-4">
@@ -321,6 +322,8 @@ export default async function RetailerProductPage({ params }) {
                 </p>
               ) : null}
 
+
+         
               <RetailerPriceComparison
                 key={product.id}
                 productId={product.id}
@@ -329,11 +332,14 @@ export default async function RetailerProductPage({ params }) {
                 }))}
               />
 
+              
+
               <p className="mt-3 flex items-start gap-1.5 text-[11.5px] leading-relaxed text-slate-400 sm:text-[12px]">
                 <FiAlertTriangle aria-hidden="true" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
                 It is always advised that products shall be patch tested before use.
               </p>
             </div>
+            
           </div>
 
           {/* -------------------------------------------------- Product Playground */}
@@ -347,6 +353,7 @@ export default async function RetailerProductPage({ params }) {
             category={canonicalCategory(product, comparableProducts)}
             excludeUid={String(product.id)}
           />
+
 
           {/* ------------------------------------------------------ Detail rows */}
           <div className="mt-6 min-w-0 overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm sm:mt-8 lg:mt-10">

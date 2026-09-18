@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { findProduct } from "@/lib/data";
+import { isNonProductImageUrl } from "@/lib/product-image";
 
 const FIELDS = "id,product_name,brand,image_url,mrp,selling_price,variant,categories,in_stock,product_url";
 
@@ -9,7 +10,7 @@ function retailerProduct(row, uid = String(row.id)) {
     retailer_product_id: String(row.id),
     product_name: row.product_name,
     brand_name: row.brand,
-    image: row.image_url || "",
+    image: isNonProductImageUrl(row.image_url) ? "" : row.image_url || "",
     mrp: row.mrp,
     selling_price: row.selling_price,
     size: row.variant,

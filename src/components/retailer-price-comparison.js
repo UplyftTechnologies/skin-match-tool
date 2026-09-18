@@ -4,6 +4,7 @@ import { useState } from 'react'
 import RefreshPricesButton from '@/components/refresh-prices-button'
 import RetailerLogo from '@/components/retailer-logo'
 import TypicalPriceRange from '@/components/typical-price-range'
+import DeliveryCheck from '@/components/delivery-check'
 
 function currentPrice(item) {
   return Number(item.selling_price) > 0 ? Number(item.selling_price) : Number(item.mrp) > 0 ? Number(item.mrp) : null
@@ -17,6 +18,13 @@ export default function RetailerPriceComparison({ productId, initialRows }) {
   const [rows, setRows] = useState(initialRows)
   const [status, setStatus] = useState('')
   const [results, setResults] = useState([])
+  const [deliveryPincode, setDeliveryPincode] = useState('')
+  const [deliveryResults, setDeliveryResults] = useState([])
+  const [deliveryStatus, setDeliveryStatus] = useState('')
+  const updateDelivery = (pincode, nextResults) => {
+    setDeliveryPincode(pincode)
+    setDeliveryResults(nextResults)
+  }
   const updatePrices = (nextResults) => {
     setResults(nextResults)
     setRows(previous => previous.map(row => {
@@ -35,12 +43,15 @@ export default function RetailerPriceComparison({ productId, initialRows }) {
   const highest = prices.length ? Math.max(...prices) : null
   return (
     <>
+    
       <div className="mt-2 flex flex-wrap items-end gap-x-3 gap-y-1 sm:mt-5">
         <span className="text-[15px] font-extrabold leading-none text-slate-900 sm:text-[1.9rem]">{formatPrice(currentPrice(primary))}</span>
         {primary.in_stock === false ? <span className="text-xs text-red-600">Out of stock</span> : null}
       </div>
       <p className="mt-1 hidden text-[12px] text-slate-400 sm:block">Inclusive of all taxes</p>
       <TypicalPriceRange currentPrice={currentPrice(primary)} prices={prices} />
+      <DeliveryCheck productId={productId} onResults={updateDelivery} onStatus={setDeliveryStatus} />
+      {deliveryStatus ? <p role="status" aria-live="polite" className="mt-1 text-xs text-slate-500">{deliveryStatus}</p> : null}
       <div id="buy-options" className="mt-5">
         <div className="flex items-center justify-between gap-2">
           <p className="text-[13px] font-extrabold uppercase tracking-wider text-slate-400">Compare prices</p>
@@ -55,12 +66,25 @@ export default function RetailerPriceComparison({ productId, initialRows }) {
             const price = currentPrice(item)
             const isLowest = item.in_stock !== false && lowest !== null && price === lowest
             const result = results.find(result => String(result.id) === String(item.id))
+            const delivery = deliveryResults.find(delivery => String(delivery.id) === String(item.id))
             return (
               <li key={item.id} className={'flex items-center gap-3 px-3 py-3 sm:px-4 ' + (isLowest ? 'bg-[#D17A6D]/6' : 'bg-white')}>
                 <div className="min-w-0 flex-1">
                   <RetailerLogo site={item.site} height={46} />
                   <p className="mt-1 truncate text-[13px] text-slate-400">{String(item.id) === String(productId) ? 'You are viewing this' : item.variant || 'Standard size'}</p>
                   {result ? <p className={'text-xs ' + (result.ok ? 'text-emerald-700' : 'text-amber-700')}>{result.ok ? 'Refreshed' : 'Refresh failed · previous price kept'}</p> : null}
+                  {delivery ? (
+                    delivery.ok ? (
+                      <p className={'text-xs ' + (delivery.deliverable ? 'text-emerald-700' : 'text-amber-700')}>
+                        {delivery.deliverable
+                          ? (delivery.message || `Deliverable to ${deliveryPincode}`)
+                          : (delivery.message || `Not deliverable to ${deliveryPincode}`)}
+                        {delivery.detail ? <span className="text-slate-400"> · {delivery.detail}</span> : null}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-slate-400">{delivery.error || 'Could not check delivery for this retailer'}</p>
+                    )
+                  ) : null}
                 </div>
                 <div className="shrink-0 text-right">
                   <p className="text-[17px] font-bold text-slate-900">{formatPrice(price)}</p>

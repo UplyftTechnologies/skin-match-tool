@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { isNonProductImageUrl } from "@/lib/product-image";
 
 export const dynamic = "force-dynamic";
 
@@ -65,7 +66,7 @@ export async function GET() {
       increment(countries, product.product_attributes?.["Country of origin"]);
 
       const brandName = typeof product.brand === "string" ? product.brand.trim() : "";
-      if (brandName && product.image_url) {
+      if (brandName && product.image_url && !isNonProductImageUrl(product.image_url)) {
         const existing = brandImages.get(brandName);
         if (!existing || (!existing.inStock && product.in_stock)) {
           brandImages.set(brandName, { url: product.image_url, inStock: Boolean(product.in_stock) });
