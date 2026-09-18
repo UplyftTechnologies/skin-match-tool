@@ -29,3 +29,21 @@ services:
       # see .github/workflows/wishlist-reminders.yml
       - key: CRON_SECRET
         sync: false
+
+  # Optional companion service for hosts that cannot execute Python directly
+  # (Vercel, primarily — see PRICE_REFRESH.md). Exposes /refresh (price) and
+  # /delivery-check over HTTP; set PRICE_SCRAPER_URL / DELIVERY_CHECK_URL on
+  # the Next.js host to point at this service's routes once it's deployed.
+  - type: web
+    name: skin-match-tool-price-scraper
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r scripts/price-scraper-requirements.txt && scrapling install
+    startCommand: uvicorn price_scraper_service:app --app-dir scripts --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PRICE_SCRAPER_TOKEN
+        sync: false
+      - key: DELIVERY_CHECK_TOKEN
+        sync: false

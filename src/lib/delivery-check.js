@@ -25,7 +25,21 @@ function runLocally(rows, pincode, receive) {
     child.stderr.setEncoding("utf8");
     child.stderr.on("data", chunk => { stderrTail = (stderrTail + chunk).slice(-2000); });
 
-    const timer = setTimeout(() => { child.kill(); reject(new Error("Delivery check timed out")); }, TIMEOUT_MS);
+    const timer = setTimeout(() => {
+      // A retailer's browser check (Nykaa) can hang past TIMEOUT_MS without
+      // ever erroring out — killing the process and rejecting the whole
+      // batch would also discard retailers that already reported back
+      // (logged here since that's otherwise silently lost). Resolving
+      // instead lets checkDelivery()'s existing "no answer" fallback mark
+      // only the stuck row(s) as failed.
+      console.error(
+        "[delivery-check] Local subprocess timed out after", TIMEOUT_MS, "ms —",
+        sawResult ? "some retailers already reported back." : "no retailer reported back yet.",
+        stderrTail.trim() ? `stderr: ${stderrTail.trim()}` : "",
+      );
+      child.kill();
+      resolve();
+    }, TIMEOUT_MS);
 
     child.stdout.on("data", chunk => {
       buffer += chunk;
@@ -97,7 +111,7 @@ export async function checkDelivery(rows, pincode, onResult) {
 
   for (const row of rows) {
     if (!results.has(String(row.product_id))) {
-      receive({ id: row.product_id, site: row.site, ok: false, error: "no answer" });
+      receive({ id: row.product_id, site: row.site, ok: false, error: "This retailer did not respond in time" });
     }
   }
   return rows.map((row) => results.get(String(row.product_id)));

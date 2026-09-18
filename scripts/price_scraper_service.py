@@ -10,6 +10,11 @@ from delivery_check import DeliveryError, check_delivery_iter, valid_pincode
 app = FastAPI()
 
 
+@app.get("/health")
+async def health():
+    return {"ok": True}
+
+
 @app.post("/refresh")
 async def refresh(body: dict, authorization: str = Header(default=""), accept: str = Header(default="")):
     token = os.environ.get("PRICE_SCRAPER_TOKEN")
